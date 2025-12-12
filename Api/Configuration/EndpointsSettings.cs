@@ -4,10 +4,10 @@ public sealed record EndpointsSettings
 {
     public sealed record Endpoint
     {
-        public string Key { get; init; }
-        public string Host { get; init; }
-        public int Port { get; init; }
+        public string Key { get; set; }
+        public string Host { get; set; }
+        public int Port { get; set; }
     }
-    
-    public Endpoint[]  Endpoints { get; init; } = [];
+
+    public Endpoint[] Endpoints { get; set; } = [];
 }
