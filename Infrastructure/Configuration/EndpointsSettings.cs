@@ -1,4 +1,4 @@
-namespace Api.Configuration;
+namespace Infrastructure.Configuration;
 
 public sealed record EndpointsSettings
 {
