@@ -35,18 +35,17 @@ app.Map("/post", async (HttpContext context, IHttpService httpService) =>
     {
         request.Content = new StreamContent(context.Request.Body);
 
-        if (!string.IsNullOrEmpty(context.Request.ContentType))
-        {
-            request.Content.Headers.TryAddWithoutValidation("Content-Type", context.Request.ContentType);
-        }
+        // if (!string.IsNullOrEmpty(context.Request.ContentType))
+        // {
+        //     request.Content.Headers.TryAddWithoutValidation("Content-Type", context.Request.ContentType);
+        // }
     }
 
     foreach (var header in context.Request.Headers)
     {
         if (!request.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()))
         {
-            request.Content?.Headers.TryAddWithoutValidation(
-                header.Key, header.Value.ToArray());
+            request.Content?.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
         }
     }
 
