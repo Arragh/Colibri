@@ -16,7 +16,7 @@ var app = builder.Build();
 app.Map("/get", async (HttpContext context, IHttpService httpService) =>
 {
     var invoker = httpService.GetClient("TestGo");
-    var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:8080/get");
+    var request = new HttpRequestMessage(HttpMethod.Get, "http://192.168.1.102:6000/get");
     request.Headers.ExpectContinue = false;
     var response = await invoker.SendAsync(request, context.RequestAborted);
     context.Response.StatusCode = (int)response.StatusCode;
@@ -27,60 +27,44 @@ var postSemaphore = new SemaphoreSlim(1000);
 
 app.Map("/post", async (HttpContext context, IHttpService httpService) =>
 {
-    if (!await postSemaphore.WaitAsync(0))
+    var invoker = httpService.GetClient("TestGo");
+    var request = new HttpRequestMessage(HttpMethod.Post, "http://192.168.1.102:6000/post");
+    request.Headers.ExpectContinue = false; // Пробуем ускорить передачу, но это не точно
+
+    if (context.Request.ContentLength > 0 || context.Request.Headers.ContainsKey("Transfer-Encoding"))
     {
-        context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
-        await context.Response.WriteAsync("Server is busy");
-        return;
-    }
-    
-    // await postSemaphore.WaitAsync(context.RequestAborted);
+        request.Content = new StreamContent(context.Request.Body);
 
-    try
+        if (!string.IsNullOrEmpty(context.Request.ContentType))
+        {
+            request.Content.Headers.TryAddWithoutValidation("Content-Type", context.Request.ContentType);
+        }
+    }
+
+    foreach (var header in context.Request.Headers)
     {
-        var invoker = httpService.GetClient("TestGo");
-        var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost:8080/post");
-        request.Headers.ExpectContinue = false; // Пробуем ускорить передачу, но это не точно
-
-        if (context.Request.ContentLength > 0 || context.Request.Headers.ContainsKey("Transfer-Encoding"))
+        if (!request.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()))
         {
-            request.Content = new StreamContent(context.Request.Body);
-
-            if (!string.IsNullOrEmpty(context.Request.ContentType))
-            {
-                request.Content.Headers.TryAddWithoutValidation("Content-Type", context.Request.ContentType);
-            }
+            request.Content?.Headers.TryAddWithoutValidation(
+                header.Key, header.Value.ToArray());
         }
-
-        foreach (var header in context.Request.Headers)
-        {
-            if (!request.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()))
-            {
-                request.Content?.Headers.TryAddWithoutValidation(
-                    header.Key, header.Value.ToArray());
-            }
-        }
-
-        var response = await invoker.SendAsync(request, context.RequestAborted);
-        context.Response.StatusCode = (int)response.StatusCode;
-
-        foreach (var header in response.Headers)
-        {
-            context.Response.Headers[header.Key] = header.Value.ToArray();
-        }
-
-        foreach (var header in response.Content.Headers)
-        {
-            context.Response.Headers[header.Key] = header.Value.ToArray();
-        }
-
-        context.Response.Headers.Remove("transfer-encoding"); // По идее ASP должен сам его выставить, но это не точно
-        await response.Content.CopyToAsync(context.Response.Body, context.RequestAborted);
     }
-    finally
+
+    var response = await invoker.SendAsync(request, context.RequestAborted);
+    context.Response.StatusCode = (int)response.StatusCode;
+
+    foreach (var header in response.Headers)
     {
-        postSemaphore.Release();
+        context.Response.Headers[header.Key] = header.Value.ToArray();
     }
+
+    foreach (var header in response.Content.Headers)
+    {
+        context.Response.Headers[header.Key] = header.Value.ToArray();
+    }
+
+    context.Response.Headers.Remove("transfer-encoding"); // По идее ASP должен сам его выставить, но это не точно
+    await response.Content.CopyToAsync(context.Response.Body, context.RequestAborted);
 });
 
 
