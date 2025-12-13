@@ -1,5 +1,5 @@
 using Api.Configuration;
-using Api.Interfaces;
+using Api.Interfaces.Services;
 using Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,7 +13,6 @@ builder.Services.AddSingleton<IHttpService, HttpService>();
 
 var app = builder.Build();
 
-// app.Map("/{**catchAll}", async (HttpContext context, IHttpService httpService) =>
 app.Map("/get", async (HttpContext context, IHttpService httpService) =>
 {
     var invoker = httpService.GetClient("TestGo");
@@ -24,46 +23,64 @@ app.Map("/get", async (HttpContext context, IHttpService httpService) =>
     await response.Content.CopyToAsync(context.Response.Body, context.RequestAborted);
 });
 
+var postSemaphore = new SemaphoreSlim(1000);
+
 app.Map("/post", async (HttpContext context, IHttpService httpService) =>
 {
-    var invoker = httpService.GetClient("TestGo");
-    var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost:8080/post");
-    request.Headers.ExpectContinue = false; // Пробуем ускорить передачу, но это не точно
-
-    if (context.Request.ContentLength > 0 || context.Request.Headers.ContainsKey("Transfer-Encoding"))
+    if (!await postSemaphore.WaitAsync(0))
     {
-        request.Content = new StreamContent(context.Request.Body);
+        context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+        await context.Response.WriteAsync("Server is busy");
+        return;
+    }
+    
+    // await postSemaphore.WaitAsync(context.RequestAborted);
 
-        if (!string.IsNullOrEmpty(context.Request.ContentType))
+    try
+    {
+        var invoker = httpService.GetClient("TestGo");
+        var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost:8080/post");
+        request.Headers.ExpectContinue = false; // Пробуем ускорить передачу, но это не точно
+
+        if (context.Request.ContentLength > 0 || context.Request.Headers.ContainsKey("Transfer-Encoding"))
         {
-            request.Content.Headers.TryAddWithoutValidation("Content-Type", context.Request.ContentType);
-        }
-    }
+            request.Content = new StreamContent(context.Request.Body);
 
-    foreach (var header in context.Request.Headers)
-    {
-        if (!request.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()))
+            if (!string.IsNullOrEmpty(context.Request.ContentType))
+            {
+                request.Content.Headers.TryAddWithoutValidation("Content-Type", context.Request.ContentType);
+            }
+        }
+
+        foreach (var header in context.Request.Headers)
         {
-            request.Content?.Headers.TryAddWithoutValidation(
-                header.Key, header.Value.ToArray());
+            if (!request.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()))
+            {
+                request.Content?.Headers.TryAddWithoutValidation(
+                    header.Key, header.Value.ToArray());
+            }
         }
+
+        var response = await invoker.SendAsync(request, context.RequestAborted);
+        context.Response.StatusCode = (int)response.StatusCode;
+
+        foreach (var header in response.Headers)
+        {
+            context.Response.Headers[header.Key] = header.Value.ToArray();
+        }
+
+        foreach (var header in response.Content.Headers)
+        {
+            context.Response.Headers[header.Key] = header.Value.ToArray();
+        }
+
+        context.Response.Headers.Remove("transfer-encoding"); // По идее ASP должен сам его выставить, но это не точно
+        await response.Content.CopyToAsync(context.Response.Body, context.RequestAborted);
     }
-
-    var response = await invoker.SendAsync(request, context.RequestAborted);
-    context.Response.StatusCode = (int)response.StatusCode;
-
-    foreach (var header in response.Headers)
+    finally
     {
-        context.Response.Headers[header.Key] = header.Value.ToArray();
+        postSemaphore.Release();
     }
-
-    foreach (var header in response.Content.Headers)
-    {
-        context.Response.Headers[header.Key] = header.Value.ToArray();
-    }
-
-    context.Response.Headers.Remove("transfer-encoding"); // По идее ASP должен сам его выставить, но это не точно
-    await response.Content.CopyToAsync(context.Response.Body, context.RequestAborted);
 });
 
 
