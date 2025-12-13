@@ -1,6 +1,6 @@
 using System.Net;
 using Api.Configuration;
-using Api.Interfaces;
+using Api.Interfaces.Services;
 using Microsoft.Extensions.Options;
 
 namespace Api.Services;
