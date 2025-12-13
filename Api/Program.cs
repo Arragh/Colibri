@@ -1,6 +1,6 @@
-using Api.Configuration;
-using Api.Interfaces.Services;
-using Api.Services;
+using Infrastructure.Configuration;
+using Infrastructure.Interfaces.Services;
+using Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

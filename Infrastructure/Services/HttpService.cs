@@ -1,9 +1,9 @@
 using System.Net;
-using Api.Configuration;
-using Api.Interfaces.Services;
+using Infrastructure.Configuration;
+using Infrastructure.Interfaces.Services;
 using Microsoft.Extensions.Options;
 
-namespace Api.Services;
+namespace Infrastructure.Services;
 
 public class HttpService : IHttpService
 {
