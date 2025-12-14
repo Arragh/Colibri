@@ -1,5 +1,7 @@
 <Solution>
   <Project Path="Api/Api.csproj" />
-  <Project Path="RpsBackend/RpsBackend.csproj" />
-  <Project Path="RpsClient/RpsClient.csproj" />
+  <Project Path="Implementation/Implementation.csproj" />
+  <Project Path="Interfaces/Interfaces.csproj" />
+  <Project Path="RPS.Backend\RPS.Backend.csproj" />
+  <Project Path="RPS.Client\RPS.Client.csproj" />
 </Solution>

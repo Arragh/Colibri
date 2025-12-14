@@ -1,15 +1,12 @@
-using Api.Configuration;
-using Api.Interfaces.Services;
-using Api.Services;
+using Implementation;
+using Interfaces.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services
-    .AddOptions<EndpointsSettings>()
-    .BindConfiguration("Configuration");
+builder.Services.AddConfiguration();
 
-builder.Services.AddHttpClient();
-builder.Services.AddSingleton<IHttpService, HttpService>();
+// builder.Services.AddHttpClient();
+builder.Services.AddImplementedServices();
 
 var app = builder.Build();
 
@@ -23,8 +20,6 @@ app.Map("/get", async (HttpContext context, IHttpService httpService) =>
     await response.Content.CopyToAsync(context.Response.Body, context.RequestAborted);
 });
 
-var postSemaphore = new SemaphoreSlim(1000);
-
 app.Map("/post", async (HttpContext context, IHttpService httpService) =>
 {
     var invoker = httpService.GetClient("TestGo");
@@ -35,18 +30,17 @@ app.Map("/post", async (HttpContext context, IHttpService httpService) =>
     {
         request.Content = new StreamContent(context.Request.Body);
 
-        if (!string.IsNullOrEmpty(context.Request.ContentType))
-        {
-            request.Content.Headers.TryAddWithoutValidation("Content-Type", context.Request.ContentType);
-        }
+        // if (!string.IsNullOrEmpty(context.Request.ContentType))
+        // {
+        //     request.Content.Headers.TryAddWithoutValidation("Content-Type", context.Request.ContentType);
+        // }
     }
 
     foreach (var header in context.Request.Headers)
     {
         if (!request.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()))
         {
-            request.Content?.Headers.TryAddWithoutValidation(
-                header.Key, header.Value.ToArray());
+            request.Content?.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
         }
     }
 
