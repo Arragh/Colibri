@@ -1,15 +1,12 @@
-using Infrastructure.Configuration;
-using Infrastructure.Interfaces.Services;
-using Infrastructure.Services;
+using Implementation;
+using Interfaces.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services
-    .AddOptions<EndpointsSettings>()
-    .BindConfiguration("Configuration");
+builder.Services.AddConfiguration();
 
-builder.Services.AddHttpClient();
-builder.Services.AddSingleton<IHttpService, HttpService>();
+// builder.Services.AddHttpClient();
+builder.Services.AddImplementedServices();
 
 var app = builder.Build();
 
@@ -22,8 +19,6 @@ app.Map("/get", async (HttpContext context, IHttpService httpService) =>
     context.Response.StatusCode = (int)response.StatusCode;
     await response.Content.CopyToAsync(context.Response.Body, context.RequestAborted);
 });
-
-var postSemaphore = new SemaphoreSlim(1000);
 
 app.Map("/post", async (HttpContext context, IHttpService httpService) =>
 {

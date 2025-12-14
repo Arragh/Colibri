@@ -1,4 +1,4 @@
-namespace Infrastructure.Interfaces.Services;
+namespace Interfaces.Services;
 
 public interface IHttpService
 {
