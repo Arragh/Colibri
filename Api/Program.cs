@@ -1,5 +1,4 @@
 using Implementation;
-using Interfaces.Services;
 using Interfaces.Services.Http;
 
 var builder = WebApplication.CreateBuilder(args);
