@@ -7,6 +7,6 @@ public static class AddConfigurationExtension
 {
     public static void AddConfiguration(this IServiceCollection services)
     {
-        services.AddOptions<EndpointsSettings>().BindConfiguration("Configuration");
+        services.AddOptions<ClusterSetting>().BindConfiguration("ClusterSetting");
     }
 }

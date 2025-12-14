@@ -43,7 +43,7 @@ async Task RunTest()
                 if (i % 10 < 7)
                 {
                     response = await httpClient.GetAsync(
-                        getUrl,
+                        getUrl + "?name=Vasya&age=35",
                         HttpCompletionOption.ResponseHeadersRead);
                 }
                 else

@@ -10,11 +10,11 @@ public class HttpTransportProvider : IHttpTransportProvider
 {
     private readonly IReadOnlyDictionary<string, IHttpTransport> _transports;
 
-    public HttpTransportProvider(IOptions<EndpointsSettings> config)
+    public HttpTransportProvider(IOptions<ClusterSetting> config)
     {
         var dict = new Dictionary<string, IHttpTransport>();
         
-        foreach (var endpoint in config.Value.Endpoints)
+        foreach (var endpoint in config.Value.Clusters)
         {
             var handler = new SocketsHttpHandler
             {

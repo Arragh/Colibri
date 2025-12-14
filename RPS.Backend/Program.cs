@@ -3,9 +3,15 @@ var app = builder.Build();
 
 int count = 1;
 
-app.MapGet("/get", () =>
+app.MapGet("/get", (
+    string name,
+    int age) =>
 {
-    var response = "Hello World!";
+    var response = new
+    {
+        Name = name,
+        Age = age
+    };
     
     Interlocked.Increment(ref count);
     Console.WriteLine(count);
