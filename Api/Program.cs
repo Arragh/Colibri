@@ -1,28 +1,26 @@
 using Implementation;
-using Interfaces.Services;
+using Interfaces.Services.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddConfiguration();
-
-// builder.Services.AddHttpClient();
 builder.Services.AddImplementedServices();
 
 var app = builder.Build();
 
-app.Map("/get", async (HttpContext context, IHttpService httpService) =>
+app.Map("/get", async (HttpContext context, IHttpTransportProvider transportProvider) =>
 {
-    var invoker = httpService.GetClient("TestGo");
+    var transport = transportProvider.GetHttpTransport("TestGo");
     var request = new HttpRequestMessage(HttpMethod.Get, "http://192.168.1.102:6000/get");
     request.Headers.ExpectContinue = false;
-    var response = await invoker.SendAsync(request, context.RequestAborted);
+    var response = await transport.SendAsync(request, context.RequestAborted);
     context.Response.StatusCode = (int)response.StatusCode;
     await response.Content.CopyToAsync(context.Response.Body, context.RequestAborted);
 });
 
-app.Map("/post", async (HttpContext context, IHttpService httpService) =>
+app.Map("/post", async (HttpContext context, IHttpTransportProvider transportProvider) =>
 {
-    var invoker = httpService.GetClient("TestGo");
+    var transport = transportProvider.GetHttpTransport("TestGo");
     var request = new HttpRequestMessage(HttpMethod.Post, "http://192.168.1.102:6000/post");
     request.Headers.ExpectContinue = false; // Пробуем ускорить передачу, но это не точно
 
@@ -44,7 +42,7 @@ app.Map("/post", async (HttpContext context, IHttpService httpService) =>
         }
     }
 
-    var response = await invoker.SendAsync(request, context.RequestAborted);
+    var response = await transport.SendAsync(request, context.RequestAborted);
     context.Response.StatusCode = (int)response.StatusCode;
 
     foreach (var header in response.Headers)
