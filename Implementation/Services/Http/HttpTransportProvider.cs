@@ -1,16 +1,19 @@
+using System.Collections.ObjectModel;
 using System.Net;
 using Implementation.Configuration;
-using Interfaces.Services;
+using Interfaces.Services.Http;
 using Microsoft.Extensions.Options;
 
-namespace Implementation.Services;
+namespace Implementation.Services.Http;
 
-public class HttpService : IHttpService
+public class HttpTransportProvider : IHttpTransportProvider
 {
-    private readonly Dictionary<string, HttpMessageInvoker> _clients = new();
+    private readonly IReadOnlyDictionary<string, IHttpTransport> _transports;
 
-    public HttpService(IOptions<EndpointsSettings> config)
+    public HttpTransportProvider(IOptions<EndpointsSettings> config)
     {
+        var dict = new Dictionary<string, IHttpTransport>();
+        
         foreach (var endpoint in config.Value.Endpoints)
         {
             var handler = new SocketsHttpHandler
@@ -27,12 +30,15 @@ public class HttpService : IHttpService
             };
 
             var invoker = new HttpMessageInvoker(handler, disposeHandler: false);
-            _clients[endpoint.Key] = invoker;
+            var transport = new HttpTransport(invoker);
+            dict.Add(endpoint.Key, transport); // TODO: возможно стоит использовать TryAdd
         }
+        
+        _transports = new ReadOnlyDictionary<string, IHttpTransport>(dict);
     }
-
-    public HttpMessageInvoker GetClient(string key)
+    
+    public IHttpTransport GetHttpTransport(string key)
     {
-        return _clients[key];
+        return _transports[key];
     }
 }
