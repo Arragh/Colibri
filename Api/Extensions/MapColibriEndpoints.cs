@@ -24,15 +24,12 @@ public static class MapColibriEndpointsExtension
                         {
                             var endpoint = ctx.GetEndpoint()!;
                             var clusterMeta = endpoint.Metadata.GetMetadata<ClusterMetadata>()!;
-                            var innerPath = endpoint.Metadata.GetMetadata<EndpointMetadata>()!.InnerPath;
+                            var endpointMeta = endpoint.Metadata.GetMetadata<EndpointMetadata>()!;
         
                             var transport = transportProvider.GetHttpTransport(clusterMeta.Key);
-        
-                            var baseUri = new Uri(clusterMeta.Host);
-                            var requestUri = new Uri(baseUri, innerPath + ctx.Request.QueryString);
-                            var method = HttpMethod.Parse(ctx.Request.Method);
+                            var requestUri = new Uri(clusterMeta.BaseUri, endpointMeta.InnerPath + ctx.Request.QueryString);
 
-                            using var request = new HttpRequestMessage(method, requestUri);
+                            using var request = new HttpRequestMessage(endpointMeta.Method, requestUri);
         
                             if (ctx.Request.ContentLength > 0 || ctx.Request.Headers.ContainsKey("Transfer-Encoding"))
                             {
@@ -49,12 +46,12 @@ public static class MapColibriEndpointsExtension
                             ctx.Response.StatusCode = (int)response.StatusCode;
                             await response.Content.CopyToAsync(ctx.Response.Body, ctx.RequestAborted);
                         })
-                    .WithMetadata(new ClusterMetadata(cluster.Key, cluster.Host))
-                    .WithMetadata(new EndpointMetadata(endpoint.InnerPath));
+                    .WithMetadata(new ClusterMetadata(cluster.Key, new Uri(cluster.Host)))
+                    .WithMetadata(new EndpointMetadata(endpoint.InnerPath, HttpMethod.Parse(endpoint.Method)));
             }
         }
     }
+    
+    private sealed record ClusterMetadata(string Key, Uri BaseUri);
+    private sealed record EndpointMetadata(string InnerPath, HttpMethod Method);
 }
-
-sealed record ClusterMetadata(string Key, string Host);
-sealed record EndpointMetadata(string InnerPath);
