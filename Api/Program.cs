@@ -1,28 +1,14 @@
-using Implementation;
-using Implementation.Configuration;
-using Interfaces.Services.Http;
+using Api.Extensions;
+using Implementation.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddConfiguration();
-builder.Services.AddImplementedServices();
+builder.Services.AddColibriConfiguration();
+builder.Services.AddColibriServices();
 
 var app = builder.Build();
 
-var clusterSetting = builder.Configuration
-    .GetRequiredSection("ClusterSetting")
-    .Get<ClusterSetting>()!;
-
-foreach (var cluster in clusterSetting.Clusters)
-{
-    foreach (var endpoint in cluster.Endpoints)
-    {
-        app
-            .MapMethods(endpoint.OuterPath, [endpoint.Method], Proxy)
-            .WithMetadata(new ClusterMetadata(cluster.Key, cluster.Host))
-            .WithMetadata(new EndpointMetadata(endpoint.InnerPath));
-    }
-}
+app.MapColibriEndpoints();
 
 // app.MapGet("/{**catchAll}", async (
 //     HttpContext context,
@@ -79,24 +65,3 @@ foreach (var cluster in clusterSetting.Clusters)
 
 
 app.Run();
-
-static async Task Proxy(HttpContext ctx, IHttpTransportProvider transportProvider)
-{
-    var clusterMeta = ctx.GetEndpoint()!.Metadata.GetMetadata<ClusterMetadata>()!;
-    var innerPath = ctx.GetEndpoint()!.Metadata.GetMetadata<EndpointMetadata>()!.InnerPath;
-    
-    var transport = transportProvider.GetHttpTransport(clusterMeta.Key);
-    
-    var baseUri = new Uri(clusterMeta.Host);
-    var requestUri = new Uri(baseUri, innerPath + ctx.Request.QueryString);
-
-    var request = new HttpRequestMessage(new HttpMethod(ctx.Request.Method), requestUri);
-    
-    request.Headers.ExpectContinue = false;
-    var response = await transport.SendAsync(request, ctx.RequestAborted);
-    ctx.Response.StatusCode = (int)response.StatusCode;
-    await response.Content.CopyToAsync(ctx.Response.Body, ctx.RequestAborted);
-}
-
-sealed record ClusterMetadata(string Key, string Host);
-sealed record EndpointMetadata(string InnerPath);

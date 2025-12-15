@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Net.Http.Json;
 
-const string getUrl = "http://192.168.1.102:5790/get";
-const string postUrl = "http://192.168.1.102:5790/post";
+const string getUrl = "http://192.168.1.102:5790/getlol";
+const string postUrl = "http://192.168.1.102:5790/postlol";
 
 const int totalRequests = 100_000;     // сколько всего запросов
 const int concurrency = 100;           // сколько одновременно
