@@ -1,10 +1,10 @@
 using Api.Extensions;
-using Implementation.Extensions;
+using Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddColibriConfiguration();
-builder.Services.AddColibriServices();
+builder.Services.AddColibriInfrastructure();
 
 var app = builder.Build();
 

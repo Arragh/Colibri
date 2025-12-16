@@ -89,9 +89,9 @@ var seconds = sw.Elapsed.TotalSeconds;
 var rps = total / seconds;
 
 Console.WriteLine("========== RESULTS ==========");
-Console.WriteLine($"Длительность:     {seconds:F1} сек");
-Console.WriteLine($"Потоков:          {concurrency}");
-Console.WriteLine($"Всего запросов:   {total}");
-Console.WriteLine($"Успешных:         {success}");
-Console.WriteLine($"Ошибок:           {failed}");
-Console.WriteLine($"RPS:              {rps:F0}");
+Console.WriteLine($"Duration:     {seconds:F1} сек");
+Console.WriteLine($"Concurrency:  {concurrency}");
+Console.WriteLine($"Total:        {total}");
+Console.WriteLine($"Success:      {success}");
+Console.WriteLine($"Failed:       {failed}");
+Console.WriteLine($"RPS:          {rps:F0}");

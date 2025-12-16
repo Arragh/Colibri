@@ -1,4 +1,4 @@
-namespace Implementation.Configuration;
+namespace Infrastructure.Configuration;
 
 public sealed record ClusterSetting
 {

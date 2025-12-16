@@ -1,4 +1,4 @@
-using Implementation.Configuration;
+using Infrastructure.Configuration;
 using Interfaces.Services.Http;
 using Microsoft.Extensions.Options;
 
@@ -22,34 +22,39 @@ public static class MapColibriEndpointsExtension
                         [endpoint.Method],
                         static async (HttpContext ctx, IHttpTransportProvider transportProvider) =>
                         {
-                            var endpoint = ctx.GetEndpoint()!;
-                            var clusterMeta = endpoint.Metadata.GetMetadata<ClusterMetadata>()!;
-                            var endpointMeta = endpoint.Metadata.GetMetadata<EndpointMetadata>()!;
-        
-                            var transport = transportProvider.GetHttpTransport(clusterMeta.Key);
-                            var requestUri = new Uri(clusterMeta.BaseUri, endpointMeta.InnerPath + ctx.Request.QueryString);
-
-                            using var request = new HttpRequestMessage(endpointMeta.Method, requestUri);
-        
-                            if (ctx.Request.ContentLength > 0 || ctx.Request.Headers.ContainsKey("Transfer-Encoding"))
-                            {
-                                request.Content = new StreamContent(ctx.Request.Body);
-                            
-                                if (!string.IsNullOrEmpty(ctx.Request.ContentType))
-                                {
-                                    request.Content.Headers.TryAddWithoutValidation("Content-Type", ctx.Request.ContentType);
-                                }
-                            }
-        
-                            request.Headers.ExpectContinue = false;
-                            using var response = await transport.SendAsync(request, ctx.RequestAborted);
-                            ctx.Response.StatusCode = (int)response.StatusCode;
-                            await response.Content.CopyToAsync(ctx.Response.Body, ctx.RequestAborted);
+                            await ForwardAsync(ctx, transportProvider);
                         })
                     .WithMetadata(new ClusterMetadata(cluster.Key, new Uri(cluster.Host)))
                     .WithMetadata(new EndpointMetadata(endpoint.InnerPath, HttpMethod.Parse(endpoint.Method)));
             }
         }
+    }
+
+    private static async Task ForwardAsync(HttpContext ctx, IHttpTransportProvider transportProvider)
+    {
+        var endpoint = ctx.GetEndpoint()!;
+        var clusterMeta = endpoint.Metadata.GetMetadata<ClusterMetadata>()!;
+        var endpointMeta = endpoint.Metadata.GetMetadata<EndpointMetadata>()!;
+        
+        var transport = transportProvider.GetHttpTransport(clusterMeta.Key);
+        var requestUri = new Uri(clusterMeta.BaseUri, endpointMeta.InnerPath + ctx.Request.QueryString);
+
+        using var request = new HttpRequestMessage(endpointMeta.Method, requestUri);
+        
+        if (ctx.Request.ContentLength > 0 || ctx.Request.Headers.ContainsKey("Transfer-Encoding"))
+        {
+            request.Content = new StreamContent(ctx.Request.Body);
+                            
+            if (!string.IsNullOrEmpty(ctx.Request.ContentType))
+            {
+                request.Content.Headers.TryAddWithoutValidation("Content-Type", ctx.Request.ContentType);
+            }
+        }
+        
+        request.Headers.ExpectContinue = false;
+        using var response = await transport.SendAsync(request, ctx.RequestAborted);
+        ctx.Response.StatusCode = (int)response.StatusCode;
+        await response.Content.CopyToAsync(ctx.Response.Body, ctx.RequestAborted);
     }
     
     private sealed record ClusterMetadata(string Key, Uri BaseUri);

@@ -1,10 +1,10 @@
 using System.Collections.ObjectModel;
 using System.Net;
-using Implementation.Configuration;
+using Infrastructure.Configuration;
 using Interfaces.Services.Http;
 using Microsoft.Extensions.Options;
 
-namespace Implementation.Services.Http;
+namespace Infrastructure.Services.Http;
 
 public class HttpTransportProvider : IHttpTransportProvider
 {
