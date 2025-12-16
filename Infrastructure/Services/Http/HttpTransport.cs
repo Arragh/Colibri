@@ -1,6 +1,6 @@
 using Interfaces.Services.Http;
 
-namespace Implementation.Services.Http;
+namespace Infrastructure.Services.Http;
 
 public class HttpTransport(HttpMessageInvoker invoker) : IHttpTransport
 {

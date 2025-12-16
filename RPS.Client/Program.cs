@@ -1,88 +1,97 @@
 ﻿using System.Diagnostics;
 using System.Net.Http.Json;
 
-const string getUrl = "http://192.168.1.102:5790/get";
-const string postUrl = "http://192.168.1.102:5790/post";
+const string getUrl = "http://192.168.1.102:5790/getlol?name=Vasya&age=35";
+const string postUrl = "http://192.168.1.102:5790/postlol";
 
-const int totalRequests = 100_000;     // сколько всего запросов
-const int concurrency = 100;           // сколько одновременно
+const int concurrency = 500;
+const int durationSec = 30;
 
-using var httpClient = new HttpClient
+var handler = new SocketsHttpHandler
+{
+    MaxConnectionsPerServer = 2000,
+    PooledConnectionLifetime = Timeout.InfiniteTimeSpan,
+    PooledConnectionIdleTimeout = TimeSpan.FromMinutes(2),
+    EnableMultipleHttp2Connections = true
+};
+
+using var httpClient = new HttpClient(handler)
 {
     Timeout = TimeSpan.FromSeconds(10)
 };
 
-int success = 0;
-int failed = 0;
-double seconds = 0;
-double rps = 0;
+long success = 0;
+long failed = 0;
 
-await RunTest();
+var cts = new CancellationTokenSource(TimeSpan.FromSeconds(durationSec));
+var token = cts.Token;
 
-PrintResults();
+Console.WriteLine($"Прогон {durationSec}-секундного теста с {concurrency} потоками");
+await Task.Delay(1000); // маленький прогрев
 
-return;
+var sw = Stopwatch.StartNew();
 
-async Task RunTest()
+var workers = Enumerable.Range(0, concurrency).Select(async workerId =>
 {
-    var sw = Stopwatch.StartNew();
+    var rnd = new Random(workerId);
 
-    await Parallel.ForEachAsync(
-        Enumerable.Range(0, totalRequests),
-        new ParallelOptions
+    while (!token.IsCancellationRequested)
+    {
+        try
         {
-            MaxDegreeOfParallelism = concurrency
-        },
-        async (i, _) =>
-        {
-            try
+            HttpResponseMessage response;
+
+            // 70% GET / 30% POST
+            if (rnd.Next(10) < 7)
             {
-                HttpResponseMessage response;
-
-                // 70% GET, 30% POST
-                if (i % 10 < 7)
+                response = await httpClient.GetAsync(getUrl, HttpCompletionOption.ResponseHeadersRead, token);
+            }
+            else
+            {
+                var payload = new
                 {
-                    response = await httpClient.GetAsync(
-                        getUrl,
-                        HttpCompletionOption.ResponseHeadersRead);
+                    Login = "user123",
+                    Password = "pass123"
+                };
+
+                response = await httpClient.PostAsJsonAsync(postUrl, payload, token);
+            }
+
+            using (response)
+            {
+                if (response.IsSuccessStatusCode)
+                {
+                    Interlocked.Increment(ref success);
                 }
                 else
                 {
-                    var payload = new
-                    {
-                        Login = "user123",
-                        Password = "pass123"
-                    };
-
-                    response = await httpClient.PostAsJsonAsync(postUrl, payload);
-                }
-
-                using (response)
-                {
-                    if (response.IsSuccessStatusCode)
-                        Interlocked.Increment(ref success);
-                    else
-                        Interlocked.Increment(ref failed);
+                    Interlocked.Increment(ref failed);
                 }
             }
-            catch
-            {
-                Interlocked.Increment(ref failed);
-            }
-        });
+        }
+        catch (OperationCanceledException)
+        {
+            break;
+        }
+        catch
+        {
+            Interlocked.Increment(ref failed);
+        }
+    }
+}).ToArray();
 
-    sw.Stop();
+await Task.WhenAll(workers);
 
-    seconds = sw.Elapsed.TotalSeconds;
-    rps = totalRequests / seconds;
-}
+sw.Stop();
 
-void PrintResults()
-{
-    Console.WriteLine($"Total requests: {totalRequests}");
-    Console.WriteLine($"Concurrency:    {concurrency}");
-    Console.WriteLine($"Success:        {success}");
-    Console.WriteLine($"Failed:         {failed}");
-    Console.WriteLine($"Time:           {seconds:F2} sec");
-    Console.WriteLine($"RPS:            {rps:F0}");
-}
+var total = success + failed;
+var seconds = sw.Elapsed.TotalSeconds;
+var rps = total / seconds;
+
+Console.WriteLine("========== RESULTS ==========");
+Console.WriteLine($"Duration:     {seconds:F1} сек");
+Console.WriteLine($"Concurrency:  {concurrency}");
+Console.WriteLine($"Total:        {total}");
+Console.WriteLine($"Success:      {success}");
+Console.WriteLine($"Failed:       {failed}");
+Console.WriteLine($"RPS:          {rps:F0}");
