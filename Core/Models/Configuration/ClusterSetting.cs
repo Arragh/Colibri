@@ -1,4 +1,4 @@
-namespace Infrastructure.Configuration;
+namespace Core.Models.Configuration;
 
 public sealed record ClusterSetting
 {
@@ -8,7 +8,8 @@ public sealed record ClusterSetting
 public sealed record Cluster
 {
     public string Key { get; set; }
-    public string Host { get; set; }
+
+    public string BaseUrl { get; set; }
     
     public Endpoint[] Endpoints { get; set; } = [];
 }
@@ -26,7 +27,7 @@ public sealed record Endpoint
         get;
         set => field = value.ToLower();
     }
-    
+
     public string InnerPath
     {
         get;
