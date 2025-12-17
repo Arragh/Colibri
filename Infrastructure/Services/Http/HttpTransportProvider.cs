@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Net;
-using Infrastructure.Configuration;
-using Interfaces.Services.Http;
+using Core.Models.Configuration;
+using Core.Interfaces.Services.Http;
 using Microsoft.Extensions.Options;
 
 namespace Infrastructure.Services.Http;

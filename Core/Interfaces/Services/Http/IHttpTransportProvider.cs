@@ -1,4 +1,4 @@
-namespace Interfaces.Services.Http;
+namespace Core.Interfaces.Services.Http;
 
 public interface IHttpTransportProvider
 {

@@ -1,11 +1,11 @@
-using Interfaces.Services.Http;
+using Core.Interfaces.Services.Http;
 
 namespace Infrastructure.Services.Http;
 
 public class HttpTransport(HttpMessageInvoker invoker) : IHttpTransport
 {
-    public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    public async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        return invoker.SendAsync(request, cancellationToken);
+        return await invoker.SendAsync(request, cancellationToken);
     }
 }
