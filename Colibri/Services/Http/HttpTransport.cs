@@ -1,8 +1,6 @@
-using Core.Interfaces.Services.Http;
+namespace Colibri.Services.Http;
 
-namespace Infrastructure.Services.Http;
-
-public class HttpTransport(HttpMessageInvoker invoker) : IHttpTransport
+public sealed class HttpTransport(HttpMessageInvoker invoker)
 {
     public async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {

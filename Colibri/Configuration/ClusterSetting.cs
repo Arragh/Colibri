@@ -1,4 +1,4 @@
-namespace Core.Models.Configuration;
+namespace Colibri.Configuration;
 
 public sealed record ClusterSetting
 {

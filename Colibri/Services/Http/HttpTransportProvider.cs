@@ -1,18 +1,17 @@
 using System.Collections.ObjectModel;
 using System.Net;
-using Core.Models.Configuration;
-using Core.Interfaces.Services.Http;
+using Colibri.Configuration;
 using Microsoft.Extensions.Options;
 
-namespace Infrastructure.Services.Http;
+namespace Colibri.Services.Http;
 
-public class HttpTransportProvider : IHttpTransportProvider
+public sealed class HttpTransportProvider
 {
-    private readonly IReadOnlyDictionary<string, IHttpTransport> _transports;
+    private readonly IReadOnlyDictionary<string, HttpTransport> _transports;
 
     public HttpTransportProvider(IOptions<ClusterSetting> config)
     {
-        var dict = new Dictionary<string, IHttpTransport>();
+        var dict = new Dictionary<string, HttpTransport>();
         
         foreach (var endpoint in config.Value.Clusters)
         {
@@ -34,10 +33,10 @@ public class HttpTransportProvider : IHttpTransportProvider
             dict.Add(endpoint.Key, transport); // TODO: возможно стоит использовать TryAdd
         }
         
-        _transports = new ReadOnlyDictionary<string, IHttpTransport>(dict);
+        _transports = new ReadOnlyDictionary<string, HttpTransport>(dict);
     }
     
-    public IHttpTransport GetHttpTransport(string key)
+    public HttpTransport GetTransport(string key)
     {
         return _transports[key];
     }
