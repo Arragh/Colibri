@@ -1,8 +1,8 @@
-using Core.Models.Configuration;
-using Core.Interfaces.Services.Http;
+using Colibri.Configuration;
+using Colibri.Services.Http;
 using Microsoft.Extensions.Options;
 
-namespace Api.Extensions;
+namespace Colibri.Extensions;
 
 public static class MapColibriEndpointsExtension
 {
@@ -22,7 +22,7 @@ public static class MapColibriEndpointsExtension
                         [endpoint.Method],
                         static async (
                             HttpContext ctx,
-                            IHttpTransportProvider transportProvider) =>
+                            HttpTransportProvider transportProvider) =>
                         {
                             await ForwardAsync(ctx, transportProvider);
                         })
@@ -37,11 +37,11 @@ public static class MapColibriEndpointsExtension
 
     private static async Task ForwardAsync(
         HttpContext ctx,
-        IHttpTransportProvider transportProvider)
+        HttpTransportProvider transportProvider)
     {
         var endpointMeta = ctx.GetEndpoint()!.Metadata.GetMetadata<EndpointMetadata>()!;
         
-        var transport = transportProvider.GetHttpTransport(endpointMeta.ClusterKey);
+        var transport = transportProvider.GetTransport(endpointMeta.ClusterKey);
         var requestUri = new Uri(endpointMeta.BaseUri, endpointMeta.InnerPath + ctx.Request.QueryString);
         
         using var request = new HttpRequestMessage(endpointMeta.Method, requestUri);
