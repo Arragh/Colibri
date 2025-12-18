@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Net.Http.Json;
 
-const string getUrl = "http://192.168.1.102:5790/getlol?name=Vasya&age=35";
-const string postUrl = "http://192.168.1.102:5790/postlol";
+const string getUrl = "http://192.168.1.102:5790/test/get?name=Vasya&age=35";
+const string postUrl = "http://192.168.1.102:5790/test/post";
 
 const int concurrency = 500;
 const int durationSec = 30;

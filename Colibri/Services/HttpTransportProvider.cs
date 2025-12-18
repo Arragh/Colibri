@@ -1,19 +1,19 @@
-using System.Collections.ObjectModel;
 using System.Net;
+using System.Runtime.CompilerServices;
 using Colibri.Configuration;
 using Microsoft.Extensions.Options;
 
-namespace Colibri.Services.Http;
+namespace Colibri.Services;
 
 public sealed class HttpTransportProvider
 {
-    private readonly IReadOnlyDictionary<string, HttpTransport> _transports;
+    private readonly HttpMessageInvoker[] _transports;
 
     public HttpTransportProvider(IOptions<ClusterSetting> config)
     {
-        var dict = new Dictionary<string, HttpTransport>();
+        var invokers = new List<HttpMessageInvoker>();
         
-        foreach (var endpoint in config.Value.Clusters)
+        foreach (var endpoint in config.Value.GetPrefixes())
         {
             var handler = new SocketsHttpHandler
             {
@@ -28,16 +28,18 @@ public sealed class HttpTransportProvider
                 EnableMultipleHttp2Connections = true
             };
 
-            var invoker = new HttpMessageInvoker(handler, disposeHandler: false);
-            var transport = new HttpTransport(invoker);
-            dict.Add(endpoint.Key, transport); // TODO: возможно стоит использовать TryAdd
+            invokers.Add(new HttpMessageInvoker(handler, disposeHandler: false));
         }
         
-        _transports = new ReadOnlyDictionary<string, HttpTransport>(dict);
+        _transports = invokers.ToArray();
     }
     
-    public HttpTransport GetTransport(string key)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public async Task<HttpResponseMessage> SendAsync(
+        int clusterIndex,
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
     {
-        return _transports[key];
+        return await _transports[clusterIndex].SendAsync(request, cancellationToken);
     }
 }
