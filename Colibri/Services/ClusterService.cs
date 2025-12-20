@@ -4,9 +4,19 @@ using Microsoft.Extensions.Options;
 
 namespace Colibri.Services;
 
-internal sealed class ClusterService(IOptions<ClusterSetting> cfg)
+internal sealed class ClusterService
 {
-    private readonly string[] _prefixes = cfg.Value.GetPrefixes();
+    private string[] _prefixes;
+
+    public ClusterService(IOptionsMonitor<ClusterSetting> cfg)
+    {
+        _prefixes = cfg.CurrentValue.Prefixes();
+
+        cfg.OnChange(s =>
+        {
+            Interlocked.Exchange(ref _prefixes, s.Prefixes());
+        });
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal int GetClusterIndex(HttpContext ctx)

@@ -1,19 +1,25 @@
 using System.Net;
 using System.Runtime.CompilerServices;
 using Colibri.Configuration;
+using Colibri.Interfaces.Services.Http;
 using Microsoft.Extensions.Options;
 
-namespace Colibri.Services;
+namespace Colibri.Services.Http;
 
-public sealed class HttpTransportProvider
+internal sealed class MessageInvokerProvider : ITransportProvider
 {
-    private readonly HttpMessageInvoker[] _transports;
+    private HttpMessageInvoker[] _transports;
 
-    public HttpTransportProvider(IOptions<ClusterSetting> config)
+    public MessageInvokerProvider(IOptionsMonitor<ClusterSetting> cfg)
+    {
+        _transports = MakeArray(cfg.CurrentValue);
+    }
+
+    private HttpMessageInvoker[] MakeArray(ClusterSetting setting)
     {
         var invokers = new List<HttpMessageInvoker>();
         
-        foreach (var endpoint in config.Value.GetPrefixes())
+        foreach (var _ in setting.Prefixes())
         {
             var handler = new SocketsHttpHandler
             {
@@ -31,7 +37,7 @@ public sealed class HttpTransportProvider
             invokers.Add(new HttpMessageInvoker(handler, disposeHandler: false));
         }
         
-        _transports = invokers.ToArray();
+        return invokers.ToArray();
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

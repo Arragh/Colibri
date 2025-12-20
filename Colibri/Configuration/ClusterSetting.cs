@@ -1,14 +1,14 @@
 namespace Colibri.Configuration;
 
-public sealed record ClusterSetting
+internal sealed class ClusterSetting
 {
     private string[] _prefixes = null!;
     private string[][] _baseUrls = null!;
     
     public Cluster[] Clusters { get; set; } = [];
 
-    internal string[] GetPrefixes() => _prefixes;
-    internal string[][]  GetBaseUrls() => _baseUrls;
+    internal string[] Prefixes() => _prefixes;
+    internal string[][]  BaseUrls() => _baseUrls;
     
     internal void BuildDictionaries()
     {

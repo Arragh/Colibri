@@ -1,16 +1,7 @@
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
-app.MapGet("/get", (string name, int age) =>
-{
-    var response = new
-    {
-        Name = name,
-        Age = age
-    };
-
-    return Results.Ok(response);
-});
+int count = 1;
 
 app.MapPost("/post", (RequestModel  request) =>
 {
@@ -19,13 +10,12 @@ app.MapPost("/post", (RequestModel  request) =>
         return Results.Forbid();
     }
     
+    Console.WriteLine(count);
+    Interlocked.Increment(ref count);
+    
     return Results.Ok("Logged in");
 });
 
 app.Run();
 
-struct RequestModel
-{
-    public string Login { get; set; }
-    public string Password { get; set; }
-}
+record RequestModel(string Login, string Password);

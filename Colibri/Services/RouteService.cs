@@ -3,9 +3,19 @@ using Microsoft.Extensions.Options;
 
 namespace Colibri.Services;
 
-internal sealed class RouteService(IOptions<ClusterSetting> cfg)
+internal sealed class RouteService
 {
-    private readonly string[] _prefixes = cfg.Value.GetPrefixes();
+    private string[] _prefixes;
+
+    public RouteService(IOptionsMonitor<ClusterSetting> cfg)
+    {
+        _prefixes = cfg.CurrentValue.Prefixes();
+        
+        cfg.OnChange(m =>
+        {
+            Interlocked.Exchange(ref _prefixes, m.Prefixes());
+        });
+    }
 
     internal ReadOnlySpan<char> BuildRoute(int clusterIndex, HttpContext ctx)
     {

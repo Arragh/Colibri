@@ -1,12 +1,18 @@
+using Colibri.BackgroundServices;
 using Colibri.Configuration;
+using Colibri.Interfaces.Services.Http;
 using Colibri.Services;
+using Colibri.Services.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOptions<ClusterSetting>().BindConfiguration("ClusterSetting");
 builder.Services.PostConfigure<ClusterSetting>(c => c.BuildDictionaries());
 
-builder.Services.AddSingleton<HttpTransportProvider>();
+builder.Services.AddSingleton<TransportDisposer>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<TransportDisposer>());
+
+builder.Services.AddSingleton<ITransportProvider, TheoryTransportProvider>();
 builder.Services.AddSingleton<ClusterService>();
 builder.Services.AddSingleton<LoadBalancer>();
 builder.Services.AddSingleton<RouteService>();
@@ -18,7 +24,7 @@ app.Map("/{**catchAll}", static async (
     ClusterService clusterService,
     LoadBalancer loadBalancer,
     RouteService routeService,
-    HttpTransportProvider transportProvider) =>
+    ITransportProvider transportProvider) =>
 {
     var clusterIndex = clusterService.GetClusterIndex(ctx);
     
