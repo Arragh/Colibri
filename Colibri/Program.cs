@@ -1,6 +1,7 @@
 using Colibri.BackgroundServices;
 using Colibri.Configuration;
 using Colibri.Interfaces.Services.Http;
+using Colibri.Models.Static;
 using Colibri.Services;
 using Colibri.Services.Http;
 
@@ -12,12 +13,29 @@ builder.Services.PostConfigure<ClusterSetting>(c => c.BuildDictionaries());
 builder.Services.AddSingleton<TransportDisposer>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<TransportDisposer>());
 
-builder.Services.AddSingleton<ITransportProvider, TheoryTransportProvider>();
+builder.Services.AddSingleton<ITransportProvider, HttpTransportProvider>();
 builder.Services.AddSingleton<ClusterService>();
 builder.Services.AddSingleton<LoadBalancer>();
 builder.Services.AddSingleton<RouteService>();
 
 var app = builder.Build();
+
+app.Use((ctx, next) =>
+{
+    if (HotReloadState.HotReloadCount == 0)
+    {
+        return next(ctx);
+    }
+    
+    ctx.Response.StatusCode = 503;
+    
+    return ctx.Response.Body.WriteAsync(
+        HotReloadState.Server503Message,
+        0,
+        HotReloadState.Server503Message.Length,
+        ctx.RequestAborted);
+    
+});
 
 app.Map("/{**catchAll}", static async (
     HttpContext ctx,

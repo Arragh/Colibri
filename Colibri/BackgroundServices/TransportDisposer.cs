@@ -13,33 +13,44 @@ public class TransportDisposer : BackgroundService
         {
             var count = _queue.Count;
 
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
-                if (_queue.TryDequeue(out var transport))
+                if (!_queue.TryDequeue(out var transport))
                 {
-                    if (transport is IDisposable disposable)
-                    {
-                        try
-                        {
-                            disposable.Dispose();
-                            Console.WriteLine($"{transport.GetType().Name} disposed");
-                        }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine(e.ToString());
-                            _queue.Enqueue(transport);
-                        }
-                    }
+                    break;
+                }
+                
+                if (transport.ReadyToDispose && transport is IDisposable d)
+                {
+                    d.Dispose();
+                }
+                else
+                {
+                    _queue.Enqueue(transport);
                 }
             }
             
             await Task.Delay(5000, stoppingToken);
+        }
+        
+        while (_queue.TryDequeue(out var transport))
+        {
+            try
+            {
+                if (transport is IDisposable d)
+                {
+                    d.Dispose();
+                }
+            }
+            catch
+            {
+                Console.WriteLine("TROLOLO");
+            }
         }
     }
 
     internal void Enqueue(ITransport transport)
     {
         _queue.Enqueue(transport);
-        Console.WriteLine($"{transport.GetType().Name} queued");
     }
 }

@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using Colibri.Configuration;
+using Colibri.Models.Static;
 using Microsoft.Extensions.Options;
 
 namespace Colibri.Services;
@@ -14,7 +15,16 @@ internal sealed class LoadBalancer
         
         cfg.OnChange(m =>
         {
-            Interlocked.Exchange(ref _baseUrls, m.BaseUrls());
+            Interlocked.Increment(ref HotReloadState.HotReloadCount);
+
+            try
+            {
+                Interlocked.Exchange(ref _baseUrls, m.BaseUrls());
+            }
+            finally
+            {
+                Interlocked.Decrement(ref HotReloadState.HotReloadCount);
+            }
         });
     }
 

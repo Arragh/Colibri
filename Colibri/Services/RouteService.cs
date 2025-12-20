@@ -1,4 +1,5 @@
 using Colibri.Configuration;
+using Colibri.Models.Static;
 using Microsoft.Extensions.Options;
 
 namespace Colibri.Services;
@@ -13,7 +14,16 @@ internal sealed class RouteService
         
         cfg.OnChange(m =>
         {
-            Interlocked.Exchange(ref _prefixes, m.Prefixes());
+            Interlocked.Increment(ref HotReloadState.HotReloadCount);
+
+            try
+            {
+                Interlocked.Exchange(ref _prefixes, m.Prefixes());
+            }
+            finally
+            {
+                Interlocked.Decrement(ref HotReloadState.HotReloadCount);
+            }
         });
     }
 

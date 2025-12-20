@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using Colibri.Configuration;
+using Colibri.Models.Static;
 using Microsoft.Extensions.Options;
 
 namespace Colibri.Services;
@@ -14,7 +15,16 @@ internal sealed class ClusterService
 
         cfg.OnChange(s =>
         {
-            Interlocked.Exchange(ref _prefixes, s.Prefixes());
+            Interlocked.Increment(ref HotReloadState.HotReloadCount);
+
+            try
+            {
+                Interlocked.Exchange(ref _prefixes, s.Prefixes());
+            }
+            finally
+            {
+                Interlocked.Decrement(ref HotReloadState.HotReloadCount);
+            }
         });
     }
 
