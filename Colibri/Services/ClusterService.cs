@@ -23,10 +23,12 @@ internal sealed class ClusterService
     {
         ReadOnlySpan<char> path = ctx.Request.Path.Value ?? ReadOnlySpan<char>.Empty;
         
-        for (var i = 0; i < _prefixes.Length; i++)
+        var prefixes = Volatile.Read(ref _prefixes);
+        
+        for (var i = 0; i < prefixes.Length; i++)
         {
-            if (path.StartsWith(_prefixes[i], StringComparison.Ordinal)
-                && (path.Length == _prefixes[i].Length || path[_prefixes[i].Length] == '/'))
+            if (path.StartsWith(prefixes[i], StringComparison.Ordinal)
+                && (path.Length == prefixes[i].Length || path[prefixes[i].Length] == '/'))
             {
                 return i;
             }

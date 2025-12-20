@@ -4,7 +4,7 @@ namespace Colibri.Services.Http;
 
 internal sealed class HttpTransport(SocketsHttpHandler invoker) : ITransport, IDisposable
 {
-    private readonly HttpMessageInvoker _invoker = new(invoker);
+    private readonly HttpMessageInvoker _invoker = new(invoker, disposeHandler: true);
     private int _activities = 0;
     private bool _disposing = false;
     private readonly object _lock = new object();

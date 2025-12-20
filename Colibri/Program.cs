@@ -37,7 +37,9 @@ app.Map("/{**catchAll}", static async (
     var clusterBaseUrl = loadBalancer.GetClusterUrl(clusterIndex);
     var pathUrl = routeService.BuildRoute(clusterIndex, ctx);
 
-    var requestUri = new Uri(clusterBaseUrl, pathUrl.ToString() + ctx.Request.QueryString.Value);
+    var requestUri = new Uri(
+        clusterBaseUrl,
+        pathUrl.ToString() + ctx.Request.QueryString.Value);
     using var request = new HttpRequestMessage(new HttpMethod(ctx.Request.Method), requestUri);
 
     if (ctx.Request.ContentLength > 0 || ctx.Request.Headers.ContainsKey("Transfer-Encoding"))
