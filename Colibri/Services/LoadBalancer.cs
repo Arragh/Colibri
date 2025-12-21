@@ -1,36 +1,15 @@
 using System.Runtime.CompilerServices;
-using Colibri.Configuration;
-using Colibri.Models.Static;
-using Microsoft.Extensions.Options;
+using Colibri.Models;
 
 namespace Colibri.Services;
 
 internal sealed class LoadBalancer
 {
-    private string[][] _baseUrls;
-
-    public LoadBalancer(IOptionsMonitor<ClusterSetting> cfg)
-    {
-        _baseUrls = cfg.CurrentValue.BaseUrls();
-        
-        cfg.OnChange(m =>
-        {
-            Interlocked.Increment(ref HotReloadState.HotReloadCount);
-
-            try
-            {
-                Interlocked.Exchange(ref _baseUrls, m.BaseUrls());
-            }
-            finally
-            {
-                Interlocked.Decrement(ref HotReloadState.HotReloadCount);
-            }
-        });
-    }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal Uri GetClusterUrl(int clusterIndex)
+    internal Uri GetClusterUrl(
+        RoutingSnapshot snapshot,
+        int clusterIndex)
     {
-        return new Uri(_baseUrls[clusterIndex][0]);
+        return new Uri(snapshot.BaseUrls[clusterIndex][0]);
     }
 }

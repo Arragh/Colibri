@@ -3,7 +3,7 @@ using Colibri.Interfaces.Services.Http;
 
 namespace Colibri.BackgroundServices;
 
-public class TransportDisposer : BackgroundService
+public class SnapshotDisposer : BackgroundService
 {
     private readonly ConcurrentQueue<ITransport> _queue = new();
     

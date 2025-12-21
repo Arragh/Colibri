@@ -10,13 +10,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOptions<ClusterSetting>().BindConfiguration("ClusterSetting");
 builder.Services.PostConfigure<ClusterSetting>(c => c.BuildDictionaries());
 
-builder.Services.AddSingleton<TransportDisposer>();
-builder.Services.AddHostedService(sp => sp.GetRequiredService<TransportDisposer>());
+builder.Services.AddSingleton<SnapshotDisposer>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<SnapshotDisposer>());
 
-builder.Services.AddSingleton<ITransportProvider, HttpTransportProvider>();
-builder.Services.AddSingleton<ClusterService>();
+builder.Services.AddSingleton<RoutingState>();
+builder.Services.AddSingleton<ITransportService, HttpTransportService>();
 builder.Services.AddSingleton<LoadBalancer>();
-builder.Services.AddSingleton<RouteService>();
+builder.Services.AddSingleton<RoutingService>();
 
 var app = builder.Build();
 
@@ -39,12 +39,14 @@ app.Use((ctx, next) =>
 
 app.Map("/{**catchAll}", static async (
     HttpContext ctx,
-    ClusterService clusterService,
+    RoutingState routingState,
     LoadBalancer loadBalancer,
-    RouteService routeService,
-    ITransportProvider transportProvider) =>
+    RoutingService routingService,
+    ITransportService transportProvider) =>
 {
-    var clusterIndex = clusterService.GetClusterIndex(ctx);
+    var snapshot = routingState.Snapshot;
+    
+    var clusterIndex = routingService.GetClusterIndex(snapshot, ctx);
     
     if (clusterIndex < 0)
     {
@@ -52,8 +54,8 @@ app.Map("/{**catchAll}", static async (
         return;
     }
 
-    var clusterBaseUrl = loadBalancer.GetClusterUrl(clusterIndex);
-    var pathUrl = routeService.BuildRoute(clusterIndex, ctx);
+    var clusterBaseUrl = loadBalancer.GetClusterUrl(snapshot, clusterIndex);
+    var pathUrl = routingService.BuildRoute(snapshot, ctx, clusterIndex);
 
     var requestUri = new Uri(
         clusterBaseUrl,
@@ -70,7 +72,7 @@ app.Map("/{**catchAll}", static async (
         }
     }
     request.Headers.ExpectContinue = false;
-    using var response = await transportProvider.SendAsync(clusterIndex, request, ctx.RequestAborted);
+    using var response = await transportProvider.SendAsync(snapshot, clusterIndex, request, ctx.RequestAborted);
     ctx.Response.StatusCode = (int)response.StatusCode;
     await response.Content.CopyToAsync(ctx.Response.Body, ctx.RequestAborted);
 });
