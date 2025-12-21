@@ -1,6 +1,6 @@
 namespace Colibri.Interfaces.Services.Http;
 
-public interface ITransport
+public interface ITransport : IDisposable
 {
     bool ReadyToDispose { get; }
     
