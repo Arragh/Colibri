@@ -1,45 +1,45 @@
 using System.Collections.Concurrent;
-using Colibri.Interfaces.Services.Http;
+using Colibri.Models;
 
 namespace Colibri.BackgroundServices;
 
 public class SnapshotDisposer : BackgroundService
 {
-    private readonly ConcurrentQueue<ITransport> _queue = new();
+    private readonly ConcurrentQueue<RoutingSnapshot> _queue = new();
     
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            var count = _queue.Count;
-
-            for (var i = 0; i < count; i++)
+            while (_queue.TryDequeue(out var oldSnapshot))
             {
-                if (!_queue.TryDequeue(out var transport))
-                {
-                    break;
-                }
+                var transportsCount = oldSnapshot.Transports.Length;
                 
-                if (transport.ReadyToDispose && transport is IDisposable d)
+                foreach (var t in oldSnapshot.Transports)
                 {
-                    d.Dispose();
+                    if (t.ReadyToDispose)
+                    {
+                        t.Dispose();
+                        transportsCount--;
+                    }
                 }
-                else
+
+                if (transportsCount > 0)
                 {
-                    _queue.Enqueue(transport);
+                    _queue.Enqueue(oldSnapshot);
                 }
             }
             
             await Task.Delay(5000, stoppingToken);
         }
         
-        while (_queue.TryDequeue(out var transport))
+        while (_queue.TryDequeue(out var oldSnapshot))
         {
             try
             {
-                if (transport is IDisposable d)
+                foreach (var t in oldSnapshot.Transports)
                 {
-                    d.Dispose();
+                    t.Dispose();
                 }
             }
             catch
@@ -49,8 +49,5 @@ public class SnapshotDisposer : BackgroundService
         }
     }
 
-    internal void Enqueue(ITransport transport)
-    {
-        _queue.Enqueue(transport);
-    }
+    internal void Enqueue(RoutingSnapshot snapshot) => _queue.Enqueue(snapshot);
 }

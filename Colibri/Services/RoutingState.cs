@@ -1,4 +1,5 @@
 using System.Net;
+using Colibri.BackgroundServices;
 using Colibri.Configuration;
 using Colibri.Interfaces.Services.Http;
 using Colibri.Models;
@@ -9,15 +10,23 @@ namespace Colibri.Services;
 
 internal sealed class RoutingState
 {
+    private readonly SnapshotDisposer _disposer;
     private RoutingSnapshot _snapshot;
     
-    public RoutingState(IOptionsMonitor<ClusterSetting> cfg)
+    public RoutingState(
+        IOptionsMonitor<ClusterSetting> cfg,
+        SnapshotDisposer disposer)
     {
         _snapshot = Build(cfg.CurrentValue);
+        _disposer = disposer;
         
         cfg.OnChange(c =>
         {
-            _snapshot = Build(c);
+            var oldSnapshot = _snapshot;
+            var newSnapshot = Build(c);
+            Volatile.Write(ref _snapshot, newSnapshot);
+                
+            _disposer.Enqueue(oldSnapshot);
         });
     }
     

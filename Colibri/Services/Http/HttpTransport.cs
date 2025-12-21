@@ -2,7 +2,7 @@ using Colibri.Interfaces.Services.Http;
 
 namespace Colibri.Services.Http;
 
-internal sealed class HttpTransport(SocketsHttpHandler handler) : ITransport, IDisposable
+internal sealed class HttpTransport(SocketsHttpHandler handler) : ITransport
 {
     private readonly HttpMessageInvoker _invoker = new(handler, disposeHandler: true);
     private int _activities = 0;
