@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="Colibri/Colibri.csproj" />
-  <Project Path="RPS.Backend/RPS.Backend.csproj" />
-  <Project Path="RPS.Client/RPS.Client.csproj" />
+  <Project Path="RPS.Backend_1\RPS.Backend_1.csproj" />
+  <Project Path="RPS.Backend_2/RPS.Backend_2.csproj" />
+  <Project Path="RPS.Client\RPS.Client.csproj" />
 </Solution>

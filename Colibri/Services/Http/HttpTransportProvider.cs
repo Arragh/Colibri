@@ -1,43 +1,76 @@
-using System.Collections.ObjectModel;
 using System.Net;
+using System.Runtime.CompilerServices;
+using Colibri.BackgroundServices;
 using Colibri.Configuration;
+using Colibri.Interfaces.Services.Http;
+using Colibri.Models.Static;
 using Microsoft.Extensions.Options;
 
 namespace Colibri.Services.Http;
 
-public sealed class HttpTransportProvider
+internal sealed class HttpTransportProvider : ITransportProvider
 {
-    private readonly IReadOnlyDictionary<string, HttpTransport> _transports;
-
-    public HttpTransportProvider(IOptions<ClusterSetting> config)
+    private ITransport[] _transports;
+    private readonly TransportDisposer _disposer;
+    
+    public HttpTransportProvider(
+        IOptionsMonitor<ClusterSetting> cfg,
+        TransportDisposer disposer)
     {
-        var dict = new Dictionary<string, HttpTransport>();
+        _transports = MakeArray(cfg.CurrentValue);
+        _disposer = disposer;
         
-        foreach (var endpoint in config.Value.Clusters)
+        cfg.OnChange(s =>
+        {
+            Interlocked.Increment(ref HotReloadState.HotReloadCount);
+
+            try
+            {
+                var oldTransports = Interlocked.Exchange(ref _transports, MakeArray(s));
+
+                foreach (var t in oldTransports)
+                {
+                    _disposer.Enqueue(t);
+                }
+            }
+            finally
+            {
+                Interlocked.Decrement(ref HotReloadState.HotReloadCount);
+            }
+        });
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public async Task<HttpResponseMessage> SendAsync(
+        int clusterIndex,
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        return await _transports[clusterIndex].SendAsync(request, cancellationToken);
+    }
+    
+    private ITransport[] MakeArray(ClusterSetting setting)
+    {
+        var invokers = new List<ITransport>();
+        
+        foreach (var _ in setting.Prefixes())
         {
             var handler = new SocketsHttpHandler
             {
                 MaxConnectionsPerServer = 2000,
                 PooledConnectionIdleTimeout = TimeSpan.FromSeconds(30),
-                PooledConnectionLifetime = Timeout.InfiniteTimeSpan,
+                PooledConnectionLifetime = TimeSpan.FromMinutes(2),
                 ConnectTimeout = TimeSpan.FromSeconds(5),
                 KeepAlivePingPolicy = HttpKeepAlivePingPolicy.Always,
                 KeepAlivePingDelay = TimeSpan.FromSeconds(30),
                 KeepAlivePingTimeout = TimeSpan.FromSeconds(5),
-                AutomaticDecompression = DecompressionMethods.None,
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
                 EnableMultipleHttp2Connections = true
             };
 
-            var invoker = new HttpMessageInvoker(handler, disposeHandler: false);
-            var transport = new HttpTransport(invoker);
-            dict.Add(endpoint.Key, transport); // TODO: возможно стоит использовать TryAdd
+            invokers.Add(new HttpTransport(handler));
         }
         
-        _transports = new ReadOnlyDictionary<string, HttpTransport>(dict);
-    }
-    
-    public HttpTransport GetTransport(string key)
-    {
-        return _transports[key];
+        return invokers.ToArray();
     }
 }
