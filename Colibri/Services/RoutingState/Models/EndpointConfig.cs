@@ -1,6 +1,6 @@
 namespace Colibri.Services.RoutingState.Models;
 
-public sealed class ClusterEndpoint
+public sealed class EndpointConfig
 {
     public required string Method { get; set; }
     public required string Downstream { get; init; }

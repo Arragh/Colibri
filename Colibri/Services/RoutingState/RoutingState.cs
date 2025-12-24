@@ -29,11 +29,11 @@ public sealed class RoutingState : IRoutingState
     {
         return new RoutingSnapshot
         {
-            Clusters = settings.Clusters.Select(c => new Cluster
+            Clusters = settings.Clusters.Select(c => new ClusterConfig
             {
                 Prefix =  c.Prefix,
                 BaseUrls = c.BaseUrls,
-                Endpoints = c.Endpoints.Select(e => new ClusterEndpoint
+                Endpoints = c.Endpoints.Select(e => new EndpointConfig
                 {
                     Method = e.Method,
                     Downstream = e.Downstream,

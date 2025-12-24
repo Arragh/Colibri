@@ -2,5 +2,5 @@ namespace Colibri.Services.RoutingState.Models;
 
 public class RoutingSnapshot
 {
-    public required Cluster[] Clusters { get; init; }
+    public required ClusterConfig[] Clusters { get; init; }
 }
