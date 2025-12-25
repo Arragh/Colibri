@@ -4,5 +4,5 @@ public abstract class UpstreamRequest
 {
     public required IHeaderDictionary Headers { get; init; }
     public Stream? Body { get; init; }
-    public CancellationToken CancellationToken { get; init; }
+    public required CancellationToken CancellationToken { get; init; }
 }

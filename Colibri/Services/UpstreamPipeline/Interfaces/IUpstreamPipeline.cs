@@ -7,6 +7,5 @@ public interface IUpstreamPipeline
 {
     Task<UpstreamResponse> ExecuteAsync(
         ClusterConfig clusterConfig,
-        UpstreamRequest upstreamRequest,
-        CancellationToken cancellationToken);
+        UpstreamRequest upstreamRequest);
 }

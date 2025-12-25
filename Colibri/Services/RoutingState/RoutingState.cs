@@ -15,11 +15,8 @@ public sealed class RoutingState : IRoutingState
         
         monitor.OnChange(c =>
         {
-            var oldSnapshot = _snapshot;
             var newSnapshot = Build(c);
             Volatile.Write(ref _snapshot, newSnapshot);
-                
-            // _disposer.Enqueue(oldSnapshot); // TODO: сделать диспозер!!!
         });
     }
     
@@ -34,6 +31,7 @@ public sealed class RoutingState : IRoutingState
             Clusters = settings.Clusters.Select(c => new ClusterConfig
             {
                 Prefix =  c.Prefix,
+                Protocol =  c.Protocol,
                 BaseUrls = c.BaseUrls,
                 Endpoints = c.Endpoints.Select(e => new EndpointConfig
                 {

@@ -1,10 +1,10 @@
-namespace Colibri.Services.TransportPool.Interfaces;
+namespace Colibri.Services.HttpTransportPool.Interfaces;
 
 /// <summary>
 /// Хранилище всех транспортов по ключу
 /// В будущем можно добавить метод получения других транспортов, например gRPC
 /// </summary>
-public interface ITransportPool
+public interface IHttpTransportPool
 {
     HttpMessageInvoker GetHttpInvoker(string baseUrl);
 }

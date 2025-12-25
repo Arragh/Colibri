@@ -16,6 +16,10 @@ public class UpstreamPipelineProvider : IUpstreamPipelineProvider
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public IUpstreamPipeline GetPipeline(Protocol protocol)
     {
+        /*
+         * Отдает нужную реализацию сервиса IUpstreamPipeline (Http, gRPC и т.д.)
+         */
+        
         return protocol switch
         {
             Protocol.Http => _http,
