@@ -2,7 +2,7 @@ using Colibri.Configuration.Models;
 
 namespace Colibri.Configuration;
 
-public class ColibriSettings
+public class RoutingSettings
 {
     public ClusterDto[] Clusters { get; set; } = null!;
 }

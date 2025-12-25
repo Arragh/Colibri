@@ -9,7 +9,7 @@ public sealed class RoutingState : IRoutingState
 {
     private RoutingSnapshot _snapshot;
 
-    public RoutingState(IOptionsMonitor<ColibriSettings> monitor)
+    public RoutingState(IOptionsMonitor<RoutingSettings> monitor)
     {
         _snapshot = Build(monitor.CurrentValue);
         
@@ -25,8 +25,10 @@ public sealed class RoutingState : IRoutingState
     
     public RoutingSnapshot Snapshot => Volatile.Read(ref _snapshot);
     
-    private static RoutingSnapshot Build(ColibriSettings settings)
+    private static RoutingSnapshot Build(RoutingSettings settings)
     {
+        Console.WriteLine("SNAPSHOT CHANGED");
+        
         return new RoutingSnapshot
         {
             Clusters = settings.Clusters.Select(c => new ClusterConfig
@@ -35,9 +37,9 @@ public sealed class RoutingState : IRoutingState
                 BaseUrls = c.BaseUrls,
                 Endpoints = c.Endpoints.Select(e => new EndpointConfig
                 {
-                    Method = e.Method,
-                    Downstream = e.Downstream,
-                    Upstream = e.Upstream
+                    Method = e.Method.ToUpperInvariant(),
+                    Downstream = e.Downstream.ToLowerInvariant(),
+                    Upstream = e.Upstream.ToLowerInvariant()
                 }).ToArray()
             }).ToArray()
         };

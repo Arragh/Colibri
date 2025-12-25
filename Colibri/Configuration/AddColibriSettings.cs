@@ -5,8 +5,8 @@ internal static class AddColibriSettingsExtension
     public static void AddColibriSettings(this IServiceCollection services)
     {
         services
-            .AddOptions<ColibriSettings>()
-            .BindConfiguration("ColibriSettings")
+            .AddOptions<RoutingSettings>()
+            .BindConfiguration("ColibriSettings:Routing")
             .Validate(settings =>
                     settings.Clusters is { Length: > 0 }
                     && settings.Clusters.All(cluster =>
@@ -20,5 +20,9 @@ internal static class AddColibriSettingsExtension
                             && !string.IsNullOrWhiteSpace(endpoint.Upstream))),
                 "Invalid ColibriSettings configuration")
             .ValidateOnStart();
+
+        services
+            .AddOptions<TestSettings>()
+            .BindConfiguration("ColibriSettings:Test");
     }
 }
