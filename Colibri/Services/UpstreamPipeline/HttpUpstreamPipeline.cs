@@ -4,7 +4,7 @@ using Colibri.Services.UpstreamPipeline.Models.Abstract;
 
 namespace Colibri.Services.UpstreamPipeline;
 
-public sealed class UpstreamPipeline : IUpstreamPipeline
+public sealed class HttpUpstreamPipeline : IUpstreamPipeline
 {
     public Task<UpstreamResponse> ExecuteAsync(
         ClusterConfig clusterConfig,
