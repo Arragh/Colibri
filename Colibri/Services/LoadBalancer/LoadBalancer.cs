@@ -1,19 +1,15 @@
-using System.Runtime.CompilerServices;
 using Colibri.Services.LoadBalancer.Interfaces;
-using Colibri.Services.RoutingState.Models;
 
 namespace Colibri.Services.LoadBalancer;
 
-public class LoadBalancer : ILoadBalancer
+public sealed class LoadBalancer : ILoadBalancer
 {
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public int Select(ClusterConfig clusterConfig)
+    private int _counter;
+
+    public int SelectHost(int clusterId)
     {
-        /*
-         * Балансировщик нагрузки, реализующий механизмы RoundRobin, Random и т.д.
-         * Нужен для выбора из нескольких BaseUrl на кластер.
-         */
+        Console.WriteLine("Load Balancer Executed");
         
-        throw new NotImplementedException();
+        return Interlocked.Increment(ref _counter) % 3;
     }
 }

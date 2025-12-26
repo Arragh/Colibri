@@ -1,5 +1,5 @@
 using Colibri.Configuration;
-using Colibri.Services.UpstreamRequestFactory.Enums;
+using Colibri.Services.RoutingState.Enums;
 using Colibri.Services.RoutingState.Interfaces;
 using Colibri.Services.RoutingState.Models;
 using Microsoft.Extensions.Options;

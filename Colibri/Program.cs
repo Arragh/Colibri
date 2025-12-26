@@ -1,18 +1,66 @@
 using Colibri.Configuration;
-using Colibri.Services.RoutingState;
-using Colibri.Services.RoutingState.Interfaces;
+using Colibri.Services;
+using Colibri.Services.CircuitBreaker;
+using Colibri.Services.CircuitBreaker.Interfaces;
+using Colibri.Services.LoadBalancer;
+using Colibri.Services.LoadBalancer.Interfaces;
+using Colibri.Services.Middleware;
+using Colibri.Services.Middleware.Interfaces;
+using Colibri.Services.RateLimiter;
+using Colibri.Services.RateLimiter.Interfaces;
+using Colibri.Services.UpstreamPipeline.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddColibriSettings();
 
-builder.Services.AddSingleton<IRoutingState, RoutingState>();
+builder.Services.AddSingleton<ICircuitBreaker, CircuitBreaker>();
+builder.Services.AddSingleton<ILoadBalancer, LoadBalancer>();
+builder.Services.AddSingleton<IRateLimiter, RateLimiter>();
+
+builder.Services.AddSingleton<CircuitBreakerMiddleware>();
+builder.Services.AddSingleton<LoadBalancerMiddleware>();
+builder.Services.AddSingleton<RateLimiterMiddleware>();
+builder.Services.AddSingleton<TerminalMiddleware>();
+
+builder.Services.AddSingleton<UnstableTerminalMiddleware>();
+builder.Services.AddSingleton<RetryMiddleware>(_ => new RetryMiddleware(maxAttempts: 3));
+
+builder.Services.AddSingleton<Pipeline>(sp =>
+{
+    return new Pipeline(new IPipelineMiddleware[]
+    {
+        sp.GetRequiredService<RateLimiterMiddleware>(),
+        sp.GetRequiredService<CircuitBreakerMiddleware>(),
+        
+        sp.GetRequiredService<RetryMiddleware>(),
+        
+        sp.GetRequiredService<LoadBalancerMiddleware>(),
+        // sp.GetRequiredService<TerminalMiddleware>()
+        sp.GetRequiredService<UnstableTerminalMiddleware>()
+    });
+});
 
 var app = builder.Build();
 
-app.Map("/{**catchAll}", static async (HttpContext ctx) =>
+app.Map("/{**catchAll}", static async (
+    Pipeline pipeline,
+    HttpContext http) =>
 {
     Console.WriteLine("TROLOLO");
+    
+    var ctx = new PipelineContext
+    {
+        ClusterId = 1,
+        EndpointId = 42
+    };
+
+    await pipeline.ExecuteAsync(ctx);
+
+    await http.Response.WriteAsync(
+        $"Attempts={ctx.Attempts}, " +
+        $"Status={ctx.StatusCode}, " +
+        $"Host={ctx.SelectedHost}");
 });
 
 app.Run();

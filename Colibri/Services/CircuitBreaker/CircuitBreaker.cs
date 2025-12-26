@@ -1,33 +1,18 @@
-using System.Runtime.CompilerServices;
 using Colibri.Services.CircuitBreaker.Interfaces;
-using Colibri.Services.RoutingState.Models;
 
 namespace Colibri.Services.CircuitBreaker;
 
-/*
- * Реализация должна хранить состояние (closed, open, half-open) по каждому endpoint'у.
- */
-public class CircuitBreaker : ICircuitBreaker
+public sealed class CircuitBreaker : ICircuitBreaker
 {
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool CanInvoke(ClusterConfig cluster, int endpointIndex)
+    public bool CanExecute(int clusterId, int endpointId)
     {
-        /*
-         * Проверяет, доступен ли выбранный эндпоинт для запросов.
-         * Если да, то возвращает true, в противном случае false.
-         */
+        Console.WriteLine("Circuit Breaker Executed");
         
-        throw new NotImplementedException();
+        return true;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void ReportResult(ClusterConfig cluster, int endpointIndex, bool success)
+    public void ReportResult(int clusterId, int endpointId, bool success)
     {
-        /*
-         * Получение результата о состоянии эндпоинта на основании ответа после выполнения запроса.
-         * Нужно для формирования состояния доступности/недоступности определенных сервисов.
-         */
-        
-        throw new NotImplementedException();
+        // throw  new NotImplementedException();
     }
 }

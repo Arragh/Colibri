@@ -1,4 +1,4 @@
-using Colibri.Services.UpstreamRequestFactory.Enums;
+using Colibri.Services.RoutingState.Enums;
 
 namespace Colibri.Services.RoutingState.Models;
 
