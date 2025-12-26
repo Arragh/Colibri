@@ -33,8 +33,11 @@ app.Map("/{**catchAll}", static async (
     IUpstreamPipelineProvider upstreamPipelineProvider,
     HttpContext ctx) =>
 {
-    var cluster = routingEngine.Match(ctx.Request.Path);
-    if (cluster == null)
+    var matchResult = routingEngine.Match(
+        ctx.Request.Path,
+        HttpMethodCache.Get(ctx.Request.Method));
+    
+    if (matchResult == null)
     {
         ctx.Response.StatusCode = 404;
         await ctx.Response.WriteAsync("Not Found");
@@ -43,16 +46,18 @@ app.Map("/{**catchAll}", static async (
 
     var request = new HttpUpstreamRequest
     {
+        ContentType = ctx.Request.ContentType,
+        ContentLength = ctx.Request.ContentLength,
         Headers = ctx.Request.Headers,
         Body = ctx.Request.Body,
         Method = HttpMethodCache.Get(ctx.Request.Method),
-        PathAndQuery =  ctx.Request.Path + ctx.Request.QueryString,
+        PathAndQuery = matchResult.Endpoint.Upstream + ctx.Request.QueryString,
         CancellationToken = ctx.RequestAborted
     };
 
-    var upstreamPipeline = upstreamPipelineProvider.GetPipeline(cluster.Protocol);
+    var upstreamPipeline = upstreamPipelineProvider.GetPipeline(matchResult.Cluster.Protocol);
     
-    var upstreamResponse = await upstreamPipeline.ExecuteAsync(cluster, request);
+    var upstreamResponse = await upstreamPipeline.ExecuteAsync(matchResult.Cluster, request);
     await upstreamResponse.CopyToAsync(ctx, request.CancellationToken);
 });
 

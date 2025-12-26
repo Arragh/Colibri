@@ -1,8 +1,8 @@
-using Colibri.Services.RoutingState.Models;
+using Colibri.Services.RoutingEngine.Models;
 
 namespace Colibri.Services.RoutingEngine.Interfaces;
 
 public interface IRoutingEngine
 {
-    ClusterConfig? Match(ReadOnlySpan<char> path);
+    RoutingMatchResult? Match(ReadOnlySpan<char> path, HttpMethod method);
 }

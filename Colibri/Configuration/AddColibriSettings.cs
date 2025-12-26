@@ -11,8 +11,8 @@ internal static class AddColibriSettingsExtension
                     settings.Clusters is { Length: > 0 }
                     && settings.Clusters.All(cluster =>
                         !string.IsNullOrWhiteSpace(cluster.Prefix)
-                        && cluster.BaseUrls is { Length: > 0 }
-                        && cluster.BaseUrls.All(url => !string.IsNullOrWhiteSpace(url))
+                        && cluster.Hosts is { Length: > 0 }
+                        && cluster.Hosts.All(url => !string.IsNullOrWhiteSpace(url))
                         && cluster.Endpoints is { Length: > 0 }
                         && cluster.Endpoints.All(endpoint =>
                             !string.IsNullOrWhiteSpace(endpoint.Method)
