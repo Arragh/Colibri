@@ -1,16 +1,16 @@
-using Colibri.Services.Middleware.Interfaces;
-using Colibri.Services.UpstreamPipeline.Models;
+using Colibri.Services.Pipeline.Interfaces;
+using Colibri.Services.Pipeline.Models;
 
-namespace Colibri.Services.Middleware;
+namespace Colibri.Services.Retrier;
 
 public sealed class RetryMiddleware : IPipelineMiddleware
 {
-    private readonly int _maxAttempts;
+    private readonly int _maxAttempts = 3;
 
-    public RetryMiddleware(int maxAttempts)
-    {
-        _maxAttempts = maxAttempts;
-    }
+    // public RetryMiddleware(int maxAttempts)
+    // {
+    //     _maxAttempts = maxAttempts;
+    // }
 
     public async ValueTask InvokeAsync(
         PipelineContext ctx,

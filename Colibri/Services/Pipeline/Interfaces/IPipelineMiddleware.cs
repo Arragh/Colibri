@@ -1,6 +1,6 @@
-using Colibri.Services.UpstreamPipeline.Models;
+using Colibri.Services.Pipeline.Models;
 
-namespace Colibri.Services.Middleware.Interfaces;
+namespace Colibri.Services.Pipeline.Interfaces;
 
 public interface IPipelineMiddleware
 {

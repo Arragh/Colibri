@@ -1,8 +1,8 @@
 using Colibri.Services.CircuitBreaker.Interfaces;
-using Colibri.Services.Middleware.Interfaces;
-using Colibri.Services.UpstreamPipeline.Models;
+using Colibri.Services.Pipeline.Interfaces;
+using Colibri.Services.Pipeline.Models;
 
-namespace Colibri.Services.Middleware;
+namespace Colibri.Services.CircuitBreaker;
 
 public sealed class CircuitBreakerMiddleware : IPipelineMiddleware
 {
