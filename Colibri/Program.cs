@@ -31,10 +31,10 @@ builder.Services.AddSingleton<Pipeline>(sp =>
     return new Pipeline(new IPipelineMiddleware[]
     {
         sp.GetRequiredService<RateLimiterMiddleware>(),
-        sp.GetRequiredService<CircuitBreakerMiddleware>(),
         
         sp.GetRequiredService<RetryMiddleware>(),
         
+        sp.GetRequiredService<CircuitBreakerMiddleware>(),
         sp.GetRequiredService<LoadBalancerMiddleware>(),
         // sp.GetRequiredService<TerminalMiddleware>()
         sp.GetRequiredService<UnstableTerminalMiddleware>()
