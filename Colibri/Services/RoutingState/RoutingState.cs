@@ -32,7 +32,7 @@ public sealed class RoutingState : IRoutingState
             {
                 Prefix =  c.Prefix,
                 Protocol =  c.Protocol,
-                Hosts = c.Hosts,
+                Hosts = c.Hosts.Select(h => new Uri(h)).ToArray(),
                 Endpoints = c.Endpoints.Select(e => new EndpointConfig
                 {
                     Method = e.Method.ToUpperInvariant(),
