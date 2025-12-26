@@ -1,4 +1,5 @@
 using Colibri.Configuration;
+using Colibri.Services.UpstreamRequestFactory.Enums;
 using Colibri.Services.RoutingState.Interfaces;
 using Colibri.Services.RoutingState.Models;
 using Microsoft.Extensions.Options;
@@ -31,7 +32,7 @@ public sealed class RoutingState : IRoutingState
             Clusters = settings.Clusters.Select(c => new ClusterConfig
             {
                 Prefix =  c.Prefix,
-                Protocol =  c.Protocol,
+                Protocol =  Enum.Parse<Protocol>(c.Protocol),
                 Hosts = c.Hosts.Select(h => new Uri(h)).ToArray(),
                 Endpoints = c.Endpoints.Select(e => new EndpointConfig
                 {

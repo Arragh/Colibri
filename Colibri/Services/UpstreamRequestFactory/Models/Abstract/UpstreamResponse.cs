@@ -1,4 +1,4 @@
-namespace Colibri.Services.UpstreamPipeline.Models.Abstract;
+namespace Colibri.Services.UpstreamRequestFactory.Models.Abstract;
 
 public abstract class UpstreamResponse
 {

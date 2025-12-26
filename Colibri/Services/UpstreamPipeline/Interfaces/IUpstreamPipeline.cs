@@ -1,5 +1,5 @@
 using Colibri.Services.RoutingState.Models;
-using Colibri.Services.UpstreamPipeline.Models.Abstract;
+using Colibri.Services.UpstreamRequestFactory.Models.Abstract;
 
 namespace Colibri.Services.UpstreamPipeline.Interfaces;
 
