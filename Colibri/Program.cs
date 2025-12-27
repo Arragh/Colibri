@@ -10,7 +10,7 @@ using Colibri.Services.Retrier;
 using Colibri.Services.Pipeline;
 using Colibri.Services.Pipeline.Models;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateSlimBuilder(args);
 
 builder.Services.AddColibriSettings();
 
@@ -38,21 +38,19 @@ builder.Services.AddSingleton<Pipeline>(sp => new Pipeline([
 
 var app = builder.Build();
 
-app.Map("/{**catchAll}", static async (
-    Pipeline pipeline,
-    HttpContext http) =>
+var pipeline = app.Services.GetRequiredService<Pipeline>();
+
+app.Run(async ctx =>
 {
-    Console.WriteLine("TROLOLO");
-    
-    var ctx = new PipelineContext
+    var lol = new PipelineContext
     {
-        HttpContext = http,
-        CancellationToken = http.RequestAborted,
+        HttpContext = ctx,
+        CancellationToken = ctx.RequestAborted,
         ClusterId = 1,
         EndpointId = 42
     };
 
-    await pipeline.ExecuteAsync(ctx);
+    await pipeline.ExecuteAsync(lol);
 });
 
 app.Run();
