@@ -1,62 +1,56 @@
-using Colibri.BackgroundServices;
 using Colibri.Configuration;
-using Colibri.Interfaces.Services.Http;
-using Colibri.Services;
-using Colibri.Services.Http;
+using Colibri.Services.CircuitBreaker;
+using Colibri.Services.CircuitBreaker.Interfaces;
+using Colibri.Services.LoadBalancer;
+using Colibri.Services.LoadBalancer.Interfaces;
+using Colibri.Services.Terminal;
+using Colibri.Services.RateLimiter;
+using Colibri.Services.RateLimiter.Interfaces;
+using Colibri.Services.Retrier;
+using Colibri.Services.Pipeline;
+using Colibri.Services.Pipeline.Models;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateSlimBuilder(args);
 
-builder.Services.AddOptions<ClusterSetting>().BindConfiguration("ClusterSetting");
-builder.Services.PostConfigure<ClusterSetting>(c => c.BuildDictionaries());
+builder.Services.AddColibriSettings();
 
-builder.Services.AddSingleton<SnapshotDisposer>();
-builder.Services.AddHostedService(sp => sp.GetRequiredService<SnapshotDisposer>());
+builder.Services.AddSingleton<ICircuitBreaker, CircuitBreaker>();
+builder.Services.AddSingleton<ILoadBalancer, LoadBalancer>();
+builder.Services.AddSingleton<IRateLimiter, RateLimiter>();
 
-builder.Services.AddSingleton<RoutingState>();
-builder.Services.AddSingleton<ITransportService, HttpTransportService>();
-builder.Services.AddSingleton<LoadBalancer>();
-builder.Services.AddSingleton<RoutingService>();
+builder.Services.AddSingleton<RateLimiterMiddleware>();
+builder.Services.AddSingleton<RetryMiddleware>();
+builder.Services.AddSingleton<CircuitBreakerMiddleware>();
+builder.Services.AddSingleton<LoadBalancerMiddleware>();
+builder.Services.AddSingleton<TerminalMiddleware>();
+
+builder.Services.AddSingleton<UnstableTerminalMiddleware>();
+// builder.Services.AddSingleton<RetryMiddleware>(_ => new RetryMiddleware(maxAttempts: 3));
+
+builder.Services.AddSingleton<Pipeline>(sp => new Pipeline([
+    sp.GetRequiredService<RateLimiterMiddleware>(),
+    sp.GetRequiredService<RetryMiddleware>(),
+    sp.GetRequiredService<CircuitBreakerMiddleware>(),
+    sp.GetRequiredService<LoadBalancerMiddleware>(),
+    sp.GetRequiredService<TerminalMiddleware>()
+    // sp.GetRequiredService<UnstableTerminalMiddleware>()
+]));
 
 var app = builder.Build();
 
-app.Map("/{**catchAll}", static async (
-    HttpContext ctx,
-    RoutingState routingState,
-    LoadBalancer loadBalancer,
-    RoutingService routingService,
-    ITransportService transportProvider) =>
+var pipeline = app.Services.GetRequiredService<Pipeline>();
+
+app.Run(async ctx =>
 {
-    var snapshot = routingState.Snapshot;
-    
-    var clusterIndex = routingService.GetClusterIndex(snapshot, ctx);
-    
-    if (clusterIndex < 0)
+    var lol = new PipelineContext
     {
-        ctx.Response.StatusCode = 404;
-        return;
-    }
-
-    var clusterBaseUrl = loadBalancer.GetClusterUrl(snapshot, clusterIndex);
-    var pathUrl = routingService.BuildRoute(snapshot, ctx, clusterIndex);
-
-    var requestUri = new Uri(
-        clusterBaseUrl,
-        pathUrl.ToString() + ctx.Request.QueryString.Value);
-    using var request = new HttpRequestMessage(new HttpMethod(ctx.Request.Method), requestUri);
-
-    if (ctx.Request.ContentLength > 0 || ctx.Request.Headers.ContainsKey("Transfer-Encoding"))
-    {
-        request.Content = new StreamContent(ctx.Request.Body);
-                            
-        if (!string.IsNullOrEmpty(ctx.Request.ContentType))
-        {
-            request.Content.Headers.TryAddWithoutValidation("Content-Type", ctx.Request.ContentType);
-        }
-    }
-    request.Headers.ExpectContinue = false;
-    using var response = await transportProvider.SendAsync(snapshot, clusterIndex, request, ctx.RequestAborted);
-    ctx.Response.StatusCode = (int)response.StatusCode;
-    await response.Content.CopyToAsync(ctx.Response.Body, ctx.RequestAborted);
+        HttpContext = ctx,
+        CancellationToken = ctx.RequestAborted,
+        ClusterId = 1,
+        EndpointId = 42
+    };
+    
+    await pipeline.ExecuteAsync(lol);
 });
 
 app.Run();
