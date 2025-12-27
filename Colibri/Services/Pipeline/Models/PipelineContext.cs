@@ -1,8 +1,11 @@
+using Colibri.Services.RoutingState.Models;
+
 namespace Colibri.Services.Pipeline.Models;
 
 public sealed class PipelineContext
 {
     public required HttpContext HttpContext { get; init; }
+    public required RoutingSnapshot Snapshot { get; init; }
     public required CancellationToken CancellationToken { get; set; }
     
     public int ClusterId { get; init; }

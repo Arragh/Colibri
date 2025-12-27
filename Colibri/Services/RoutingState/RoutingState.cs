@@ -37,8 +37,33 @@ public sealed class RoutingState : IRoutingState
                 Endpoints = c.Endpoints.Select(e => new EndpointConfig
                 {
                     Method = e.Method.ToUpperInvariant(),
-                    Downstream = e.Downstream.ToLowerInvariant(),
-                    Upstream = e.Upstream.ToLowerInvariant()
+                    DownstreamPattern = e.DownstreamPattern.ToLowerInvariant(),
+                    UpstreamPattern = e.UpstreamPattern.ToLowerInvariant(),
+                    CachedUpstream = e.DownstreamPattern
+                        .ToLowerInvariant()
+                        .Split('/', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(s =>
+                        {
+                            /*
+                             * Возможно потом имеет смысл переработать этот код для работы без аллокаций,
+                             * чтобы при перезагрузке конфига меньше нагружать GC,
+                             * но это на очень далекое будущее.
+                             */
+                            if (s.StartsWith('{') && s.EndsWith('}'))
+                            {
+                                return new RouteSegment(
+                                    isParameter: true,
+                                    parameterName: s.Replace("{", "").Replace("}", ""),
+                                    literal: null
+                                );
+                            }
+
+                            return new RouteSegment(
+                                isParameter: false,
+                                parameterName: null,
+                                literal: s
+                            );
+                        }).ToArray()
                 }).ToArray()
             }).ToArray()
         };

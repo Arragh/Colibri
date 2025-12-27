@@ -9,11 +9,17 @@ using Colibri.Services.RateLimiter.Interfaces;
 using Colibri.Services.Retrier;
 using Colibri.Services.Pipeline;
 using Colibri.Services.Pipeline.Models;
+using Colibri.Services.RoutingEngine;
+using Colibri.Services.RoutingEngine.Interfaces;
+using Colibri.Services.RoutingState;
+using Colibri.Services.RoutingState.Interfaces;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
 builder.Services.AddColibriSettings();
 
+builder.Services.AddSingleton<IRoutingState, RoutingState>();
+builder.Services.AddSingleton<IRoutingEngine, RoutingEngine>();
 builder.Services.AddSingleton<ICircuitBreaker, CircuitBreaker>();
 builder.Services.AddSingleton<ILoadBalancer, LoadBalancer>();
 builder.Services.AddSingleton<IRateLimiter, RateLimiter>();
@@ -39,12 +45,14 @@ builder.Services.AddSingleton<Pipeline>(sp => new Pipeline([
 var app = builder.Build();
 
 var pipeline = app.Services.GetRequiredService<Pipeline>();
+var state = app.Services.GetRequiredService<IRoutingState>();
 
 app.Run(async ctx =>
 {
     var lol = new PipelineContext
     {
         HttpContext = ctx,
+        Snapshot = state.Snapshot,
         CancellationToken = ctx.RequestAborted,
         ClusterId = 1,
         EndpointId = 42

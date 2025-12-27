@@ -16,8 +16,8 @@ internal static class AddColibriSettingsExtension
                         && cluster.Endpoints is { Length: > 0 }
                         && cluster.Endpoints.All(endpoint =>
                             !string.IsNullOrWhiteSpace(endpoint.Method)
-                            && !string.IsNullOrWhiteSpace(endpoint.Downstream)
-                            && !string.IsNullOrWhiteSpace(endpoint.Upstream))),
+                            && !string.IsNullOrWhiteSpace(endpoint.UpstreamPattern)
+                            && !string.IsNullOrWhiteSpace(endpoint.DownstreamPattern))),
                 "Invalid ColibriSettings configuration")
             .ValidateOnStart();
 
