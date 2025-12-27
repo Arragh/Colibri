@@ -18,13 +18,13 @@ builder.Services.AddSingleton<ICircuitBreaker, CircuitBreaker>();
 builder.Services.AddSingleton<ILoadBalancer, LoadBalancer>();
 builder.Services.AddSingleton<IRateLimiter, RateLimiter>();
 
+builder.Services.AddSingleton<RateLimiterMiddleware>();
+builder.Services.AddSingleton<RetryMiddleware>();
 builder.Services.AddSingleton<CircuitBreakerMiddleware>();
 builder.Services.AddSingleton<LoadBalancerMiddleware>();
-builder.Services.AddSingleton<RateLimiterMiddleware>();
 builder.Services.AddSingleton<TerminalMiddleware>();
 
 builder.Services.AddSingleton<UnstableTerminalMiddleware>();
-builder.Services.AddSingleton<RetryMiddleware>();
 // builder.Services.AddSingleton<RetryMiddleware>(_ => new RetryMiddleware(maxAttempts: 3));
 
 builder.Services.AddSingleton<Pipeline>(sp => new Pipeline([
@@ -49,7 +49,7 @@ app.Run(async ctx =>
         ClusterId = 1,
         EndpointId = 42
     };
-
+    
     await pipeline.ExecuteAsync(lol);
 });
 
