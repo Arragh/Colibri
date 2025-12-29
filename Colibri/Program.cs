@@ -46,11 +46,13 @@ var snapshotProvider = app.Services.GetRequiredService<ISnapshotProvider>();
 
 app.Run(async ctx =>
 {
+    var globalSnapshot = snapshotProvider.GlobalSnapshot;
+    
     var lol = new PipelineContext
     {
         HttpContext = ctx,
-        ClusterSnapshot = snapshotProvider.ClusterSnapshot,
-        TransportSnapshot = snapshotProvider.TransportSnapshot,
+        ClusterSnapshot = globalSnapshot.ClusterSnapshot,
+        TransportSnapshot = globalSnapshot.TransportSnapshot,
         CancellationToken = ctx.RequestAborted,
         ClusterId = 1,
         EndpointId = 42

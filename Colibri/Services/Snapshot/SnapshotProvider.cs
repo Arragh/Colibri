@@ -23,8 +23,7 @@ public class SnapshotProvider : ISnapshotProvider
         });
     }
 
-    public ClusterConfigSnapshot ClusterSnapshot => Volatile.Read(ref _globalSnapshot).ClusterConfigSnapshot;
-    public TransportRuntimeSnapshot TransportSnapshot => Volatile.Read(ref _globalSnapshot).TransportRuntimeSnapshot;
+    public GlobalSnapshot GlobalSnapshot => Volatile.Read(ref _globalSnapshot);
     
     private static GlobalSnapshot Build(RoutingSettings settings)
     {
@@ -32,7 +31,7 @@ public class SnapshotProvider : ISnapshotProvider
         
         return new GlobalSnapshot
         {
-            ClusterConfigSnapshot = new ClusterConfigSnapshot
+            ClusterSnapshot = new ClusterConfigSnapshot
             {
                 Clusters = settings.Clusters.Select(c => new ClusterConfig
                 {
@@ -72,7 +71,7 @@ public class SnapshotProvider : ISnapshotProvider
                     }).ToImmutableArray()
                 }).ToImmutableArray()
             },
-            TransportRuntimeSnapshot = new TransportRuntimeSnapshot
+            TransportSnapshot = new TransportRuntimeSnapshot
             {
                 Transports = settings.Clusters.Select(c => new TransportConfig
                 {

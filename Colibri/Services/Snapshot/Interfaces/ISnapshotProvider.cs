@@ -4,6 +4,5 @@ namespace Colibri.Services.Snapshot.Interfaces;
 
 public interface ISnapshotProvider
 {
-    ClusterConfigSnapshot ClusterSnapshot { get; }
-    TransportRuntimeSnapshot TransportSnapshot { get; }
+    GlobalSnapshot GlobalSnapshot { get; }
 }
