@@ -1,6 +1,6 @@
-namespace Colibri.Services.RoutingState.Models;
+namespace Colibri.Services.Snapshot.Models;
 
-public readonly struct RouteSegment(bool isParameter, string? parameterName, string? literal)
+public sealed class RouteSegment(bool isParameter, string? parameterName, string? literal)
 {
     public readonly bool IsParameter = isParameter;
     public readonly string? ParameterName = parameterName;

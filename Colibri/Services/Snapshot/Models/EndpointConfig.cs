@@ -1,0 +1,11 @@
+using System.Collections.Immutable;
+
+namespace Colibri.Services.Snapshot.Models;
+
+public sealed class EndpointConfig
+{
+    public required string Method { get; init; }
+    public required string UpstreamPattern { get; init; }
+    public required string DownstreamPattern { get; init; }
+    public required ImmutableArray<RouteSegment> CachedUpstream { get; init; }
+}

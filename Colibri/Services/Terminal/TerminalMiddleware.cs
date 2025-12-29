@@ -1,10 +1,9 @@
 using Colibri.Services.Pipeline.Interfaces;
 using Colibri.Services.Pipeline.Models;
-using Colibri.Services.RoutingEngine.Interfaces;
 
 namespace Colibri.Services.Terminal;
 
-public sealed class TerminalMiddleware(IRoutingEngine routingEngine) : IPipelineMiddleware
+public sealed class TerminalMiddleware : IPipelineMiddleware
 {
     public async ValueTask InvokeAsync(
         PipelineContext ctx,
@@ -12,12 +11,6 @@ public sealed class TerminalMiddleware(IRoutingEngine routingEngine) : IPipeline
     {
         Console.WriteLine("Terminal Middleware Invoked");
 
-        var lol = routingEngine.TryMatchRoute(
-            ctx.HttpContext.Request.Path.Value.AsSpan(),
-            ctx.HttpContext.Request.Method,
-            ctx.Snapshot,
-            out var downstreamPath);
-        
         ctx.StatusCode = 200;
         ctx.IsCompleted = true;
         
