@@ -17,8 +17,6 @@ public sealed class LoadBalancerMiddleware : IPipelineMiddleware
         PipelineContext ctx,
         PipelineDelegate next)
     {
-        Console.WriteLine("Load Balancer Middleware Invoked");
-        
         ctx.SelectedHost = _lb.SelectHost(ctx.ClusterId);
         return next(ctx);
     }

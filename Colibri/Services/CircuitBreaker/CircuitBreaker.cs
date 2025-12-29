@@ -6,13 +6,11 @@ public sealed class CircuitBreaker : ICircuitBreaker
 {
     public bool CanExecute(int clusterId, int endpointId)
     {
-        Console.WriteLine("Circuit Breaker Executed");
-        
-        return true;
+        return true; // Заглушка
     }
 
     public void ReportResult(int clusterId, int endpointId, bool success)
     {
-        // throw  new NotImplementedException();
+        // throw  new NotImplementedException(); // Заглушка
     }
 }

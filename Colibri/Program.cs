@@ -1,4 +1,5 @@
 using Colibri.Configuration;
+using Colibri.Helpers;
 using Colibri.Services.CircuitBreaker;
 using Colibri.Services.CircuitBreaker.Interfaces;
 using Colibri.Services.LoadBalancer;
@@ -54,8 +55,8 @@ app.Run(async ctx =>
         ClusterSnapshot = globalSnapshot.ClusterSnapshot,
         TransportSnapshot = globalSnapshot.TransportSnapshot,
         CancellationToken = ctx.RequestAborted,
-        ClusterId = 1,
-        EndpointId = 42
+        ClusterId = HttpMethodCache.Get(ctx.Request.Method) == HttpMethod.Get ? 0 : 1, // Заглушка
+        EndpointId = 0, // Заглушка
     };
     
     await pipeline.ExecuteAsync(lol);

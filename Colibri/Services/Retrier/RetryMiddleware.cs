@@ -18,8 +18,6 @@ public sealed class RetryMiddleware : IPipelineMiddleware
     {
         for (int attempt = 1; attempt <= _maxAttempts; attempt++)
         {
-            Console.WriteLine("Retry Middleware Invoked");
-            
             ctx.Attempts = attempt;
 
             await next(ctx);

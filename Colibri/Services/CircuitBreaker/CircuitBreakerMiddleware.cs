@@ -17,8 +17,6 @@ public sealed class CircuitBreakerMiddleware : IPipelineMiddleware
         PipelineContext ctx,
         PipelineDelegate next)
     {
-        Console.WriteLine("Circuit Breaker Middleware Invoked");
-        
         if (!_breaker.CanExecute(ctx.ClusterId, ctx.EndpointId))
         {
             ctx.StatusCode = 503;
