@@ -38,7 +38,7 @@ public class SnapshotProvider : ISnapshotProvider
                     Prefix =  c.Prefix,
                     Protocol =  Enum.Parse<Protocol>(c.Protocol),
                     Hosts = c.Hosts.Select(h => new Uri(h)).ToImmutableArray(),
-                    Endpoints = c.Endpoints.Select(e => new EndpointConfig
+                    Routes = c.Routes.Select(e => new RouteConfig
                     {
                         Method = e.Method.ToUpperInvariant(),
                         DownstreamPattern = e.DownstreamPattern.ToLowerInvariant(),

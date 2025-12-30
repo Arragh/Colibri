@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 
 namespace Colibri.Services.Snapshot.Models;
 
-public sealed class EndpointConfig
+public sealed class RouteConfig
 {
     public required string Method { get; init; }
     public required string UpstreamPattern { get; init; }

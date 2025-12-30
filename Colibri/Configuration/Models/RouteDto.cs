@@ -1,6 +1,6 @@
 namespace Colibri.Configuration.Models;
 
-public class EndpointDto
+public class RouteDto
 {
     public string Method { get; set; } = null!;
     public string UpstreamPattern { get; set; } = null!;
