@@ -6,8 +6,6 @@ public sealed class RateLimiter : IRateLimiter
 {
     public bool Allow(int clusterId, int endpointId)
     {
-        Console.WriteLine("Rate Limiter Executed");
-        
-        return true;
+        return true; // Заглушка
     }
 }

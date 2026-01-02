@@ -1,8 +1,12 @@
+using Colibri.Services.Snapshot.Models;
+
 namespace Colibri.Services.Pipeline.Models;
 
 public sealed class PipelineContext
 {
     public required HttpContext HttpContext { get; init; }
+    public required ClusterConfigSnapshot ClusterSnapshot { get; init; }
+    public required TransportRuntimeSnapshot TransportSnapshot { get; init; }
     public required CancellationToken CancellationToken { get; set; }
     
     public int ClusterId { get; init; }

@@ -8,8 +8,7 @@ public sealed class LoadBalancer : ILoadBalancer
 
     public int SelectHost(int clusterId)
     {
-        Console.WriteLine("Load Balancer Executed");
-        
-        return Interlocked.Increment(ref _counter) % 3;
+        // return Interlocked.Increment(ref _counter) % 2;
+        return 0; // Заглушка
     }
 }

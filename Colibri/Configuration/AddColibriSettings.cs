@@ -13,16 +13,12 @@ internal static class AddColibriSettingsExtension
                         !string.IsNullOrWhiteSpace(cluster.Prefix)
                         && cluster.Hosts is { Length: > 0 }
                         && cluster.Hosts.All(url => !string.IsNullOrWhiteSpace(url))
-                        && cluster.Endpoints is { Length: > 0 }
-                        && cluster.Endpoints.All(endpoint =>
-                            !string.IsNullOrWhiteSpace(endpoint.Method)
-                            && !string.IsNullOrWhiteSpace(endpoint.Downstream)
-                            && !string.IsNullOrWhiteSpace(endpoint.Upstream))),
+                        && cluster.Routes is { Length: > 0 }
+                        && cluster.Routes.All(route =>
+                            !string.IsNullOrWhiteSpace(route.Method)
+                            && !string.IsNullOrWhiteSpace(route.UpstreamPattern)
+                            && !string.IsNullOrWhiteSpace(route.DownstreamPattern))),
                 "Invalid ColibriSettings configuration")
             .ValidateOnStart();
-
-        services
-            .AddOptions<TestSettings>()
-            .BindConfiguration("ColibriSettings:Test");
     }
 }

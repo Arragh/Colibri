@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Net.Http.Json;
 
-const string getUrl = "http://192.168.1.102:5790/test1/get?name=Vasya&age=35";
-const string postUrl = "http://192.168.1.102:5790/test2/post";
+const string getUrl = "http://192.168.1.102:5790/get?name=Vasya&age=35";
+const string postUrl = "http://192.168.1.102:5790/post";
 
 const int concurrency = 500;
 const int durationSec = 30;
@@ -88,10 +88,25 @@ var total = success + failed;
 var seconds = sw.Elapsed.TotalSeconds;
 var rps = total / seconds;
 
+const string Gray = "\x1b[90m";
+const string Green = "\x1b[32m";
+const string Red = "\x1b[31m";
+const string Yellow = "\x1b[33m";
+const string Reset = "\x1b[0m";
+
+string formattedSuccess = success > 0 ? $"{Green}{success}{Reset}" : $"{Gray}{success}{Reset}";
+string formattedFailed = failed > 0 ? $"{Red}{failed}{Reset}" : $"{Gray}{failed}{Reset}";
+string formattedRps = rps switch
+{
+    < 50000 => $"{Red}{rps:F0}{Reset}",
+    < 55000 => $"{Yellow}{rps:F0}{Reset}",
+    _ => $"{Green}{rps:F0}{Reset}"
+};
+
 Console.WriteLine("========== RESULTS ==========");
 Console.WriteLine($"Duration:     {seconds:F1} сек");
 Console.WriteLine($"Concurrency:  {concurrency}");
 Console.WriteLine($"Total:        {total}");
-Console.WriteLine($"Success:      {success}");
-Console.WriteLine($"Failed:       {failed}");
-Console.WriteLine($"RPS:          {rps:F0}");
+Console.WriteLine($"Success:      {formattedSuccess}");
+Console.WriteLine($"Failed:       {formattedFailed}");
+Console.WriteLine($"RPS:          {formattedRps}");
