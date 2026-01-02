@@ -1,3 +1,4 @@
+using System.Data;
 using Colibri.Configuration;
 using Colibri.Theory.Models;
 using Microsoft.Extensions.Options;
@@ -14,46 +15,55 @@ public class TheorySnapshotProvider
         var pathLenght = CountCharsLength(monitor.CurrentValue);
         // _theorySnapshot = new TheorySnapshot(1, 1);
 
-        MakePathAsCharsArray(monitor.CurrentValue);
+        CreateTrie(monitor.CurrentValue);
 
         Console.WriteLine();
     }
 
-    private void MakePathAsCharsArray(RoutingSettings settings)
+    private void CreateTrie(RoutingSettings settings)
     {
         foreach (var cluster in settings.Clusters)
         {
             foreach (var route in cluster.Routes)
             {
                 var upstreamSegmentsArray = route.UpstreamPattern.Split('/', StringSplitOptions.RemoveEmptyEntries);
-                CreateTrieRecursively(upstreamSegmentsArray, _root);
+                CreateTrieRecursively(
+                    route.Method,
+                    upstreamSegmentsArray,
+                    route.DownstreamPattern,
+                    _root);
             }
         }
 
         Console.WriteLine(_root);
     }
 
-    private void CreateTrieRecursively(string[] segments, Dictionary<string, TempSegment> root)
+    private void CreateTrieRecursively(string method, string[] segments, string downStreamPattern, Dictionary<string, TempSegment> root)
     {
-        if (root.ContainsKey(segments[0]))
-        {
-            CreateTrieRecursively(segments.Skip(1).ToArray(), root[segments[0]].IncludedSegments!);
-        }
-        else
+        if (!root.ContainsKey(segments[0]))
         {
             root[segments[0]] = new TempSegment
             {
                 SegmentName = segments[0]
             };
-
-            if (segments.Length > 1)
+        }
+        
+        if (segments.Length > 1)
+        {
+            CreateTrieRecursively(
+                method,
+                segments.Skip(1).ToArray(),
+                downStreamPattern,
+                root[segments[0]].IncludedSegments);
+        }
+        else
+        {
+            if (root[segments[0]].Methods.TryGetValue(method, out _))
             {
-                CreateTrieRecursively(segments.Skip(1).ToArray(), root[segments[0]].IncludedSegments);
+                throw new DuplicateNameException($"Duplicate method type: {method}");
             }
-            else
-            {
-                root[segments[0]].IsEndpoint = true;
-            }
+                
+            root[segments[0]].Methods.Add(method, downStreamPattern);
         }
     }
 
