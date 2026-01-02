@@ -1,27 +1,32 @@
 using System.Data;
 using Colibri.Configuration;
 using Colibri.Theory.Models;
+using Colibri.Theory.Structs;
 using Microsoft.Extensions.Options;
 
 namespace Colibri.Theory;
 
 public class TheorySnapshotProvider
 {
-    private TheorySnapshot _theorySnapshot;
     private readonly Dictionary<string, TempSegment> _root = new();
+    private readonly char[] _chars;
+    private readonly Segment[] _segments;
 
     public TheorySnapshotProvider(IOptionsMonitor<RoutingSettings> monitor)
     {
-        var pathLenght = CountCharsLength(monitor.CurrentValue);
-        // _theorySnapshot = new TheorySnapshot(1, 1);
+        var lol = CreateTrie(monitor.CurrentValue);
 
-        CreateTrie(monitor.CurrentValue);
+        _chars = new char[lol.Item1];
+        _segments = new Segment[lol.Item2];
 
         Console.WriteLine();
     }
 
-    private void CreateTrie(RoutingSettings settings)
+    private (int, int) CreateTrie(RoutingSettings settings)
     {
+        int charsLenght = 0;
+        int segmentsCount = 0;
+        
         foreach (var cluster in settings.Clusters)
         {
             foreach (var route in cluster.Routes)
@@ -31,14 +36,22 @@ public class TheorySnapshotProvider
                     route.Method,
                     upstreamSegmentsArray,
                     route.DownstreamPattern,
-                    _root);
+                    _root,
+                    ref charsLenght,
+                    ref segmentsCount);
             }
         }
 
-        Console.WriteLine(_root);
+        return (charsLenght, segmentsCount);
     }
 
-    private void CreateTrieRecursively(string method, string[] segments, string downStreamPattern, Dictionary<string, TempSegment> root)
+    private void CreateTrieRecursively(
+        string method,
+        string[] segments,
+        string downStreamPattern,
+        Dictionary<string, TempSegment> root,
+        ref int charsLenght,
+        ref int segmentsCount)
     {
         if (!root.ContainsKey(segments[0]))
         {
@@ -46,6 +59,9 @@ public class TheorySnapshotProvider
             {
                 SegmentName = segments[0]
             };
+            
+            charsLenght += segments[0].Length;
+            segmentsCount++;
         }
         
         if (segments.Length > 1)
@@ -54,7 +70,9 @@ public class TheorySnapshotProvider
                 method,
                 segments.Skip(1).ToArray(),
                 downStreamPattern,
-                root[segments[0]].IncludedSegments);
+                root[segments[0]].IncludedSegments,
+                ref charsLenght,
+                ref segmentsCount);
         }
         else
         {
@@ -65,26 +83,5 @@ public class TheorySnapshotProvider
                 
             root[segments[0]].Methods.Add(method, downStreamPattern);
         }
-    }
-
-    private char[] CountCharsLength(RoutingSettings settings)
-    {
-        List<char> charsList = new();
-
-        foreach (var cluster in settings.Clusters)
-        {
-            foreach (var route in cluster.Routes)
-            {
-                var upstreamSegments = route.UpstreamPattern.Split('/', StringSplitOptions.RemoveEmptyEntries);
-
-                foreach (var s in upstreamSegments)
-                {
-                    charsList.AddRange(s.ToCharArray());
-                }
-                
-            }
-        }
-
-        return charsList.ToArray();
     }
 }
