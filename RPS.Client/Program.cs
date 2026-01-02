@@ -5,7 +5,7 @@ const string getUrl = "http://192.168.1.102:5790/get?name=Vasya&age=35";
 const string postUrl = "http://192.168.1.102:5790/post";
 
 const int concurrency = 500;
-const int durationSec = 5;
+const int durationSec = 30;
 
 var handler = new SocketsHttpHandler
 {
