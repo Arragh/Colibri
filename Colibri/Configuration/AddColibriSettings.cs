@@ -10,8 +10,7 @@ internal static class AddColibriSettingsExtension
             .Validate(settings =>
                     settings.Clusters is { Length: > 0 }
                     && settings.Clusters.All(cluster =>
-                        !string.IsNullOrWhiteSpace(cluster.Prefix)
-                        && cluster.Hosts is { Length: > 0 }
+                        cluster.Hosts is { Length: > 0 }
                         && cluster.Hosts.All(url => !string.IsNullOrWhiteSpace(url))
                         && cluster.Routes is { Length: > 0 }
                         && cluster.Routes.All(route =>

@@ -35,7 +35,6 @@ public class SnapshotProvider : ISnapshotProvider
             {
                 Clusters = settings.Clusters.Select(c => new ClusterConfig
                 {
-                    Prefix =  c.Prefix,
                     Protocol =  Enum.Parse<Protocol>(c.Protocol),
                     Hosts = c.Hosts.Select(h => new Uri(h)).ToImmutableArray(),
                     Routes = c.Routes.Select(e => new RouteConfig

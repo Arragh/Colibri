@@ -5,7 +5,6 @@ namespace Colibri.Services.Snapshot.Models;
 
 public sealed class ClusterConfig
 {
-    public required string Prefix { get; init; }
     public required Protocol Protocol { get; init; }
     public required ImmutableArray<Uri> Hosts { get; init; }
     public required ImmutableArray<RouteConfig> Routes { get; init; }
