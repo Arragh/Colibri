@@ -7,4 +7,6 @@ public sealed class TempSegment
 
     public int FirstChildIndex { get; set;}
     public int ChildrenCount { get; set;}
+    
+    public int MethodMask { get; set;}
 }

@@ -38,7 +38,8 @@ public sealed class RoutingSnapshotBuilder
                 tempSegments[i].PathStartIndex,
                 tempSegments[i].PathLength,
                 tempSegments[i].FirstChildIndex,
-                tempSegments[i].ChildrenCount);
+                tempSegments[i].ChildrenCount,
+                tempSegments[i].MethodMask);
         }
     }
     
@@ -72,6 +73,14 @@ public sealed class RoutingSnapshotBuilder
                 ChildrenCount = segmentsArray[i].IncludedSegments.Count
             };
 
+            // Устанавливаем побитовую маску доступных методов для данного маршрута
+            var methodMask = 0;
+            foreach (var k in segmentsArray[i].Methods.Keys)
+            {
+                methodMask = methodMask | GetMethodMask(k);
+            }
+            tempSegments[segmentIndex].MethodMask = methodMask;
+            
             /*
              * Присваиваем индекс первого элемента в списке,
              * чтобы вернуть его родителю как индекс первого наследника, т.е. FirstChildIndex
@@ -175,6 +184,25 @@ public sealed class RoutingSnapshotBuilder
             }
                 
             root[segments[0]].Methods.Add(method, downStreamPattern);
+        }
+    }
+    
+    private static int GetMethodMask(string method)
+    {
+        switch (method.Length)
+        {
+            case 3: return method[0] == 'G'
+                ? HttpMethodBits.Get
+                : HttpMethodBits.Put;
+
+            case 4: return method[0] == 'P'
+                ? HttpMethodBits.Post
+                : HttpMethodBits.Head;
+
+            case 5: return HttpMethodBits.Patch;
+            case 6: return HttpMethodBits.Delete;
+            case 7: return HttpMethodBits.Options;
+            default: return HttpMethodBits.None;
         }
     }
 }

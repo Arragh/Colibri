@@ -32,7 +32,7 @@ public sealed class SnapshotProvider : ISnapshotProvider
         });
     }
 
-    public ref readonly RoutingSnapshot TheorySnapshot
+    public ref readonly RoutingSnapshot RoutingSnapshot
     {
         get
         {

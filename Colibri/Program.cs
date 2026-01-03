@@ -12,6 +12,7 @@ using Colibri.Services.Pipeline;
 using Colibri.Services.Pipeline.Models;
 using Colibri.Services.SnapshotProvider;
 using Colibri.Services.SnapshotProvider.Interfaces;
+using Colibri.Services.SnapshotProvider.Models.RoutingSnapshot;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
@@ -48,7 +49,7 @@ var snapshotProvider = app.Services.GetRequiredService<ISnapshotProvider>();
 app.Run(async ctx =>
 {
     var globalSnapshot = snapshotProvider.GlobalSnapshot;
-    var theorySnapshot = snapshotProvider.TheorySnapshot;
+    var routingSnapshot = snapshotProvider.RoutingSnapshot;
 
     var lol = new PipelineContext
     {
