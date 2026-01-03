@@ -1,12 +1,14 @@
 namespace Colibri.Theory.Structs;
 
-public class Segment
+internal readonly struct Segment(
+    int pathStartIndex,
+    int pathLength,
+    int firstChildIndex,
+    int childrenCount)
 {
-    public int Id { get; set; }
-    
-    public int PathStartIndex { get; set; }
-    public int PathLength { get; set;}
+    public readonly int PathStartIndex = pathStartIndex;
+    public readonly int PathLength = pathLength;
 
-    public int? FirstChildIndex { get; set;}
-    public int ChildrenCount { get; set;}
+    public readonly int FirstChildIndex = firstChildIndex;
+    public readonly int ChildrenCount = childrenCount;
 }

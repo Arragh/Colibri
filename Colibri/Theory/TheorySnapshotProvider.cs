@@ -8,40 +8,57 @@ namespace Colibri.Theory;
 
 public class TheorySnapshotProvider
 {
-    private readonly Dictionary<string, TempSegment> _root = new();
+    private readonly Dictionary<string, SegmentNode> _root = new();
     private readonly char[] _paths;
     private readonly Segment[] _segments;
 
     public TheorySnapshotProvider(IOptionsMonitor<RoutingSettings> monitor)
     {
-        var lol = CreateTrie(monitor.CurrentValue);
+        var trieDataCounts = CreateTrie(monitor.CurrentValue);
 
-        _paths = new char[lol.Item1];
-        _segments = new Segment[lol.Item2];
-
-        var pathStartIndex = 0;
-        var segmentIndex = 0;
-
-        CreateSegmentRecursively(
-            ref pathStartIndex,
-            ref segmentIndex,
-            _segments,
-            _root.Values.ToArray());
+        _paths = new char[trieDataCounts.Item1];
+        _segments = new Segment[trieDataCounts.Item2];
+        
+        FillDataArrays(_paths, _segments);
 
         Console.WriteLine();
     }
+
+    private void FillDataArrays(char[] paths, Segment[] segments)
+    {
+        var pathStartIndex = 0;
+        var segmentIndex = 0;
+        var tempSegments = new TempSegment[segments.Length];
+
+        CreateTempSegmentsRecursively(
+            ref pathStartIndex,
+            ref segmentIndex,
+            paths,
+            tempSegments,
+            _root.Values.ToArray());
+
+        for (int i = 0; i < tempSegments.Length; i++)
+        {
+            _segments[i] = new Segment(
+                tempSegments[i].PathStartIndex,
+                tempSegments[i].PathLength,
+                tempSegments[i].FirstChildIndex,
+                tempSegments[i].ChildrenCount);
+        }
+    }
     
-    private int? CreateSegmentRecursively(
+    private int? CreateTempSegmentsRecursively(
         ref int pathStartIndex,
         ref int segmentIndex,
-        Segment[] segments,
-        TempSegment[] segmentsArray)
+        char[] paths,
+        TempSegment[] tempSegments,
+        SegmentNode[] segmentsArray)
     {
         int? firstChildIndex = null;
 
         for (int i = 0; i < segmentsArray.Length; i++)
         {
-            segments[segmentIndex] = new Segment
+            tempSegments[segmentIndex] = new TempSegment
             {
                 PathStartIndex = pathStartIndex,
                 ChildrenCount = segmentsArray[i].IncludedSegments.Count,
@@ -55,7 +72,7 @@ public class TheorySnapshotProvider
             
             foreach (var c in segmentsArray[i].SegmentName)
             {
-                _paths[pathStartIndex++] = c;
+                paths[pathStartIndex++] = c;
             }
             
             segmentIndex++;
@@ -63,11 +80,17 @@ public class TheorySnapshotProvider
         
         for (int i = 0; i < segmentsArray.Length; i++)
         {
-            segments[firstChildIndex!.Value + i].FirstChildIndex = CreateSegmentRecursively(
+            var temp = CreateTempSegmentsRecursively(
                 ref pathStartIndex,
                 ref segmentIndex,
-                _segments,
+                paths,
+                tempSegments,
                 segmentsArray[i].IncludedSegments.Values.ToArray());
+
+            if (temp != null)
+            {
+                tempSegments[firstChildIndex!.Value + i].FirstChildIndex = temp.Value;
+            }
         }
 
         return firstChildIndex;
@@ -75,7 +98,7 @@ public class TheorySnapshotProvider
 
     private (int, int) CreateTrie(RoutingSettings settings)
     {
-        int charsLenght = 0;
+        int charsCount = 0;
         int segmentsCount = 0;
         
         foreach (var cluster in settings.Clusters)
@@ -88,25 +111,25 @@ public class TheorySnapshotProvider
                     upstreamSegmentsArray,
                     route.DownstreamPattern,
                     _root,
-                    ref charsLenght,
+                    ref charsCount,
                     ref segmentsCount);
             }
         }
 
-        return (charsLenght, segmentsCount);
+        return (charsCount, segmentsCount);
     }
 
     private void CreateTrieRecursively(
         string method,
         string[] segments,
         string downStreamPattern,
-        Dictionary<string, TempSegment> root,
+        Dictionary<string, SegmentNode> root,
         ref int charsLenght,
         ref int segmentsCount)
     {
         if (!root.ContainsKey(segments[0]))
         {
-            root[segments[0]] = new TempSegment
+            root[segments[0]] = new SegmentNode
             {
                 SegmentName = segments[0]
             };
