@@ -9,17 +9,68 @@ namespace Colibri.Theory;
 public class TheorySnapshotProvider
 {
     private readonly Dictionary<string, TempSegment> _root = new();
-    private readonly char[] _chars;
+    private readonly char[] _paths;
     private readonly Segment[] _segments;
 
     public TheorySnapshotProvider(IOptionsMonitor<RoutingSettings> monitor)
     {
         var lol = CreateTrie(monitor.CurrentValue);
 
-        _chars = new char[lol.Item1];
+        _paths = new char[lol.Item1];
         _segments = new Segment[lol.Item2];
 
+        var pathStartIndex = 0;
+        var segmentIndex = 0;
+
+        CreateSegmentRecursively(
+            ref pathStartIndex,
+            ref segmentIndex,
+            _segments,
+            _root.Values.ToArray());
+
         Console.WriteLine();
+    }
+    
+    private int? CreateSegmentRecursively(
+        ref int pathStartIndex,
+        ref int segmentIndex,
+        Segment[] segments,
+        TempSegment[] segmentsArray)
+    {
+        int? firstChildIndex = null;
+
+        for (int i = 0; i < segmentsArray.Length; i++)
+        {
+            segments[segmentIndex] = new Segment
+            {
+                PathStartIndex = pathStartIndex,
+                ChildrenCount = segmentsArray[i].IncludedSegments.Count,
+                PathLength = segmentsArray[i].SegmentName.Length
+            };
+
+            if (firstChildIndex == null)
+            {
+                firstChildIndex = segmentIndex;
+            }
+            
+            foreach (var c in segmentsArray[i].SegmentName)
+            {
+                _paths[pathStartIndex++] = c;
+            }
+            
+            segmentIndex++;
+        }
+        
+        for (int i = 0; i < segmentsArray.Length; i++)
+        {
+            segments[firstChildIndex!.Value + i].FirstChildIndex = CreateSegmentRecursively(
+                ref pathStartIndex,
+                ref segmentIndex,
+                _segments,
+                segmentsArray[i].IncludedSegments.Values.ToArray());
+        }
+
+        return firstChildIndex;
     }
 
     private (int, int) CreateTrie(RoutingSettings settings)
