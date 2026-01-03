@@ -1,6 +1,6 @@
-namespace Colibri.Theory.Models;
+namespace Colibri.Services.SnapshotProvider.Models.RoutingSnapshot;
 
-public class TempSegment
+public sealed class TempSegment
 {
     public int PathStartIndex { get; set; }
     public int PathLength { get; set;}

@@ -1,4 +1,4 @@
-namespace Colibri.Theory.Structs;
+namespace Colibri.Services.SnapshotProvider.Models.RoutingSnapshot;
 
 public readonly struct Segment(
     int pathStartIndex,

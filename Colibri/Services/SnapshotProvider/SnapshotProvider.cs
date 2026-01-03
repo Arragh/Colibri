@@ -4,43 +4,40 @@ using Colibri.Configuration;
 using Colibri.Services.SnapshotProvider.Enums;
 using Colibri.Services.SnapshotProvider.Interfaces;
 using Colibri.Services.SnapshotProvider.Models;
-using Colibri.Theory;
-using Colibri.Theory.Structs;
+using Colibri.Services.SnapshotProvider.Models.ClusterSnapshot;
+using Colibri.Services.SnapshotProvider.Models.RoutingSnapshot;
+using Colibri.Services.SnapshotProvider.Models.TransportSnapshot;
 using Microsoft.Extensions.Options;
 
 namespace Colibri.Services.SnapshotProvider;
 
-public class SnapshotProvider : ISnapshotProvider
+public sealed class SnapshotProvider : ISnapshotProvider
 {
     private GlobalSnapshot _globalSnapshot;
-    private TheorySnapshotWrapper _theorySnapshotWrapper;
-    
-    private TheorySnapshotBuilder _snapshotBuilder;
+    private RoutingSnapshotWrapper _routingSnapshotWrapper;
+    private RoutingSnapshotBuilder _routingSnapshotBuilder = new();
 
-    public SnapshotProvider(
-        TheorySnapshotBuilder snapshotBuilder,
-        IOptionsMonitor<RoutingSettings> monitor)
+    public SnapshotProvider(IOptionsMonitor<RoutingSettings> monitor)
     {
-        _snapshotBuilder = snapshotBuilder;
         _globalSnapshot = Build(monitor.CurrentValue);
-        _theorySnapshotWrapper = _snapshotBuilder.BuildSnapshot(monitor.CurrentValue);
+        _routingSnapshotWrapper = _routingSnapshotBuilder.BuildSnapshot(monitor.CurrentValue);
         
         monitor.OnChange(c =>
         {
             var newGlobalSnapshot = Build(c);
             Volatile.Write(ref _globalSnapshot, newGlobalSnapshot);
             
-            var newTheorySnapshotWrapper = _snapshotBuilder.BuildSnapshot(c);
-            Volatile.Write(ref _theorySnapshotWrapper, newTheorySnapshotWrapper);
+            var newRoutingSnapshotWrapper = _routingSnapshotBuilder.BuildSnapshot(c);
+            Volatile.Write(ref _routingSnapshotWrapper, newRoutingSnapshotWrapper);
         });
     }
 
-    public ref readonly TheorySnapshot TheorySnapshot
+    public ref readonly RoutingSnapshot TheorySnapshot
     {
         get
         {
-            var wrapper = Volatile.Read(ref _theorySnapshotWrapper);
-            return ref wrapper.TheorySnapshot;
+            var wrapper = Volatile.Read(ref _routingSnapshotWrapper);
+            return ref wrapper.RoutingSnapshot;
         }
     }
 

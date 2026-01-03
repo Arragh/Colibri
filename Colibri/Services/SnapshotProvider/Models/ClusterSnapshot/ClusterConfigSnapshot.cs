@@ -1,8 +1,8 @@
 using System.Collections.Immutable;
 
-namespace Colibri.Services.SnapshotProvider.Models;
+namespace Colibri.Services.SnapshotProvider.Models.ClusterSnapshot;
 
-public class ClusterConfigSnapshot
+public sealed class ClusterConfigSnapshot
 {
     public required ImmutableArray<ClusterConfig> Clusters { get; init; }
 }

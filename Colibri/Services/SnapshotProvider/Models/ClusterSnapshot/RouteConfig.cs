@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace Colibri.Services.SnapshotProvider.Models;
+namespace Colibri.Services.SnapshotProvider.Models.ClusterSnapshot;
 
 public sealed class RouteConfig
 {

@@ -12,7 +12,6 @@ using Colibri.Services.Pipeline;
 using Colibri.Services.Pipeline.Models;
 using Colibri.Services.SnapshotProvider;
 using Colibri.Services.SnapshotProvider.Interfaces;
-using Colibri.Theory;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
@@ -22,7 +21,6 @@ builder.Services.AddSingleton<ICircuitBreaker, CircuitBreaker>();
 builder.Services.AddSingleton<ILoadBalancer, LoadBalancer>();
 builder.Services.AddSingleton<IRateLimiter, RateLimiter>();
 builder.Services.AddSingleton<ISnapshotProvider, SnapshotProvider>();
-builder.Services.AddSingleton<TheorySnapshotBuilder>();
 
 builder.Services.AddSingleton<RateLimiterMiddleware>();
 builder.Services.AddSingleton<RetryMiddleware>();
@@ -52,8 +50,6 @@ app.Run(async ctx =>
     var globalSnapshot = snapshotProvider.GlobalSnapshot;
     var theorySnapshot = snapshotProvider.TheorySnapshot;
 
-    Console.WriteLine();
-    
     var lol = new PipelineContext
     {
         HttpContext = ctx,

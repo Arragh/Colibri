@@ -1,13 +1,11 @@
 using System.Data;
 using Colibri.Configuration;
-using Colibri.Theory.Models;
-using Colibri.Theory.Structs;
 
-namespace Colibri.Theory;
+namespace Colibri.Services.SnapshotProvider.Models.RoutingSnapshot;
 
-public class TheorySnapshotBuilder
+public sealed class RoutingSnapshotBuilder
 {
-    public TheorySnapshotWrapper BuildSnapshot(RoutingSettings settings)
+    public RoutingSnapshotWrapper BuildSnapshot(RoutingSettings settings)
     {
         var root = new Dictionary<string, SegmentNode>();
         
@@ -18,7 +16,7 @@ public class TheorySnapshotBuilder
         
         FillDataArrays(root, paths, segments);
         
-        return new TheorySnapshotWrapper(new TheorySnapshot(segments, paths));
+        return new RoutingSnapshotWrapper(new RoutingSnapshot(segments, paths));
     }
 
     private void FillDataArrays(Dictionary<string, SegmentNode> root, char[] paths, Segment[] segments)

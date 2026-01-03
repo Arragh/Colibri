@@ -1,6 +1,6 @@
-namespace Colibri.Theory.Models;
+namespace Colibri.Services.SnapshotProvider.Models.RoutingSnapshot;
 
-public class SegmentNode
+public sealed class SegmentNode
 {
     public string SegmentName { get; set; }
     public Dictionary<string, SegmentNode> IncludedSegments { get; set; } = new();
