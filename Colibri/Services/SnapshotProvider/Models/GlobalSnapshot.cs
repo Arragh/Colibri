@@ -1,4 +1,4 @@
-namespace Colibri.Services.Snapshot.Models;
+namespace Colibri.Services.SnapshotProvider.Models;
 
 public class GlobalSnapshot
 {

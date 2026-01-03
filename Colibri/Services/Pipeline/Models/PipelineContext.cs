@@ -1,4 +1,4 @@
-using Colibri.Services.Snapshot.Models;
+using Colibri.Services.SnapshotProvider.Models;
 
 namespace Colibri.Services.Pipeline.Models;
 

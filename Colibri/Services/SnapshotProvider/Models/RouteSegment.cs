@@ -1,4 +1,4 @@
-namespace Colibri.Services.Snapshot.Models;
+namespace Colibri.Services.SnapshotProvider.Models;
 
 public sealed class RouteSegment(bool isParameter, string? parameterName, string? literal)
 {

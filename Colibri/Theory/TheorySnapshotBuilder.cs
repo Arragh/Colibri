@@ -2,29 +2,26 @@ using System.Data;
 using Colibri.Configuration;
 using Colibri.Theory.Models;
 using Colibri.Theory.Structs;
-using Microsoft.Extensions.Options;
 
 namespace Colibri.Theory;
 
-public class TheorySnapshotProvider
+public class TheorySnapshotBuilder
 {
-    private readonly Dictionary<string, SegmentNode> _root = new();
-    private readonly char[] _paths;
-    private readonly Segment[] _segments;
-
-    public TheorySnapshotProvider(IOptionsMonitor<RoutingSettings> monitor)
+    public TheorySnapshotWrapper BuildSnapshot(RoutingSettings settings)
     {
-        var trieDataCounts = CreateTrie(monitor.CurrentValue);
-
-        _paths = new char[trieDataCounts.Item1];
-        _segments = new Segment[trieDataCounts.Item2];
+        var root = new Dictionary<string, SegmentNode>();
         
-        FillDataArrays(_paths, _segments);
+        var trieDataCounts = CreateTrie(root, settings);
 
-        Console.WriteLine();
+        var paths = new char[trieDataCounts.Item1];
+        var segments = new Segment[trieDataCounts.Item2];
+        
+        FillDataArrays(root, paths, segments);
+        
+        return new TheorySnapshotWrapper(new TheorySnapshot(segments, paths));
     }
 
-    private void FillDataArrays(char[] paths, Segment[] segments)
+    private void FillDataArrays(Dictionary<string, SegmentNode> root, char[] paths, Segment[] segments)
     {
         var pathStartIndex = 0;
         var segmentIndex = 0;
@@ -35,11 +32,11 @@ public class TheorySnapshotProvider
             ref segmentIndex,
             paths,
             tempSegments,
-            _root.Values.ToArray());
+            root.Values.ToArray());
 
         for (int i = 0; i < tempSegments.Length; i++)
         {
-            _segments[i] = new Segment(
+            segments[i] = new Segment(
                 tempSegments[i].PathStartIndex,
                 tempSegments[i].PathLength,
                 tempSegments[i].FirstChildIndex,
@@ -120,7 +117,7 @@ public class TheorySnapshotProvider
         return firstChildIndex;
     }
 
-    private (int, int) CreateTrie(RoutingSettings settings)
+    private (int, int) CreateTrie(Dictionary<string, SegmentNode> root, RoutingSettings settings)
     {
         int charsCount = 0;
         int segmentsCount = 0;
@@ -134,7 +131,7 @@ public class TheorySnapshotProvider
                     route.Method,
                     upstreamSegmentsArray,
                     route.DownstreamPattern,
-                    _root,
+                    root,
                     ref charsCount,
                     ref segmentsCount);
             }

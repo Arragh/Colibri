@@ -1,4 +1,3 @@
-using System.Text;
 using Colibri.Configuration;
 using Colibri.Helpers;
 using Colibri.Services.CircuitBreaker;
@@ -11,8 +10,8 @@ using Colibri.Services.RateLimiter.Interfaces;
 using Colibri.Services.Retrier;
 using Colibri.Services.Pipeline;
 using Colibri.Services.Pipeline.Models;
-using Colibri.Services.Snapshot;
-using Colibri.Services.Snapshot.Interfaces;
+using Colibri.Services.SnapshotProvider;
+using Colibri.Services.SnapshotProvider.Interfaces;
 using Colibri.Theory;
 
 var builder = WebApplication.CreateSlimBuilder(args);
@@ -23,7 +22,7 @@ builder.Services.AddSingleton<ICircuitBreaker, CircuitBreaker>();
 builder.Services.AddSingleton<ILoadBalancer, LoadBalancer>();
 builder.Services.AddSingleton<IRateLimiter, RateLimiter>();
 builder.Services.AddSingleton<ISnapshotProvider, SnapshotProvider>();
-builder.Services.AddSingleton<TheorySnapshotProvider>();
+builder.Services.AddSingleton<TheorySnapshotBuilder>();
 
 builder.Services.AddSingleton<RateLimiterMiddleware>();
 builder.Services.AddSingleton<RetryMiddleware>();
@@ -48,25 +47,12 @@ var app = builder.Build();
 var pipeline = app.Services.GetRequiredService<Pipeline>();
 var snapshotProvider = app.Services.GetRequiredService<ISnapshotProvider>();
 
-var theorySnapshotProvider = app.Services.GetRequiredService<TheorySnapshotProvider>();
-
 app.Run(async ctx =>
 {
-    var stringValue = "test";
-    var charArray = stringValue.ToCharArray();
-    var byteArray = Encoding.UTF8.GetBytes(stringValue);
-
-    for (int i = 0; i < charArray.Length; i++)
-    {
-        Console.WriteLine($"{i}: {charArray[i]}");
-    }
-    
-    for (int i = 0; i < byteArray.Length; i++)
-    {
-        Console.WriteLine($"{i}: {byteArray[i]}");
-    }
-    
     var globalSnapshot = snapshotProvider.GlobalSnapshot;
+    var theorySnapshot = snapshotProvider.TheorySnapshot;
+
+    Console.WriteLine();
     
     var lol = new PipelineContext
     {

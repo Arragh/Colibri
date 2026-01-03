@@ -1,26 +1,47 @@
 using System.Collections.Immutable;
 using System.Net;
 using Colibri.Configuration;
-using Colibri.Services.Snapshot.Enums;
-using Colibri.Services.Snapshot.Interfaces;
-using Colibri.Services.Snapshot.Models;
+using Colibri.Services.SnapshotProvider.Enums;
+using Colibri.Services.SnapshotProvider.Interfaces;
+using Colibri.Services.SnapshotProvider.Models;
+using Colibri.Theory;
+using Colibri.Theory.Structs;
 using Microsoft.Extensions.Options;
 
-namespace Colibri.Services.Snapshot;
+namespace Colibri.Services.SnapshotProvider;
 
 public class SnapshotProvider : ISnapshotProvider
 {
     private GlobalSnapshot _globalSnapshot;
+    private TheorySnapshotWrapper _theorySnapshotWrapper;
+    
+    private TheorySnapshotBuilder _snapshotBuilder;
 
-    public SnapshotProvider(IOptionsMonitor<RoutingSettings> monitor)
+    public SnapshotProvider(
+        TheorySnapshotBuilder snapshotBuilder,
+        IOptionsMonitor<RoutingSettings> monitor)
     {
+        _snapshotBuilder = snapshotBuilder;
         _globalSnapshot = Build(monitor.CurrentValue);
+        _theorySnapshotWrapper = _snapshotBuilder.BuildSnapshot(monitor.CurrentValue);
         
         monitor.OnChange(c =>
         {
             var newGlobalSnapshot = Build(c);
             Volatile.Write(ref _globalSnapshot, newGlobalSnapshot);
+            
+            var newTheorySnapshotWrapper = _snapshotBuilder.BuildSnapshot(c);
+            Volatile.Write(ref _theorySnapshotWrapper, newTheorySnapshotWrapper);
         });
+    }
+
+    public ref readonly TheorySnapshot TheorySnapshot
+    {
+        get
+        {
+            var wrapper = Volatile.Read(ref _theorySnapshotWrapper);
+            return ref wrapper.TheorySnapshot;
+        }
     }
 
     public GlobalSnapshot GlobalSnapshot => Volatile.Read(ref _globalSnapshot);

@@ -1,6 +1,6 @@
 namespace Colibri.Theory.Structs;
 
-internal readonly struct Segment(
+public readonly struct Segment(
     int pathStartIndex,
     int pathLength,
     int firstChildIndex,
