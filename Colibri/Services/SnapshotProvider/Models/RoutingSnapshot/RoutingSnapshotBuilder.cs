@@ -14,13 +14,18 @@ public sealed class RoutingSnapshotBuilder
         int downstreamPathCharsCount = 0;
         int downstreamsCount = 0;
         
+        var allHosts = settings.Clusters
+            .SelectMany(c => c.Hosts)
+            .ToArray();
+        
         FillTrie(
             root,
             settings,
             ref upstreamPathCharsCount,
             ref segmentsCount,
             ref downstreamPathCharsCount,
-            ref downstreamsCount);
+            ref downstreamsCount,
+            allHosts);
 
         var upstreamPathChars = new char[upstreamPathCharsCount];
         var segments = new Segment[segmentsCount];
@@ -38,7 +43,8 @@ public sealed class RoutingSnapshotBuilder
             segments,
             upstreamPathChars,
             downstreams,
-            downstreamPathChars);
+            downstreamPathChars,
+            allHosts.Select(h => new Uri(h)).ToArray());
     }
 
     #region FillTrie
@@ -48,7 +54,8 @@ public sealed class RoutingSnapshotBuilder
         ref int upstreamPathCharsCount,
         ref int segmentsCount,
         ref int downstreamPathCharsCount,
-        ref int downstreamsCount)
+        ref int downstreamsCount,
+        string[] allHosts)
     {
         foreach (var cluster in settings.Clusters)
         {
@@ -64,7 +71,9 @@ public sealed class RoutingSnapshotBuilder
                     ref upstreamPathCharsCount,
                     ref segmentsCount,
                     ref downstreamPathCharsCount,
-                    ref downstreamsCount);
+                    ref downstreamsCount,
+                    allHosts,
+                    cluster.Hosts);
             }
         }
     }
@@ -77,7 +86,9 @@ public sealed class RoutingSnapshotBuilder
         ref int upstreamPathCharsCount,
         ref int segmentsCount,
         ref int downstreamPathCharsCount,
-        ref int downstreamsCount)
+        ref int downstreamsCount,
+        string[] allHosts,
+        string[] clusterHosts)
     {
         if (!root.ContainsKey(upstreamPathSegments[0]))
         {
@@ -100,7 +111,9 @@ public sealed class RoutingSnapshotBuilder
                 ref upstreamPathCharsCount,
                 ref segmentsCount,
                 ref downstreamPathCharsCount,
-                ref downstreamsCount);
+                ref downstreamsCount,
+                allHosts,
+                clusterHosts);
         }
         else
         {
@@ -112,6 +125,24 @@ public sealed class RoutingSnapshotBuilder
             root[upstreamPathSegments[0]].Methods.Add(method, downStreamPattern);
             downstreamsCount++;
             downstreamPathCharsCount += downStreamPattern.Length;
+
+            for (int i = 0; i < allHosts.Length; i++)
+            {
+                if (root[upstreamPathSegments[0]].SegmentName == "info")
+                {
+                    Console.WriteLine($"{root[upstreamPathSegments[0]].SegmentName}: {allHosts[i]}");
+                }
+                
+                foreach (var ch in clusterHosts)
+                {
+                    if (allHosts[i] == ch)
+                    {
+                        root[upstreamPathSegments[0]].HostStartIndex ??= i;
+                    }
+                }
+            }
+            
+            root[upstreamPathSegments[0]].HostsCount = clusterHosts.Length;
         }
     }
     #endregion
@@ -161,7 +192,9 @@ public sealed class RoutingSnapshotBuilder
             downstreams[i] = new Downstream(
                 tempDownstreams[i].PathStartIndex,
                 tempDownstreams[i].PathLength,
-                tempDownstreams[i].MethodMask);
+                tempDownstreams[i].MethodMask,
+                tempDownstreams[i].HostStartIndex,
+                tempDownstreams[i].HostsCount);
         }
 
         Console.WriteLine();
@@ -189,8 +222,7 @@ public sealed class RoutingSnapshotBuilder
 
         for (int i = 0; i < segmentNodesArray.Length; i++)
         {
-            // Создаем модель и заполняем поля, которые сразу на 100% известны
-            tempSegments[segmentIndex] = new TempSegment
+            tempSegments[segmentIndex] = new TempSegment // Создаем модель и заполняем поля, которые сразу на 100% известны
             {
                 PathStartIndex = upstreamPathStartIndex, // С какого индекса в массиве "paths" начинается имя текущего сегмента
                 PathLength = (short)segmentNodesArray[i].SegmentName.Length, // Длина имени текущего сегмента в массиве "paths"
@@ -202,39 +234,38 @@ public sealed class RoutingSnapshotBuilder
                  */
                 ChildrenCount = (short)segmentNodesArray[i].IncludedSegments.Count
             };
-
-            // Устанавливаем побитовую маску доступных методов для данного маршрута
+            
             byte methodMask = 0;
-            foreach (var k in segmentNodesArray[i].Methods.Keys)
+            foreach (var k in segmentNodesArray[i].Methods.Keys) // Устанавливаем побитовую маску доступных методов для данного маршрута
             {
-                // То есть на каждой итерации как бы пополняем список доступных методов
-                methodMask = (byte)(methodMask | GetMethodMask(k));
+                methodMask = (byte)(methodMask | GetMethodMask(k)); // То есть на каждой итерации как бы пополняем список доступных методов
             }
             tempSegments[segmentIndex].MethodMask = methodMask;
-
-            // Добавляем доступные маршруты для эндпоинта по типу метода
+            
             tempSegments[segmentIndex].DownstreamStartIndex = downstreamIndex;
-            foreach (var kv in segmentNodesArray[i].Methods)
+            foreach (var kv in segmentNodesArray[i].Methods) // Добавляем доступные маршруты для эндпоинта по типу метода
             {
                 var tempDownstream = new TempDownstream();
                 tempDownstream.MethodMask = GetMethodMask(kv.Key);
+
+                if (segmentNodesArray[i].HostStartIndex.HasValue)
+                {
+                    tempDownstream.HostStartIndex = (short)segmentNodesArray[i].HostStartIndex!.Value;
+                    tempDownstream.HostsCount = (byte)segmentNodesArray[i].HostsCount;
+                }
                 
-                // С какого индекса в общем массиве начинать читать маршрут
-                tempDownstream.PathStartIndex = downstreamPathStartIndex;
+                tempDownstream.PathStartIndex = downstreamPathStartIndex; // С какого индекса в общем массиве начинать читать маршрут
                 
-                // Заполнение общего массива символами маршрута
-                foreach (var c in kv.Value)
+                foreach (var c in kv.Value) // Заполнение общего массива символами маршрута
                 {
                     downstreamPathChars[downstreamPathStartIndex++] = c;
                 }
-
-                // Общее количество символов маршрута, которые нужно прочитать
-                tempDownstream.PathLength = (short)kv.Value.Length;
+                
+                tempDownstream.PathLength = (short)kv.Value.Length; // Общее количество символов маршрута, которые нужно прочитать
 
                 tempDownstreams[downstreamIndex++] = tempDownstream;
-
-                // Количество downstream-маршрутов на upstream-маршрут
-                tempSegments[segmentIndex].DownstreamCount++;
+                
+                tempSegments[segmentIndex].DownstreamCount++; // Количество downstream-маршрутов на upstream-маршрут
             }
             
             /*
@@ -254,8 +285,7 @@ public sealed class RoutingSnapshotBuilder
             segmentIndex++; // Инкрементим индекс для следующего сегмента в цикле
         }
         
-        // Рекурсивный проход по наследникам
-        for (int i = 0; i < segmentNodesArray.Length; i++)
+        for (int i = 0; i < segmentNodesArray.Length; i++) // Рекурсивный проход по наследникам
         {
             var frstChldIndx = CreateTempSegmentsRecursively(
                 ref upstreamPathStartIndex,
@@ -267,9 +297,8 @@ public sealed class RoutingSnapshotBuilder
                 ref downstreamPathStartIndex,
                 tempDownstreams,
                 ref downstreamIndex);
-
-            // Если есть наследник и вернуло индекс, то присваиваем его в поле родителя
-            if (frstChldIndx != null)
+            
+            if (frstChldIndx != null) // Если есть наследник и вернуло индекс, то присваиваем его в поле родителя
             {
                 /*
                  * Так как "segmentIndex" убежал вперед в предыдущем цикле,

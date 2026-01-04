@@ -5,4 +5,6 @@ public sealed class SegmentNode
     public string SegmentName { get; set; }
     public Dictionary<string, SegmentNode> IncludedSegments { get; set; } = new();
     public Dictionary<string, string> Methods { get; set; } = new();
+    public int? HostStartIndex { get; set; }
+    public int HostsCount { get; set; }
 }
