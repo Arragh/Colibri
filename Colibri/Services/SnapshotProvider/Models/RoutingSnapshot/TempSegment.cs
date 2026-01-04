@@ -9,4 +9,7 @@ public sealed class TempSegment
     public short ChildrenCount { get; set;}
     
     public byte MethodMask { get; set;}
+    
+    public short DownstreamStartIndex { get; set;}
+    public byte DownstreamCount { get; set; } = 0;
 }

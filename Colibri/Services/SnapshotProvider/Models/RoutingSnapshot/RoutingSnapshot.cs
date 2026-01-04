@@ -1,10 +1,13 @@
-using System.Collections.Immutable;
-
 namespace Colibri.Services.SnapshotProvider.Models.RoutingSnapshot;
 
-public readonly struct RoutingSnapshot(Segment[] segments, char[] segmentsNames)
+public sealed class RoutingSnapshot(
+    Segment[] segments,
+    char[] upstreamPathChars,
+    Downstream[] downstreams,
+    char[] downstreamPathChars)
 {
-    public readonly ImmutableArray<Segment> Segments = segments.ToImmutableArray();
-    public readonly ImmutableArray<char> SegmentsNames = segmentsNames.ToImmutableArray();
-    public readonly ImmutableArray<char> DownstreamRoutes;
+    public ReadOnlySpan<Segment> Segments => segments;
+    public ReadOnlySpan<char> SegmentsNames => upstreamPathChars;
+    public ReadOnlySpan<Downstream> Downstreams => downstreams;
+    public ReadOnlySpan<char> DownstreamRoutes => downstreamPathChars;
 }

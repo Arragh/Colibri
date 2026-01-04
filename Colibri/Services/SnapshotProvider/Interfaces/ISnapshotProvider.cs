@@ -6,5 +6,5 @@ namespace Colibri.Services.SnapshotProvider.Interfaces;
 public interface ISnapshotProvider
 {
     GlobalSnapshot GlobalSnapshot { get; }
-    ref readonly RoutingSnapshot RoutingSnapshot { get; }
+    RoutingSnapshot RoutingSnapshot { get; }
 }

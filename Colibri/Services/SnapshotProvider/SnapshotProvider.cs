@@ -14,32 +14,25 @@ namespace Colibri.Services.SnapshotProvider;
 public sealed class SnapshotProvider : ISnapshotProvider
 {
     private GlobalSnapshot _globalSnapshot;
-    private RoutingSnapshotWrapper _routingSnapshotWrapper;
+    private RoutingSnapshot _routingSnapshot;
     private RoutingSnapshotBuilder _routingSnapshotBuilder = new();
 
     public SnapshotProvider(IOptionsMonitor<RoutingSettings> monitor)
     {
         _globalSnapshot = Build(monitor.CurrentValue);
-        _routingSnapshotWrapper = _routingSnapshotBuilder.BuildSnapshot(monitor.CurrentValue);
+        _routingSnapshot = _routingSnapshotBuilder.Build(monitor.CurrentValue);
         
         monitor.OnChange(c =>
         {
             var newGlobalSnapshot = Build(c);
             Volatile.Write(ref _globalSnapshot, newGlobalSnapshot);
             
-            var newRoutingSnapshotWrapper = _routingSnapshotBuilder.BuildSnapshot(c);
-            Volatile.Write(ref _routingSnapshotWrapper, newRoutingSnapshotWrapper);
+            var newRoutingSnapshot = _routingSnapshotBuilder.Build(c);
+            Volatile.Write(ref _routingSnapshot, newRoutingSnapshot);
         });
     }
 
-    public ref readonly RoutingSnapshot RoutingSnapshot
-    {
-        get
-        {
-            var wrapper = Volatile.Read(ref _routingSnapshotWrapper);
-            return ref wrapper.RoutingSnapshot;
-        }
-    }
+    public RoutingSnapshot RoutingSnapshot => Volatile.Read(ref _routingSnapshot);
 
     public GlobalSnapshot GlobalSnapshot => Volatile.Read(ref _globalSnapshot);
     
