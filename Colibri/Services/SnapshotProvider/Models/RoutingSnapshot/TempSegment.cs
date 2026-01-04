@@ -3,10 +3,10 @@ namespace Colibri.Services.SnapshotProvider.Models.RoutingSnapshot;
 public sealed class TempSegment
 {
     public int PathStartIndex { get; set; }
-    public int PathLength { get; set;}
+    public short PathLength { get; set;}
 
     public int FirstChildIndex { get; set;}
-    public int ChildrenCount { get; set;}
+    public short ChildrenCount { get; set;}
     
-    public int MethodMask { get; set;}
+    public byte MethodMask { get; set;}
 }

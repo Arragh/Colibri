@@ -63,21 +63,21 @@ public sealed class RoutingSnapshotBuilder
             tempSegments[segmentIndex] = new TempSegment
             {
                 PathStartIndex = pathStartIndex, // С какого индекса в массиве "paths" начинается имя текущего сегмента
-                PathLength = segmentsArray[i].SegmentName.Length, // Длина имени текущего сегмента в массиве "paths"
+                PathLength = (short)segmentsArray[i].SegmentName.Length, // Длина имени текущего сегмента в массиве "paths"
                 
                 /*
                  * Количество наследников после сегмента.
                  * Например, если имеем 2 маршрута "/users/{id}" и "/users/info",
                  * то у сегмента "users" 2 наследника - "{id}" и "info"
                  */
-                ChildrenCount = segmentsArray[i].IncludedSegments.Count
+                ChildrenCount = (short)segmentsArray[i].IncludedSegments.Count
             };
 
             // Устанавливаем побитовую маску доступных методов для данного маршрута
-            var methodMask = 0;
+            byte methodMask = 0;
             foreach (var k in segmentsArray[i].Methods.Keys)
             {
-                methodMask = methodMask | GetMethodMask(k);
+                methodMask = (byte)(methodMask | GetMethodMask(k));
             }
             tempSegments[segmentIndex].MethodMask = methodMask;
             
@@ -187,7 +187,7 @@ public sealed class RoutingSnapshotBuilder
         }
     }
     
-    private static int GetMethodMask(string method)
+    private static byte GetMethodMask(string method)
     {
         switch (method.Length)
         {
