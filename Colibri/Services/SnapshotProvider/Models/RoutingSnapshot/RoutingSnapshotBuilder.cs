@@ -19,13 +19,13 @@ public sealed class RoutingSnapshotBuilder
             .ToArray();
         
         FillTrie(
+            allHosts,
             root,
             settings,
             ref upstreamPathCharsCount,
             ref segmentsCount,
             ref downstreamPathCharsCount,
-            ref downstreamsCount,
-            allHosts);
+            ref downstreamsCount);
 
         var upstreamPathChars = new char[upstreamPathCharsCount];
         var segments = new Segment[segmentsCount];
@@ -49,13 +49,13 @@ public sealed class RoutingSnapshotBuilder
 
     #region FillTrie
     private void FillTrie(
+        string[] allHosts,
         Dictionary<string, SegmentNode> root,
         RoutingSettings settings,
         ref int upstreamPathCharsCount,
         ref int segmentsCount,
         ref int downstreamPathCharsCount,
-        ref int downstreamsCount,
-        string[] allHosts)
+        ref int downstreamsCount)
     {
         foreach (var cluster in settings.Clusters)
         {
@@ -65,30 +65,30 @@ public sealed class RoutingSnapshotBuilder
 
                 CreateTrieRecursively(
                     route.Method,
-                    upstreamPathSegments,
                     route.DownstreamPattern,
+                    upstreamPathSegments,
+                    allHosts,
+                    cluster.Hosts,
                     root,
                     ref upstreamPathCharsCount,
                     ref segmentsCount,
                     ref downstreamPathCharsCount,
-                    ref downstreamsCount,
-                    allHosts,
-                    cluster.Hosts);
+                    ref downstreamsCount);
             }
         }
     }
 
     private void CreateTrieRecursively(
         string method,
-        string[] upstreamPathSegments,
         string downStreamPattern,
+        string[] upstreamPathSegments,
+        string[] allHosts,
+        string[] clusterHosts,
         Dictionary<string, SegmentNode> root,
         ref int upstreamPathCharsCount,
         ref int segmentsCount,
         ref int downstreamPathCharsCount,
-        ref int downstreamsCount,
-        string[] allHosts,
-        string[] clusterHosts)
+        ref int downstreamsCount)
     {
         if (!root.ContainsKey(upstreamPathSegments[0]))
         {
@@ -105,15 +105,15 @@ public sealed class RoutingSnapshotBuilder
         {
             CreateTrieRecursively(
                 method,
-                upstreamPathSegments.Skip(1).ToArray(),
                 downStreamPattern,
+                upstreamPathSegments.Skip(1).ToArray(),
+                allHosts,
+                clusterHosts,
                 root[upstreamPathSegments[0]].IncludedSegments,
                 ref upstreamPathCharsCount,
                 ref segmentsCount,
                 ref downstreamPathCharsCount,
-                ref downstreamsCount,
-                allHosts,
-                clusterHosts);
+                ref downstreamsCount);
         }
         else
         {
@@ -165,14 +165,14 @@ public sealed class RoutingSnapshotBuilder
         var tempDownstreams = new TempDownstream[downstreams.Length];
 
         CreateTempSegmentsRecursively(
-            ref upstreamPathStartIndex,
-            ref segmentIndex,
             upstreamPathChars,
+            downstreamPathChars,
             tempSegments,
             root.Values.ToArray(),
-            downstreamPathChars,
-            ref downstreamPathStartIndex,
             tempDownstreams,
+            ref upstreamPathStartIndex,
+            ref segmentIndex,
+            ref downstreamPathStartIndex,
             ref downstreamIndex);
 
         for (int i = 0; i < tempSegments.Length; i++)
@@ -196,19 +196,17 @@ public sealed class RoutingSnapshotBuilder
                 tempDownstreams[i].HostStartIndex,
                 tempDownstreams[i].HostsCount);
         }
-
-        Console.WriteLine();
     }
     
     private int? CreateTempSegmentsRecursively(
-        ref int upstreamPathStartIndex,
-        ref int segmentIndex,
         char[] upstreamPathChars,
+        char[] downstreamPathChars,
         TempSegment[] tempSegments,
         SegmentNode[] segmentNodesArray,
-        char[] downstreamPathChars,
-        ref int downstreamPathStartIndex,
         TempDownstream[] tempDownstreams,
+        ref int upstreamPathStartIndex,
+        ref int segmentIndex,
+        ref int downstreamPathStartIndex,
         ref short downstreamIndex)
     {
         /*
@@ -262,9 +260,7 @@ public sealed class RoutingSnapshotBuilder
                 }
                 
                 tempDownstream.PathLength = (short)kv.Value.Length; // Общее количество символов маршрута, которые нужно прочитать
-
                 tempDownstreams[downstreamIndex++] = tempDownstream;
-                
                 tempSegments[segmentIndex].DownstreamCount++; // Количество downstream-маршрутов на upstream-маршрут
             }
             
@@ -288,14 +284,14 @@ public sealed class RoutingSnapshotBuilder
         for (int i = 0; i < segmentNodesArray.Length; i++) // Рекурсивный проход по наследникам
         {
             var frstChldIndx = CreateTempSegmentsRecursively(
-                ref upstreamPathStartIndex,
-                ref segmentIndex,
                 upstreamPathChars,
+                downstreamPathChars,
                 tempSegments,
                 segmentNodesArray[i].IncludedSegments.Values.ToArray(),
-                downstreamPathChars,
-                ref downstreamPathStartIndex,
                 tempDownstreams,
+                ref upstreamPathStartIndex,
+                ref segmentIndex,
+                ref downstreamPathStartIndex,
                 ref downstreamIndex);
             
             if (frstChldIndx != null) // Если есть наследник и вернуло индекс, то присваиваем его в поле родителя
@@ -328,6 +324,7 @@ public sealed class RoutingSnapshotBuilder
             case 5: return HttpMethodBits.Patch;
             case 6: return HttpMethodBits.Delete;
             case 7: return HttpMethodBits.Options;
+            
             default: return HttpMethodBits.None;
         }
     }
