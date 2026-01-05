@@ -6,7 +6,7 @@ namespace Colibri.Services.Pipeline.Models;
 public sealed class PipelineContext
 {
     public required HttpContext HttpContext { get; init; }
-    public required ClusterConfigSnapshot ClusterSnapshot { get; init; }
+    // public required ClusterConfigSnapshot ClusterSnapshot { get; init; }
     public required TransportRuntimeSnapshot TransportSnapshot { get; init; }
     public required CancellationToken CancellationToken { get; set; }
     
@@ -21,4 +21,7 @@ public sealed class PipelineContext
     
     // public long DeadlineTimestamp;
     // public bool IsExpired => Stopwatch.GetTimestamp() > DeadlineTimestamp;
+    
+    public Uri[] Hosts { get; set; }
+    public string DownstreamPattern { get; set; }
 }

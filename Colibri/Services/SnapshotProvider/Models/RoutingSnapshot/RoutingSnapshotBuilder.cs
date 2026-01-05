@@ -1,5 +1,6 @@
 using System.Data;
 using Colibri.Configuration;
+using Colibri.Helpers;
 
 namespace Colibri.Services.SnapshotProvider.Models.RoutingSnapshot;
 
@@ -8,7 +9,8 @@ public sealed class RoutingSnapshotBuilder
     public RoutingSnapshot Build(RoutingSettings settings)
     {
         var root = new Dictionary<string, SegmentNode>();
-        
+
+        int rootSegmentsCount = 0;
         int upstreamPathCharsCount = 0;
         int segmentsCount = 0;
         int downstreamPathCharsCount = 0;
@@ -22,6 +24,7 @@ public sealed class RoutingSnapshotBuilder
             allHosts,
             root,
             settings,
+            ref rootSegmentsCount,
             ref upstreamPathCharsCount,
             ref segmentsCount,
             ref downstreamPathCharsCount,
@@ -40,6 +43,7 @@ public sealed class RoutingSnapshotBuilder
             downstreams);
         
         return new RoutingSnapshot(
+            rootSegmentsCount,
             segments,
             upstreamPathChars,
             downstreams,
@@ -52,16 +56,25 @@ public sealed class RoutingSnapshotBuilder
         string[] allHosts,
         Dictionary<string, SegmentNode> root,
         RoutingSettings settings,
+        ref int rootSegmentsCount,
         ref int upstreamPathCharsCount,
         ref int segmentsCount,
         ref int downstreamPathCharsCount,
         ref int downstreamsCount)
     {
+        var rootHashSet = new HashSet<string>();
+        
         foreach (var cluster in settings.Clusters)
         {
             foreach (var route in cluster.Routes)
             {
                 var upstreamPathSegments = route.UpstreamPattern.Split('/', StringSplitOptions.RemoveEmptyEntries);
+                rootHashSet.Add(upstreamPathSegments[0]);
+
+                for (int i = 0; i < upstreamPathSegments.Length; i++)
+                {
+                    upstreamPathSegments[i] = '/' + upstreamPathSegments[i];
+                }
 
                 CreateTrieRecursively(
                     route.Method,
@@ -76,6 +89,8 @@ public sealed class RoutingSnapshotBuilder
                     ref downstreamsCount);
             }
         }
+        
+        rootSegmentsCount = rootHashSet.Count;
     }
 
     private void CreateTrieRecursively(
@@ -233,7 +248,7 @@ public sealed class RoutingSnapshotBuilder
             byte methodMask = 0;
             foreach (var k in segmentNodesArray[i].Methods.Keys) // Устанавливаем побитовую маску доступных методов для данного маршрута
             {
-                methodMask = (byte)(methodMask | GetMethodMask(k)); // То есть на каждой итерации как бы пополняем список доступных методов
+                methodMask = (byte)(methodMask | HttpMethodMask.GetMask(k)); // То есть на каждой итерации как бы пополняем список доступных методов
             }
             tempSegments[segmentIndex].MethodMask = methodMask;
             
@@ -241,7 +256,7 @@ public sealed class RoutingSnapshotBuilder
             foreach (var kv in segmentNodesArray[i].Methods) // Добавляем доступные маршруты для эндпоинта по типу метода
             {
                 var tempDownstream = new TempDownstream();
-                tempDownstream.MethodMask = GetMethodMask(kv.Key);
+                tempDownstream.MethodMask = HttpMethodMask.GetMask(kv.Key);
 
                 if (segmentNodesArray[i].HostStartIndex.HasValue)
                 {
@@ -304,26 +319,6 @@ public sealed class RoutingSnapshotBuilder
         }
 
         return firstChildIndex;
-    }
-    
-    private static byte GetMethodMask(string method)
-    {
-        switch (method.Length)
-        {
-            case 3: return method[0] == 'G'
-                ? HttpMethodBits.Get
-                : HttpMethodBits.Put;
-
-            case 4: return method[0] == 'P'
-                ? HttpMethodBits.Post
-                : HttpMethodBits.Head;
-
-            case 5: return HttpMethodBits.Patch;
-            case 6: return HttpMethodBits.Delete;
-            case 7: return HttpMethodBits.Options;
-            
-            default: return HttpMethodBits.None;
-        }
     }
     #endregion
 }
