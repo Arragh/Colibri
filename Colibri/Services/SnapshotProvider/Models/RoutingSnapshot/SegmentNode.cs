@@ -7,4 +7,5 @@ public sealed class SegmentNode
     public Dictionary<string, string> Methods { get; set; } = new();
     public int? HostStartIndex { get; set; }
     public int HostsCount { get; set; }
+    public bool IsParameter { get; set; }
 }

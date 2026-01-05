@@ -26,7 +26,7 @@ public sealed class RoutingSnapshotBuilder
             ref segmentsCount,
             ref downstreamPathCharsCount,
             ref downstreamsCount);
-
+        
         var upstreamPathChars = new char[upstreamPathCharsCount];
         var segments = new Segment[segmentsCount];
         var downstreamPathChars = new char[downstreamPathCharsCount];
@@ -94,7 +94,9 @@ public sealed class RoutingSnapshotBuilder
         {
             root[upstreamPathSegments[0]] = new SegmentNode
             {
-                SegmentName = upstreamPathSegments[0]
+                SegmentName = upstreamPathSegments[0],
+                IsParameter = upstreamPathSegments[0].Contains('{')
+                              && upstreamPathSegments[0].Contains('}')
             };
             
             upstreamPathCharsCount += upstreamPathSegments[0].Length;
@@ -128,11 +130,6 @@ public sealed class RoutingSnapshotBuilder
 
             for (int i = 0; i < allHosts.Length; i++)
             {
-                if (root[upstreamPathSegments[0]].SegmentName == "info")
-                {
-                    Console.WriteLine($"{root[upstreamPathSegments[0]].SegmentName}: {allHosts[i]}");
-                }
-                
                 foreach (var ch in clusterHosts)
                 {
                     if (allHosts[i] == ch)
@@ -168,7 +165,7 @@ public sealed class RoutingSnapshotBuilder
             upstreamPathChars,
             downstreamPathChars,
             tempSegments,
-            root.Values.ToArray(),
+            root.Values.OrderBy(n => n.IsParameter).ToArray(), // Сортировка, чтобы константы всегда шли перед параметрами
             tempDownstreams,
             ref upstreamPathStartIndex,
             ref segmentIndex,
@@ -287,7 +284,7 @@ public sealed class RoutingSnapshotBuilder
                 upstreamPathChars,
                 downstreamPathChars,
                 tempSegments,
-                segmentNodesArray[i].IncludedSegments.Values.ToArray(),
+                segmentNodesArray[i].IncludedSegments.Values.OrderBy(n => n.IsParameter).ToArray(), // Сортировка, чтобы константы всегда шли перед параметрами
                 tempDownstreams,
                 ref upstreamPathStartIndex,
                 ref segmentIndex,
