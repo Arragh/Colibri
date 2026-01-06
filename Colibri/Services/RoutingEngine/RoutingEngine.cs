@@ -19,9 +19,8 @@ public sealed class RoutingEngine : IRoutingEngine
         for (int i = 0; i < rootSegmentsCount; i++)
         {
             int requestPathIndex = 0;
-
-            // while (true)
             int trololo = i + 1;
+            
             for (int j = i; j < trololo; j++)
             {
                 int requestPathIndexBackup = requestPathIndex;
@@ -40,7 +39,7 @@ public sealed class RoutingEngine : IRoutingEngine
                 var requestSpan = requestPath
                     .Slice(start, requestPathIndex - start);
                 
-                var segmentSpan = snapshot.SegmentNames
+                var segmentSpan = segmentNames
                     .Slice(segment.PathStartIndex, segment.PathLength);
 
                 if (IsParameterPattern(segmentSpan))
@@ -54,19 +53,28 @@ public sealed class RoutingEngine : IRoutingEngine
                     continue;
                 }
 
+                Console.WriteLine();
+
+                if (IsFinalStep(requestPath, requestPathIndex))
+                {
+                    if (TryMatchDownstream(downstreams, methodMask, segment, out result))
+                    {
+                        return true;
+                    }
+                    
+                    break;
+                }
+
                 if (segment.ChildrenCount > 0)
                 {
-                    // var childrenSpan = snapshot.Segments
-                    //     .Slice(segment.FirstChildIndex, segment.ChildrenCount);
-
                     j = segment.FirstChildIndex - 1;
                     trololo = segment.FirstChildIndex + segment.ChildrenCount;
                 }
             }
         }
 
-        Console.WriteLine();
-        throw new NotImplementedException();
+        result = null;
+        return false;
     }
 
     private bool IsParameterPattern(ReadOnlySpan<char> segmentName)
@@ -77,6 +85,37 @@ public sealed class RoutingEngine : IRoutingEngine
             return true;
         }
 
+        return false;
+    }
+
+    private bool IsFinalStep(ReadOnlySpan<char> requestPath, int requestPathIndex)
+    {
+        return requestPathIndex >= requestPath.Length;
+    }
+
+    private bool TryMatchDownstream(
+        ReadOnlySpan<Downstream> downstreams,
+        byte methodMask,
+        in Segment segment,
+        out Downstream? result)
+    {
+        if (segment.DownstreamCount > 0)
+        {
+            var segmentDownstreams = downstreams
+                .Slice(segment.DownstreamStartIndex, segment.DownstreamCount);
+        
+            for (int k = 0; k < segmentDownstreams.Length; k++)
+            {
+                ref readonly var downstream = ref segmentDownstreams[k];
+                if ((downstream.MethodMask | methodMask) != 0)
+                {
+                    result = downstream;
+                    return true;
+                }
+            }
+        }
+
+        result = null;
         return false;
     }
 }
