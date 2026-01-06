@@ -19,15 +19,20 @@ public sealed class RoutingEngine : IRoutingEngine
         for (int i = 0; i < rootSegmentsCount; i++)
         {
             int requestPathIndex = 0;
-            int trololo = i + 1;
+            int limiter = i + 1;
             
-            for (int j = i; j < trololo; j++)
+            for (int j = i; j < limiter; j++) // Обходим конкретный сегмент из массива Segment[] с Idx = i
             {
                 int requestPathIndexBackup = requestPathIndex;
                 
                 ref readonly var segment = ref segments[j];
                 
                 int start = requestPathIndex;
+                
+                /*
+                 * Пропускаем первый '/' в маршруте, так как тут это сделать проще,
+                 * чем в следующем цикле while.
+                 */
                 requestPathIndex++;
 
                 while (requestPathIndex < requestPath.Length
@@ -46,14 +51,15 @@ public sealed class RoutingEngine : IRoutingEngine
                 {
                     // TODO: Написать логику обработки параметра из requestSegment
                 }
-                
-                if (!segmentSpan.SequenceEqual(requestSpan))
+                else if (!segmentSpan.SequenceEqual(requestSpan))
                 {
+                    /*
+                     * Если сегмент не верный, то сбрасываем значение requestPathIndex на изначальное
+                     * перед переходом к следующей итерации, чтобы опять сравнить его со следующим сегментом.
+                     */
                     requestPathIndex = requestPathIndexBackup;
                     continue;
                 }
-
-                Console.WriteLine();
 
                 if (IsFinalStep(requestPath, requestPathIndex))
                 {
@@ -67,8 +73,12 @@ public sealed class RoutingEngine : IRoutingEngine
 
                 if (segment.ChildrenCount > 0)
                 {
+                    /*
+                     * Если у сегмента есть наследники, то задаем значение итератора и ограничителя
+                     * для цикла for, чтобы в следующей итерации начать обход по наследникам.
+                     */
                     j = segment.FirstChildIndex - 1;
-                    trololo = segment.FirstChildIndex + segment.ChildrenCount;
+                    limiter = segment.FirstChildIndex + segment.ChildrenCount;
                 }
             }
         }
