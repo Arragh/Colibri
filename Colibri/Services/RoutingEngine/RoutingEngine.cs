@@ -19,164 +19,64 @@ public sealed class RoutingEngine : IRoutingEngine
         for (int i = 0; i < rootSegmentsCount; i++)
         {
             int requestPathIndex = 0;
-            int currentSegmentIndex = 0;
-            
-            ref readonly var segment = ref segments[i];
 
-            while (true)
+            // while (true)
+            int trololo = i + 1;
+            for (int j = i; j < trololo; j++)
             {
-                if (!TryMatchSegment(requestPath, segmentNames, ref requestPathIndex, in segment))
+                int requestPathIndexBackup = requestPathIndex;
+                
+                ref readonly var segment = ref segments[j];
+                
+                int start = requestPathIndex;
+                requestPathIndex++;
+
+                while (requestPathIndex < requestPath.Length
+                       && requestPath[requestPathIndex] != '/')
                 {
-                    break;
+                    requestPathIndex++;
+                }
+                
+                var requestSpan = requestPath
+                    .Slice(start, requestPathIndex - start);
+                
+                var segmentSpan = snapshot.SegmentNames
+                    .Slice(segment.PathStartIndex, segment.PathLength);
+
+                if (IsParameterPattern(segmentSpan))
+                {
+                    // TODO: Написать логику обработки параметра из requestSegment
+                }
+                
+                if (!segmentSpan.SequenceEqual(requestSpan))
+                {
+                    requestPathIndex = requestPathIndexBackup;
+                    continue;
                 }
 
                 if (segment.ChildrenCount > 0)
                 {
-                    for (int j = 0; j < segment.ChildrenCount; j++)
-                    {
-                        ref readonly var childSegment = ref segments[segment.FirstChildIndex + j];
-                        
-                        if (!TryMatchSegment(requestPath, segmentNames, ref requestPathIndex, in childSegment))
-                        {
-                            break;
-                        }
+                    // var childrenSpan = snapshot.Segments
+                    //     .Slice(segment.FirstChildIndex, segment.ChildrenCount);
 
-                        if (IsFinalStepInPath(requestPath, requestPathIndex))
-                        {
-                            if (!TryMatchDownstream(downstreams, childSegment, methodMask, out result))
-                            {
-                                return false;
-                            }
-
-                            return true;
-                        }
-                    }
-                }
-                
-                if (IsFinalStepInPath(requestPath, requestPathIndex))
-                {
-                    if (!TryMatchDownstream(downstreams, segment, methodMask, out result))
-                    {
-                        return false;
-                    }
-
-                    return true;
+                    j = segment.FirstChildIndex - 1;
+                    trololo = segment.FirstChildIndex + segment.ChildrenCount;
                 }
             }
         }
-        
-        result = default;
-        return false;
+
+        Console.WriteLine();
+        throw new NotImplementedException();
     }
 
-    private bool TryMatchSegment(
-        ReadOnlySpan<char> requestPath,
-        ReadOnlySpan<char> segmentNames,
-        ref int requestPathIndex,
-        in Segment segment)
+    private bool IsParameterPattern(ReadOnlySpan<char> segmentName)
     {
-        var segmentNameSpan = segmentNames.Slice(segment.PathStartIndex, segment.PathLength);
-
-        if (segmentNameSpan[1] == '{'
-            && segmentNameSpan[^1] == '}'
-            && TryMatchParameterSegment(requestPath, ref requestPathIndex, out var parameter))
-        {
-            return true;
-        }
-        
-        if (TryMatchStaticSegment(requestPath, segmentNameSpan, ref requestPathIndex))
+        if (segmentName[1] == '{'
+            && segmentName[^1] == '}')
         {
             return true;
         }
 
-        return false;
-    }
-
-    private bool TryMatchStaticSegment(
-        ReadOnlySpan<char> requestPath,
-        ReadOnlySpan<char> segmentNameSpan,
-        ref int requestPathIndex)
-    {
-        // Сразу отметаем лишнее, не совпадающее по длине
-        if (requestPath.Length - requestPathIndex < segmentNameSpan.Length)
-        {
-            return false;
-        }
-
-        /*
-         * Если оставшийся RequestPath длиннее той части, что мы будем проверять, то нужно убедиться,
-         * что следующим символом за границами проверяемого сегмента пути будет '/',
-         * иначе маршрут не верен. На случай, если RequestPath == "delete", а SegmentName = "del".
-         * Без такой проверки произойдет мэтч, хотя по факту маршрут не верный.
-         */
-        if (requestPath.Length - requestPathIndex > segmentNameSpan.Length)
-        {
-            var nextChar = requestPath[requestPathIndex + segmentNameSpan.Length];
-            
-            if (nextChar != '/')
-            {
-                return false;
-            }
-        }
-        
-        // Если сегменты не совпадают, то сразу выходим из метода.
-        var requestPathSlice  = requestPath.Slice(requestPathIndex, segmentNameSpan.Length);
-        if (!requestPathSlice.SequenceEqual(segmentNameSpan))
-        {
-            return false;
-        }
-        
-        requestPathIndex += segmentNameSpan.Length;
-
-        return true;
-    }
-
-    private bool TryMatchParameterSegment(
-        ReadOnlySpan<char> requestPath,
-        ref int requestPathStartIndex,
-        out ReadOnlySpan<char> parameter)
-    {
-        int start = requestPathStartIndex;
-        
-        while (requestPathStartIndex < requestPath.Length && requestPath[requestPathStartIndex] != '/')
-        {
-            requestPathStartIndex++;
-        }
-            
-        parameter = requestPath.Slice(start, requestPathStartIndex - start);
-        
-        return parameter.Length > 0;
-    }
-
-    private bool IsFinalStepInPath(
-        ReadOnlySpan<char> requestPath,
-        int requestPathIndex)
-    {
-        return requestPathIndex == requestPath.Length;
-    }
-
-    private bool TryMatchDownstream(
-        ReadOnlySpan<Downstream> downstreams,
-        in Segment segment,
-        byte methodMask,
-        out Downstream? result)
-    {
-        if (segment.DownstreamCount > 0)
-        {
-            var segmentDownstreams = downstreams.Slice(segment.DownstreamStartIndex, segment.DownstreamCount);
-                                
-            for (int k = 0; k < segmentDownstreams.Length; k++)
-            {
-                ref readonly var downstream = ref segmentDownstreams[k];
-                if ((downstream.MethodMask | methodMask) != 0)
-                {
-                    result = downstream;
-                    return true;
-                }
-            }
-        }
-        
-        result = null;
         return false;
     }
 }
