@@ -16,9 +16,14 @@ public sealed class SnapshotProvider : ISnapshotProvider
     private GlobalSnapshot _globalSnapshot;
     private RoutingSnapshot _routingSnapshot;
     private RoutingSnapshotBuilder _routingSnapshotBuilder = new();
+    private NewRoutingSnapshotBuilder _newRoutingSnapshotBuilder = new();
 
     public SnapshotProvider(IOptionsMonitor<RoutingSettings> monitor)
     {
+        _newRoutingSnapshotBuilder.Build(monitor.CurrentValue);
+
+        Console.WriteLine();
+        
         _globalSnapshot = Build(monitor.CurrentValue);
         _routingSnapshot = _routingSnapshotBuilder.Build(monitor.CurrentValue);
         
