@@ -1,193 +1,213 @@
-using System.Data;
 using Colibri.Configuration;
 using Colibri.Helpers;
 
 namespace Colibri.Services.SnapshotProvider.Models.RoutingSnapshot;
 
-public sealed class RoutingSnapshotBuilder
+public class RoutingSnapshotBuilder
 {
     public RoutingSnapshot Build(RoutingSettings settings)
     {
-        var root = new Dictionary<string, SegmentNode>();
+        var clustersData = PrepareDataForTrie(settings);
+        var hosts = CreateHosts(clustersData);
+        var trie = CreateTrie(clustersData, hosts);
+        SortTrieRecursively(trie);
 
-        int rootSegmentsCount = 0;
-        int upstreamPathCharsCount = 0;
-        int segmentsCount = 0;
-        int downstreamPathCharsCount = 0;
-        int downstreamsCount = 0;
+        var tempSegments = new List<TempSegment>();
+        string segmentNames = string.Empty;
+        var tempDownstreams = new List<TempDownstream>();
+        string downstreamPaths = string.Empty;
+        FillDataArraysRecursively(tempSegments, tempDownstreams, trie, ref segmentNames, ref downstreamPaths);
         
-        var allHosts = settings.Clusters
-            .SelectMany(c => c.Hosts)
-            .ToArray();
-        
-        FillTrie(
-            allHosts,
-            root,
-            settings,
-            ref rootSegmentsCount,
-            ref upstreamPathCharsCount,
-            ref segmentsCount,
-            ref downstreamPathCharsCount,
-            ref downstreamsCount);
-        
-        var upstreamPathChars = new char[upstreamPathCharsCount];
-        var segments = new Segment[segmentsCount];
-        var downstreamPathChars = new char[downstreamPathCharsCount];
-        var downstreams = new Downstream[downstreamsCount];
-        
-        FillDataArrays(
-            root,
-            upstreamPathChars,
-            segments,
-            downstreamPathChars,
-            downstreams);
-        
-        return new RoutingSnapshot(
-            rootSegmentsCount,
-            segments,
-            upstreamPathChars,
-            downstreams,
-            downstreamPathChars,
-            allHosts.Select(h => new Uri(h)).ToArray());
+        var snapshot = CreateSnapshot(
+            tempSegments,
+            tempDownstreams,
+            segmentNames,
+            downstreamPaths,
+            trie.ChildrenSegments.Count,
+            hosts);
+
+        return snapshot;
     }
 
-    #region FillTrie
-    private void FillTrie(
-        string[] allHosts,
-        Dictionary<string, SegmentNode> root,
-        RoutingSettings settings,
-        ref int rootSegmentsCount,
-        ref int upstreamPathCharsCount,
-        ref int segmentsCount,
-        ref int downstreamPathCharsCount,
-        ref int downstreamsCount)
+    private List<TempCluster> PrepareDataForTrie(RoutingSettings settings)
     {
-        var rootHashSet = new HashSet<string>();
-        
+        var clusters = new List<TempCluster>();
+
         foreach (var cluster in settings.Clusters)
+        {
+            clusters.Add(new TempCluster
+            {
+                Protocol = cluster.Protocol,
+                Hosts = cluster.Hosts,
+                Routes = cluster.Routes.Select(r => new TempRoute
+                {
+                    Method = r.Method,
+                    Upstream = r.UpstreamPattern.Split('/', StringSplitOptions.RemoveEmptyEntries),
+                    Downstream = r.DownstreamPattern
+                }).ToArray()
+            });
+        }
+        
+        return clusters;
+    }
+
+    private List<string> CreateHosts(List<TempCluster> clustersData)
+    {
+        var hosts = new List<string>();
+        
+        foreach (var cluster in clustersData)
+        {
+            hosts.AddRange(cluster.Hosts);
+        }
+        
+        return hosts;
+    }
+    
+    private TrieNode CreateTrie(List<TempCluster> clustersData, List<string> hosts)
+    {
+        var root = new TrieNode();
+        
+        foreach (var cluster in clustersData)
         {
             foreach (var route in cluster.Routes)
             {
-                var upstreamPathSegments = route.UpstreamPattern.Split('/', StringSplitOptions.RemoveEmptyEntries);
-                rootHashSet.Add(upstreamPathSegments[0]);
-
-                for (int i = 0; i < upstreamPathSegments.Length; i++)
+                fillTrieRecursively(route, root, cluster.Hosts);
+            }
+        }
+        
+        return root;
+        
+        void fillTrieRecursively(TempRoute route, TrieNode root, string[] clusterHosts)
+        {
+            var segment = root.ChildrenSegments
+                .FirstOrDefault(t => t.SegmentName == route.Upstream[0]);
+        
+            if (segment == null)
+            {
+                segment = new TrieNode
                 {
-                    upstreamPathSegments[i] = '/' + upstreamPathSegments[i];
+                    SegmentName = route.Upstream[0]
+                };
+
+                if (route.Upstream[0].StartsWith('{')
+                    && route.Upstream[0].EndsWith('}'))
+                {
+                    segment.IsParameter = true;
                 }
-
-                CreateTrieRecursively(
-                    route.Method,
-                    route.DownstreamPattern,
-                    upstreamPathSegments,
-                    allHosts,
-                    cluster.Hosts,
-                    root,
-                    ref upstreamPathCharsCount,
-                    ref segmentsCount,
-                    ref downstreamPathCharsCount,
-                    ref downstreamsCount);
-            }
-        }
-        
-        rootSegmentsCount = rootHashSet.Count;
-    }
-
-    private void CreateTrieRecursively(
-        string method,
-        string downStreamPattern,
-        string[] upstreamPathSegments,
-        string[] allHosts,
-        string[] clusterHosts,
-        Dictionary<string, SegmentNode> root,
-        ref int upstreamPathCharsCount,
-        ref int segmentsCount,
-        ref int downstreamPathCharsCount,
-        ref int downstreamsCount)
-    {
-        if (!root.ContainsKey(upstreamPathSegments[0]))
-        {
-            root[upstreamPathSegments[0]] = new SegmentNode
-            {
-                SegmentName = upstreamPathSegments[0],
-                IsParameter = upstreamPathSegments[0].Contains('{')
-                              && upstreamPathSegments[0].Contains('}')
-            };
             
-            upstreamPathCharsCount += upstreamPathSegments[0].Length;
-            segmentsCount++;
-        }
-        
-        if (upstreamPathSegments.Length > 1)
-        {
-            CreateTrieRecursively(
-                method,
-                downStreamPattern,
-                upstreamPathSegments.Skip(1).ToArray(),
-                allHosts,
-                clusterHosts,
-                root[upstreamPathSegments[0]].IncludedSegments,
-                ref upstreamPathCharsCount,
-                ref segmentsCount,
-                ref downstreamPathCharsCount,
-                ref downstreamsCount);
-        }
-        else
-        {
-            if (root[upstreamPathSegments[0]].Methods.TryGetValue(method, out _))
-            {
-                throw new DuplicateNameException($"Duplicate method type: {method}");
+                root.ChildrenSegments.Add(segment);
             }
-            
-            root[upstreamPathSegments[0]].Methods.Add(method, downStreamPattern);
-            downstreamsCount++;
-            downstreamPathCharsCount += downStreamPattern.Length;
-
-            for (int i = 0; i < allHosts.Length; i++)
+        
+            route.Upstream = route.Upstream[1..];
+        
+            if (route.Upstream.Length == 0)
             {
-                foreach (var ch in clusterHosts)
+                var indexes = new List<int>();
+                for (int i = 0; i < hosts.Count; i++)
                 {
-                    if (allHosts[i] == ch)
+                    if (clusterHosts.Contains(hosts[i]))
                     {
-                        root[upstreamPathSegments[0]].HostStartIndex ??= i;
+                        indexes.Add(i);
                     }
                 }
-            }
+
+                if (indexes.Count > 0)
+                {
+                    segment.HostStartIndex = indexes[0];
+                    segment.HostsCount = indexes.Count;
+                }
             
-            root[upstreamPathSegments[0]].HostsCount = clusterHosts.Length;
+                segment.Methods.Add(route.Method, route.Downstream);
+            
+                return;
+            }
+        
+            fillTrieRecursively(route, segment, clusterHosts);
         }
     }
-    #endregion
-
-    #region FillDataArrays
-    private void FillDataArrays(
-        Dictionary<string, SegmentNode> root,
-        char[] upstreamPathChars,
-        Segment[] segments,
-        char[] downstreamPathChars,
-        Downstream[] downstreams)
+    
+    private void SortTrieRecursively(TrieNode segment)
     {
-        var upstreamPathStartIndex = 0;
-        var segmentIndex = 0;
-        
-        var downstreamPathStartIndex = 0;
-        short downstreamIndex = 0;
-        
-        var tempSegments = new TempSegment[segments.Length];
-        var tempDownstreams = new TempDownstream[downstreams.Length];
+        segment.ChildrenSegments = segment.ChildrenSegments
+            .OrderBy(s => s.IsParameter)
+            .ToList();
 
-        CreateTempSegmentsRecursively(
-            upstreamPathChars,
-            downstreamPathChars,
-            tempSegments,
-            root.Values.OrderBy(n => n.IsParameter).ToArray(), // Сортировка, чтобы константы всегда шли перед параметрами
-            tempDownstreams,
-            ref upstreamPathStartIndex,
-            ref segmentIndex,
-            ref downstreamPathStartIndex,
-            ref downstreamIndex);
+        foreach (var child in segment.ChildrenSegments)
+        {
+            SortTrieRecursively(child);
+        }
+    }
 
-        for (int i = 0; i < tempSegments.Length; i++)
+    private void FillDataArraysRecursively(
+            List<TempSegment> tempSegments,
+            List<TempDownstream> tempDownstreams,
+            TrieNode node,
+            ref string segmentNames,
+            ref string downstreamPaths)
+    {
+        foreach (var child in node.ChildrenSegments)
+        {
+            var tempSegment = new TempSegment();
+            
+            tempSegment.PathStartIndex = segmentNames.Length;
+            segmentNames += '/' + child.SegmentName;
+            tempSegment.PathLength = (short)(segmentNames.Length - tempSegment.PathStartIndex);
+
+            tempSegments.Add(tempSegment);
+            
+            foreach (var method in  child.Methods)
+            {
+                var tempDownstream = new TempDownstream();
+                
+                tempDownstream.PathStartIndex = downstreamPaths.Length;
+                tempDownstream.PathLength = (short)method.Value.Length;
+                downstreamPaths += method.Value;
+                tempDownstream.MethodMask = HttpMethodMask.GetMask(method.Key);
+                tempDownstream.HostStartIndex = (short)child.HostStartIndex;
+                tempDownstream.HostsCount = (byte)child.HostsCount;
+                    
+                tempDownstreams.Add(tempDownstream);
+
+                tempSegment.DownstreamStartIndex = (short)(tempDownstreams.Count - 1);
+                tempSegment.DownstreamCount++;
+                tempSegment.MethodMask |= HttpMethodMask.GetMask(method.Key);
+            }
+        }
+
+        var createdTempSegments = tempSegments
+            .TakeLast(node.ChildrenSegments.Count)
+            .ToList();
+
+        for (int i = 0; i < node.ChildrenSegments.Count; i++)
+        {
+            createdTempSegments[i].ChildrenCount = (short)node.ChildrenSegments[i].ChildrenSegments.Count;
+
+            if (createdTempSegments[i].ChildrenCount > 0)
+            {
+                createdTempSegments[i].FirstChildIndex = tempSegments.Count;
+            }
+            
+            FillDataArraysRecursively(
+                tempSegments,
+                tempDownstreams,
+                node.ChildrenSegments[i],
+                ref segmentNames,
+                ref downstreamPaths);
+        }
+    }
+
+    private RoutingSnapshot CreateSnapshot(
+        List<TempSegment> tempSegments,
+        List<TempDownstream> tempDownstreams,
+        string segmentNames,
+        string downstreamPaths,
+        int rootSegmentsCount,
+        List<string> hosts)
+    {
+        var segments = new Segment[tempSegments.Count];
+        var downstreams = new Downstream[tempDownstreams.Count];
+
+        for (int i = 0; i < tempSegments.Count; i++)
         {
             segments[i] = new Segment(
                 tempSegments[i].PathStartIndex,
@@ -199,7 +219,7 @@ public sealed class RoutingSnapshotBuilder
                 tempSegments[i].MethodMask);
         }
 
-        for (int i = 0; i < tempDownstreams.Length; i++)
+        for (int i = 0; i < tempDownstreams.Count; i++)
         {
             downstreams[i] = new Downstream(
                 tempDownstreams[i].PathStartIndex,
@@ -208,117 +228,15 @@ public sealed class RoutingSnapshotBuilder
                 tempDownstreams[i].HostStartIndex,
                 tempDownstreams[i].HostsCount);
         }
-    }
-    
-    private int? CreateTempSegmentsRecursively(
-        char[] upstreamPathChars,
-        char[] downstreamPathChars,
-        TempSegment[] tempSegments,
-        SegmentNode[] segmentNodesArray,
-        TempDownstream[] tempDownstreams,
-        ref int upstreamPathStartIndex,
-        ref int segmentIndex,
-        ref int downstreamPathStartIndex,
-        ref short downstreamIndex)
-    {
-        /*
-         * Так как смысл кода неочевиден, добавил подробные комментарии,
-         * чтобы потом было проще вспомнить, что тут происходит.
-         * Может показаться, что где-то комментарий объясняет очевидную вещь,
-         * но лучше пусть так, чем потом ничего не вспомнить и не понимать, что тут происходит.
-         */
+
+        var routingSnapshot = new RoutingSnapshot(
+            rootSegmentsCount,
+            segments,
+            segmentNames.ToArray(),
+            downstreams,
+            downstreamPaths.ToArray(),
+            hosts.Select(h => new Uri(h)).ToArray());
         
-        int? firstChildIndex = null;
-
-        for (int i = 0; i < segmentNodesArray.Length; i++)
-        {
-            tempSegments[segmentIndex] = new TempSegment // Создаем модель и заполняем поля, которые сразу на 100% известны
-            {
-                PathStartIndex = upstreamPathStartIndex, // С какого индекса в массиве "paths" начинается имя текущего сегмента
-                PathLength = (short)segmentNodesArray[i].SegmentName.Length, // Длина имени текущего сегмента в массиве "paths"
-                
-                /*
-                 * Количество наследников после сегмента.
-                 * Например, если имеем 2 маршрута "/users/{id}" и "/users/info",
-                 * то у сегмента "users" 2 наследника - "{id}" и "info"
-                 */
-                ChildrenCount = (short)segmentNodesArray[i].IncludedSegments.Count
-            };
-            
-            byte methodMask = 0;
-            foreach (var k in segmentNodesArray[i].Methods.Keys) // Устанавливаем побитовую маску доступных методов для данного маршрута
-            {
-                methodMask = (byte)(methodMask | HttpMethodMask.GetMask(k)); // То есть на каждой итерации как бы пополняем список доступных методов
-            }
-            tempSegments[segmentIndex].MethodMask = methodMask;
-            
-            tempSegments[segmentIndex].DownstreamStartIndex = downstreamIndex;
-            foreach (var kv in segmentNodesArray[i].Methods) // Добавляем доступные маршруты для эндпоинта по типу метода
-            {
-                var tempDownstream = new TempDownstream();
-                tempDownstream.MethodMask = HttpMethodMask.GetMask(kv.Key);
-
-                if (segmentNodesArray[i].HostStartIndex.HasValue)
-                {
-                    tempDownstream.HostStartIndex = (short)segmentNodesArray[i].HostStartIndex!.Value;
-                    tempDownstream.HostsCount = (byte)segmentNodesArray[i].HostsCount;
-                }
-                
-                tempDownstream.PathStartIndex = downstreamPathStartIndex; // С какого индекса в общем массиве начинать читать маршрут
-                
-                foreach (var c in kv.Value) // Заполнение общего массива символами маршрута
-                {
-                    downstreamPathChars[downstreamPathStartIndex++] = c;
-                }
-                
-                tempDownstream.PathLength = (short)kv.Value.Length; // Общее количество символов маршрута, которые нужно прочитать
-                tempDownstreams[downstreamIndex++] = tempDownstream;
-                tempSegments[segmentIndex].DownstreamCount++; // Количество downstream-маршрутов на upstream-маршрут
-            }
-            
-            /*
-             * Присваиваем индекс первого элемента в списке,
-             * чтобы вернуть его родителю как индекс первого наследника, т.е. FirstChildIndex
-             */
-            if (firstChildIndex == null)
-            {
-                firstChildIndex = segmentIndex;
-            }
-            
-            foreach (var c in segmentNodesArray[i].SegmentName)
-            {
-                upstreamPathChars[upstreamPathStartIndex++] = c; // Заполняем общий массив "paths" символами имени сегмента
-            }
-            
-            segmentIndex++; // Инкрементим индекс для следующего сегмента в цикле
-        }
-        
-        for (int i = 0; i < segmentNodesArray.Length; i++) // Рекурсивный проход по наследникам
-        {
-            var frstChldIndx = CreateTempSegmentsRecursively(
-                upstreamPathChars,
-                downstreamPathChars,
-                tempSegments,
-                segmentNodesArray[i].IncludedSegments.Values.OrderBy(n => n.IsParameter).ToArray(), // Сортировка, чтобы константы всегда шли перед параметрами
-                tempDownstreams,
-                ref upstreamPathStartIndex,
-                ref segmentIndex,
-                ref downstreamPathStartIndex,
-                ref downstreamIndex);
-            
-            if (frstChldIndx != null) // Если есть наследник и вернуло индекс, то присваиваем его в поле родителя
-            {
-                /*
-                 * Так как "segmentIndex" убежал вперед в предыдущем цикле,
-                 * то будем использовать "firstChildIndex", которому ранее было присвоено значение segmentIndex.
-                 * Так как нужно присвоить значения всем родителям, мы инкрементимся за счет итерации "i".
-                 * То есть это равносильно тому, что мы делали в предыдущем цикле, инкрементируя "segmentIndex"
-                 */
-                tempSegments[firstChildIndex!.Value + i].FirstChildIndex = frstChldIndx.Value;
-            }
-        }
-
-        return firstChildIndex;
+        return routingSnapshot;
     }
-    #endregion
 }
