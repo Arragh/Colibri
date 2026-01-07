@@ -6,7 +6,7 @@ namespace Tests;
 public class ConfigValidatorTests
 {
     [Fact]
-    public void NullClusters_ReturnsFalse()
+    public void NullClusters_ResultFalse()
     {
         // Arrange
         var settings = new RoutingSettings();
@@ -19,7 +19,7 @@ public class ConfigValidatorTests
     }
 
     [Fact]
-    public void EmptyClusters_ReturnsFalse()
+    public void EmptyClusters_ResultFalse()
     {
         var settings = new RoutingSettings
         {
@@ -34,7 +34,7 @@ public class ConfigValidatorTests
     }
 
     [Fact]
-    public void SingleBlankCluster_ReturnsFalse()
+    public void SingleBlankCluster_ResultFalse()
     {
         var settings = new RoutingSettings
         {
@@ -51,7 +51,7 @@ public class ConfigValidatorTests
     }
 
     [Fact]
-    public void SingleCluster_EmptyProtocol_EmptyHosts_EmptyRoutes_ReturnsFalse()
+    public void SingleCluster_EmptyProtocol_EmptyHosts_EmptyRoutes_ResultFalse()
     {
         var settings = new RoutingSettings
         {
@@ -73,7 +73,7 @@ public class ConfigValidatorTests
     }
     
     [Fact]
-    public void SingleCluster_EmptyHosts_EmptyRoutes_ReturnsFalse()
+    public void SingleCluster_EmptyHosts_EmptyRoutes_ResultFalse()
     {
         var settings = new RoutingSettings
         {
@@ -95,7 +95,7 @@ public class ConfigValidatorTests
     }
     
     [Fact]
-    public void SingleCluster_EmptyRoutes_ReturnsFalse()
+    public void SingleCluster_EmptyRoutes_ResultFalse()
     {
         var settings = new RoutingSettings
         {
@@ -119,7 +119,7 @@ public class ConfigValidatorTests
     }
     
     [Fact]
-    public void SingleCluster_SingleBlankRoute_ReturnsFalse()
+    public void SingleCluster_SingleBlankRoute_ResultFalse()
     {
         var settings = new RoutingSettings
         {
@@ -145,7 +145,7 @@ public class ConfigValidatorTests
     }
     
     [Fact]
-    public void SingleCluster_SingleRoute_EmptyMethod_EmptyUpstream_EmptyDownstream_ReturnsFalse()
+    public void SingleCluster_SingleRoute_EmptyMethod_EmptyUpstream_EmptyDownstream_ResultFalse()
     {
         var settings = new RoutingSettings
         {
@@ -176,7 +176,7 @@ public class ConfigValidatorTests
     }
     
     [Fact]
-    public void SingleCluster_SingleRoute_EmptyUpstream_EmptyDownstream_ReturnsFalse()
+    public void SingleCluster_SingleRoute_EmptyUpstream_EmptyDownstream_ResultFalse()
     {
         var settings = new RoutingSettings
         {
@@ -207,7 +207,7 @@ public class ConfigValidatorTests
     }
     
     [Fact]
-    public void SingleCluster_SingleRoute_EmptyDownstream_ReturnsFalse()
+    public void SingleCluster_SingleRoute_EmptyDownstream_ResultFalse()
     {
         var settings = new RoutingSettings
         {
@@ -238,7 +238,7 @@ public class ConfigValidatorTests
     }
     
     [Fact]
-    public void SingleCluster_SingleRoute_ReturnsTrue()
+    public void SingleCluster_SingleRoute_ResultTrue()
     {
         var settings = new RoutingSettings
         {
