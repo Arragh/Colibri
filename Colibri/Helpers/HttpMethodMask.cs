@@ -2,7 +2,7 @@ using Colibri.Services.SnapshotProvider.Models.RoutingSnapshot;
 
 namespace Colibri.Helpers;
 
-internal static class HttpMethodMask
+public static class HttpMethodMask
 {
     public static byte GetMask(string method)
     {
