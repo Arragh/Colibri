@@ -129,8 +129,8 @@ public class RoutingSnapshotBuilder
     private void SortTrieRecursively(TrieNode segment)
     {
         segment.ChildrenSegments = segment.ChildrenSegments
-            .OrderByDescending(s => s.SegmentName!.Length)
-            .ThenBy(s => s.IsParameter)
+            .OrderBy(s => s.IsParameter)
+            .ThenByDescending(s => s.SegmentName!.Length)
             .ToList();
 
         foreach (var child in segment.ChildrenSegments)

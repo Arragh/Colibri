@@ -93,13 +93,13 @@ public static class RoutingSettingsHelper
                         new RouteDto
                         {
                             Method = "GET",
-                            UpstreamPattern = "/profile/{id}",
+                            UpstreamPattern = "/profile/{longParameter}/lol",
                             DownstreamPattern = "/internal/profile?id={id}"
                         },
                         new RouteDto
                         {
                             Method = "PATCH",
-                            UpstreamPattern = "/profile/{id}/edit",
+                            UpstreamPattern = "/profile/me/edit",
                             DownstreamPattern = "/internal/profile/{id}/edit"
                         },
                         

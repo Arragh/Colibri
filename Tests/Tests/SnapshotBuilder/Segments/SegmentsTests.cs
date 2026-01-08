@@ -133,5 +133,47 @@ public class SegmentsTests
             }
         }
     }
-    
+
+    [Fact]
+    public void Build_ChildrenSegments_AreSortedByRules()
+    {
+        // Arrange
+        var routingSnapshotBuilder = new RoutingSnapshotBuilder();
+        var settings = RoutingSettingsHelper.MultipleClusters_MultipleRoutes();
+        
+        // Act
+        var routingSnapshot = routingSnapshotBuilder.Build(settings);
+        var segmentsAsArray = routingSnapshot.Segments.ToArray();
+        var segmentsNames = routingSnapshot.SegmentNames;
+        
+        // Assert
+        foreach (var segment in segmentsAsArray)
+        {
+            if (segment.ChildrenCount == 0)
+            {
+                continue;
+            }
+
+            var start = segment.FirstChildIndex;
+            var end = segment.FirstChildIndex + segment.ChildrenCount;
+            for (int i = start; i < end - 1; i++)
+            {
+                var a = segmentsAsArray[i];
+                var b = segmentsAsArray[i + 1];
+
+                var aName = segmentsNames.Slice(a.PathStartIndex, a.PathLength);
+                var bName = segmentsNames.Slice(b.PathStartIndex, b.PathLength);
+
+                var aIsParam = aName[1] == '{' && aName[^1] == '}';
+                var bIsParam = bName[1] == '{' && bName[^1] == '}';
+
+                if (!bIsParam)
+                {
+                    Assert.True(a.PathLength >= b.PathLength);
+                }
+                    
+                Assert.False(aIsParam && !bIsParam);
+            }
+        }
+    }
 }
