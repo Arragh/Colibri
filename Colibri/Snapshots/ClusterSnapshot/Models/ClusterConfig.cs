@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
-using Colibri.Services.SnapshotProvider.Enums;
+using Colibri.Snapshots.Enums;
 
-namespace Colibri.Services.SnapshotProvider.Models.ClusterSnapshot;
+namespace Colibri.Snapshots.ClusterSnapshot.Models;
 
 public sealed class ClusterConfig
 {

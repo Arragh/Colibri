@@ -1,4 +1,4 @@
-namespace Colibri.Services.SnapshotProvider.Models.RoutingSnapshot;
+namespace Colibri.Snapshots.RoutingSnapshot.Models;
 
 public readonly struct Downstream(
     int pathStartIndex,

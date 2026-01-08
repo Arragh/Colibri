@@ -1,7 +1,8 @@
 using Colibri.Configuration;
 using Colibri.Helpers;
+using Colibri.Snapshots.RoutingSnapshot.Models;
 
-namespace Colibri.Services.SnapshotProvider.Models.RoutingSnapshot;
+namespace Colibri.Snapshots.RoutingSnapshot;
 
 public class RoutingSnapshotBuilder
 {

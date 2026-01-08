@@ -1,5 +1,5 @@
-using Colibri.Services.SnapshotProvider.Models;
-using Colibri.Services.SnapshotProvider.Models.RoutingSnapshot;
+using Colibri.Snapshots;
+using Colibri.Snapshots.RoutingSnapshot;
 
 namespace Colibri.Services.SnapshotProvider.Interfaces;
 

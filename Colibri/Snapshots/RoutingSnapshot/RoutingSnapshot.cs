@@ -1,4 +1,6 @@
-namespace Colibri.Services.SnapshotProvider.Models.RoutingSnapshot;
+using Colibri.Snapshots.RoutingSnapshot.Models;
+
+namespace Colibri.Snapshots.RoutingSnapshot;
 
 public sealed class RoutingSnapshot(
     int rootSegmentsCount,

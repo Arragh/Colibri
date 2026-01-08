@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
+using Colibri.Snapshots.TransportSnapshot.Models;
 
-namespace Colibri.Services.SnapshotProvider.Models.TransportSnapshot;
+namespace Colibri.Snapshots.TransportSnapshot;
 
 public sealed class TransportRuntimeSnapshot
 {

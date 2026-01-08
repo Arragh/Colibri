@@ -1,5 +1,6 @@
 using Colibri.Services.RoutingEngine.Interfaces;
-using Colibri.Services.SnapshotProvider.Models.RoutingSnapshot;
+using Colibri.Snapshots.RoutingSnapshot;
+using Colibri.Snapshots.RoutingSnapshot.Models;
 
 namespace Colibri.Services.RoutingEngine;
 

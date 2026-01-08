@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
+using Colibri.Snapshots.ClusterSnapshot.Models;
 
-namespace Colibri.Services.SnapshotProvider.Models.ClusterSnapshot;
+namespace Colibri.Snapshots.ClusterSnapshot;
 
 public sealed class ClusterConfigSnapshot
 {

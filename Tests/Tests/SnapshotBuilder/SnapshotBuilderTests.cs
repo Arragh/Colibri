@@ -1,4 +1,4 @@
-using Colibri.Services.SnapshotProvider.Models.RoutingSnapshot;
+using Colibri.Snapshots.RoutingSnapshot;
 using Tests.Helpers;
 
 namespace Tests.Tests.SnapshotBuilder;
@@ -20,7 +20,7 @@ public class SnapshotBuilderTests
     }
     
     [Fact]
-    public void Build_BasicFieldsAreValid()
+    public void Build_BasicFields_AreValid()
     {
         // Arrange
         var routingSnapshotBuilder = new RoutingSnapshotBuilder();

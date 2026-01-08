@@ -1,5 +1,4 @@
-using Colibri.Services.SnapshotProvider.Models.ClusterSnapshot;
-using Colibri.Services.SnapshotProvider.Models.TransportSnapshot;
+using Colibri.Snapshots.TransportSnapshot;
 
 namespace Colibri.Services.Pipeline.Models;
 

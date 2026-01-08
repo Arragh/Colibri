@@ -1,7 +1,7 @@
-using Colibri.Services.SnapshotProvider.Models.ClusterSnapshot;
-using Colibri.Services.SnapshotProvider.Models.TransportSnapshot;
+using Colibri.Snapshots.ClusterSnapshot;
+using Colibri.Snapshots.TransportSnapshot;
 
-namespace Colibri.Services.SnapshotProvider.Models;
+namespace Colibri.Snapshots;
 
 public sealed class GlobalSnapshot
 {

@@ -1,4 +1,4 @@
-using Colibri.Services.SnapshotProvider.Models.RoutingSnapshot;
+using Colibri.Snapshots.RoutingSnapshot;
 using Tests.Helpers;
 
 namespace Tests.Tests.SnapshotBuilder.Downstreams;

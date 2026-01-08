@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace Colibri.Services.SnapshotProvider.Models.TransportSnapshot;
+namespace Colibri.Snapshots.TransportSnapshot.Models;
 
 public sealed class TransportConfig
 {

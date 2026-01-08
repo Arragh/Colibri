@@ -1,12 +1,14 @@
 using System.Collections.Immutable;
 using System.Net;
 using Colibri.Configuration;
-using Colibri.Services.SnapshotProvider.Enums;
+using Colibri.Snapshots.Enums;
 using Colibri.Services.SnapshotProvider.Interfaces;
-using Colibri.Services.SnapshotProvider.Models;
-using Colibri.Services.SnapshotProvider.Models.ClusterSnapshot;
-using Colibri.Services.SnapshotProvider.Models.RoutingSnapshot;
-using Colibri.Services.SnapshotProvider.Models.TransportSnapshot;
+using Colibri.Snapshots;
+using Colibri.Snapshots.ClusterSnapshot;
+using Colibri.Snapshots.ClusterSnapshot.Models;
+using Colibri.Snapshots.RoutingSnapshot;
+using Colibri.Snapshots.TransportSnapshot;
+using Colibri.Snapshots.TransportSnapshot.Models;
 using Microsoft.Extensions.Options;
 
 namespace Colibri.Services.SnapshotProvider;
