@@ -1,8 +1,8 @@
 namespace Colibri.Snapshots.RoutingSnapshot.Models;
 
-public class TempRoute
+public sealed class TempRoute
 {
     public string Method { get; set; } = null!;
-    public string[] Upstream { get; set; } = null!;
-    public string Downstream { get; set; } = null!;
+    public string[] UpstreamSegments { get; set; } = null!;
+    public string DownstreamPattern { get; set; } = null!;
 }

@@ -8,9 +8,9 @@ public class RoutingSnapshotBuilder
 {
     public RoutingSnapshot Build(RoutingSettings settings)
     {
-        var clustersData = PrepareDataForTrie(settings);
-        var hosts = CreateHosts(clustersData);
-        var trie = CreateTrie(clustersData, hosts);
+        var tempClusters = CreateTempClusters(settings);
+        var hosts = CreateHosts(tempClusters);
+        var trie = CreateTrie(tempClusters, hosts);
         SortTrieRecursively(trie);
 
         var tempSegments = new List<TempSegment>();
@@ -30,7 +30,7 @@ public class RoutingSnapshotBuilder
         return snapshot;
     }
 
-    private List<TempCluster> PrepareDataForTrie(RoutingSettings settings)
+    private List<TempCluster> CreateTempClusters(RoutingSettings settings)
     {
         var clusters = new List<TempCluster>();
 
@@ -43,8 +43,8 @@ public class RoutingSnapshotBuilder
                 Routes = cluster.Routes.Select(r => new TempRoute
                 {
                     Method = r.Method,
-                    Upstream = r.UpstreamPattern.Split('/', StringSplitOptions.RemoveEmptyEntries),
-                    Downstream = r.DownstreamPattern
+                    UpstreamSegments = r.UpstreamPattern.Split('/', StringSplitOptions.RemoveEmptyEntries),
+                    DownstreamPattern = r.DownstreamPattern
                 }).ToArray()
             });
         }
@@ -81,17 +81,17 @@ public class RoutingSnapshotBuilder
         void fillTrieRecursively(TempRoute route, TrieNode root, string[] clusterHosts)
         {
             var segment = root.ChildrenSegments
-                .FirstOrDefault(t => t.SegmentName == route.Upstream[0]);
+                .FirstOrDefault(t => t.SegmentName == route.UpstreamSegments[0]);
         
             if (segment == null)
             {
                 segment = new TrieNode
                 {
-                    SegmentName = route.Upstream[0]
+                    SegmentName = route.UpstreamSegments[0]
                 };
 
-                if (route.Upstream[0].StartsWith('{')
-                    && route.Upstream[0].EndsWith('}'))
+                if (route.UpstreamSegments[0].StartsWith('{')
+                    && route.UpstreamSegments[0].EndsWith('}'))
                 {
                     segment.IsParameter = true;
                 }
@@ -99,9 +99,9 @@ public class RoutingSnapshotBuilder
                 root.ChildrenSegments.Add(segment);
             }
         
-            route.Upstream = route.Upstream[1..];
+            route.UpstreamSegments = route.UpstreamSegments[1..];
         
-            if (route.Upstream.Length == 0)
+            if (route.UpstreamSegments.Length == 0)
             {
                 var indexes = new List<int>();
                 for (int i = 0; i < hosts.Count; i++)
@@ -118,7 +118,7 @@ public class RoutingSnapshotBuilder
                     segment.HostsCount = indexes.Count;
                 }
             
-                segment.Methods.Add(route.Method, route.Downstream);
+                segment.Methods.Add(route.Method, route.DownstreamPattern);
             
                 return;
             }
