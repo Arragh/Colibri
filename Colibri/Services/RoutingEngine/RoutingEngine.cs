@@ -48,7 +48,7 @@ public sealed class RoutingEngine : IRoutingEngine
                 var segmentSpan = segmentNames
                     .Slice(segment.PathStartIndex, segment.PathLength);
 
-                if (IsParameterPattern(segmentSpan))
+                if (IsParameter(segmentSpan))
                 {
                     // TODO: Написать логику обработки параметра из requestSegment
                 }
@@ -88,7 +88,7 @@ public sealed class RoutingEngine : IRoutingEngine
         return false;
     }
 
-    private bool IsParameterPattern(ReadOnlySpan<char> segmentName)
+    private bool IsParameter(ReadOnlySpan<char> segmentName)
     {
         if (segmentName[1] == '{'
             && segmentName[^1] == '}')
