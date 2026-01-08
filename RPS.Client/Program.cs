@@ -1,11 +1,11 @@
 ﻿using System.Diagnostics;
 using System.Net.Http.Json;
 
-const string getUrl = "http://192.168.1.102:5790/get?name=Vasya&age=35";
-const string postUrl = "http://192.168.1.102:5790/post";
+const string getUrl = "http://192.168.1.102:5790/test1/get?name=Vasya&age=35";
+const string postUrl = "http://192.168.1.102:5790/test2/post";
 
 const int concurrency = 500;
-const int durationSec = 30;
+const int durationSec = 5;
 
 var handler = new SocketsHttpHandler
 {

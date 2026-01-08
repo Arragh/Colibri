@@ -1,41 +1,49 @@
 using System.Collections.Immutable;
 using System.Net;
 using Colibri.Configuration;
-using Colibri.Services.Snapshot.Enums;
-using Colibri.Services.Snapshot.Interfaces;
-using Colibri.Services.Snapshot.Models;
+using Colibri.Services.SnapshotProvider.Enums;
+using Colibri.Services.SnapshotProvider.Interfaces;
+using Colibri.Services.SnapshotProvider.Models;
+using Colibri.Services.SnapshotProvider.Models.ClusterSnapshot;
+using Colibri.Services.SnapshotProvider.Models.RoutingSnapshot;
+using Colibri.Services.SnapshotProvider.Models.TransportSnapshot;
 using Microsoft.Extensions.Options;
 
-namespace Colibri.Services.Snapshot;
+namespace Colibri.Services.SnapshotProvider;
 
-public class SnapshotProvider : ISnapshotProvider
+public sealed class SnapshotProvider : ISnapshotProvider
 {
     private GlobalSnapshot _globalSnapshot;
+    private RoutingSnapshot _routingSnapshot;
+    private RoutingSnapshotBuilder _routingSnapshotBuilder = new();
 
     public SnapshotProvider(IOptionsMonitor<RoutingSettings> monitor)
     {
         _globalSnapshot = Build(monitor.CurrentValue);
+        _routingSnapshot = _routingSnapshotBuilder.Build(monitor.CurrentValue);
         
         monitor.OnChange(c =>
         {
             var newGlobalSnapshot = Build(c);
             Volatile.Write(ref _globalSnapshot, newGlobalSnapshot);
+            
+            var newRoutingSnapshot = _routingSnapshotBuilder.Build(c);
+            Volatile.Write(ref _routingSnapshot, newRoutingSnapshot);
         });
     }
+
+    public RoutingSnapshot RoutingSnapshot => Volatile.Read(ref _routingSnapshot);
 
     public GlobalSnapshot GlobalSnapshot => Volatile.Read(ref _globalSnapshot);
     
     private static GlobalSnapshot Build(RoutingSettings settings)
     {
-        Console.WriteLine("SNAPSHOT CHANGED");
-        
         return new GlobalSnapshot
         {
             ClusterSnapshot = new ClusterConfigSnapshot
             {
                 Clusters = settings.Clusters.Select(c => new ClusterConfig
                 {
-                    Prefix =  c.Prefix,
                     Protocol =  Enum.Parse<Protocol>(c.Protocol),
                     Hosts = c.Hosts.Select(h => new Uri(h)).ToImmutableArray(),
                     Routes = c.Routes.Select(e => new RouteConfig

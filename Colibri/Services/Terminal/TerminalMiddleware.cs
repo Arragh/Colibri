@@ -12,9 +12,8 @@ public sealed class TerminalMiddleware : IPipelineMiddleware
     {
         // Тут вообще весь код - одна большая заглушка
         
-        var requestUri = new Uri(
-            ctx.ClusterSnapshot.Clusters[ctx.ClusterId].Hosts[ctx.SelectedHost],
-            ctx.HttpContext.Request.Path + ctx.HttpContext.Request.QueryString.Value);
+        var requestUri = new Uri(ctx.Hosts[ctx.SelectedHost],
+            ctx.DownstreamPattern + ctx.HttpContext.Request.QueryString.Value);
 
         using var request = new HttpRequestMessage(HttpMethodCache.Get(ctx.HttpContext.Request.Method), requestUri);
         if (ctx.HttpContext.Request.ContentLength > 0 || ctx.HttpContext.Request.Headers.ContainsKey("Transfer-Encoding"))

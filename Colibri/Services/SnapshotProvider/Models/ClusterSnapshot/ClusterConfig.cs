@@ -1,11 +1,10 @@
 using System.Collections.Immutable;
-using Colibri.Services.Snapshot.Enums;
+using Colibri.Services.SnapshotProvider.Enums;
 
-namespace Colibri.Services.Snapshot.Models;
+namespace Colibri.Services.SnapshotProvider.Models.ClusterSnapshot;
 
 public sealed class ClusterConfig
 {
-    public required string Prefix { get; init; }
     public required Protocol Protocol { get; init; }
     public required ImmutableArray<Uri> Hosts { get; init; }
     public required ImmutableArray<RouteConfig> Routes { get; init; }
