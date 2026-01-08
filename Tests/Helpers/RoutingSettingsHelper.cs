@@ -105,6 +105,35 @@ public static class RoutingSettingsHelper
                         
                     ]
                 },
+                new ClusterDto // Кластер для тестов RoutingEngine
+                {
+                    Protocol = "Http",
+                    Hosts = [
+                        "http://escapepod:5000",
+                        "http://escapepod:5001"
+                    ],
+                    Routes =
+                    [
+                        new RouteDto
+                        {
+                            Method = "POST",
+                            UpstreamPattern = "/tests/users",
+                            DownstreamPattern = "/internal/users"
+                        },
+                        new RouteDto
+                        {
+                            Method = "GET",
+                            UpstreamPattern = "/tests/users/{name}/info",
+                            DownstreamPattern = "/profile/{login}/info"
+                        },
+                        new RouteDto
+                        {
+                            Method = "GET",
+                            UpstreamPattern = "/tests/users/me",
+                            DownstreamPattern = "/api/clients"
+                        }
+                    ]
+                },
                 new ClusterDto
                 {
                     Protocol = "Http",

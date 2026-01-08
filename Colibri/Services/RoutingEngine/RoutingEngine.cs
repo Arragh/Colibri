@@ -118,7 +118,7 @@ public sealed class RoutingEngine : IRoutingEngine
             for (int k = 0; k < segmentDownstreams.Length; k++)
             {
                 ref readonly var downstream = ref segmentDownstreams[k];
-                if ((downstream.MethodMask | methodMask) != 0)
+                if ((downstream.MethodMask & methodMask) != 0)
                 {
                     result = downstream;
                     return true;
