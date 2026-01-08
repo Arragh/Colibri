@@ -1,7 +1,7 @@
 using Colibri.Configuration;
 using Colibri.Configuration.Models;
 
-namespace Tests;
+namespace Tests.Tests.Validator;
 
 public class ConfigValidatorTests
 {

@@ -5,7 +5,7 @@ namespace Tests.Helpers;
 
 public static class RoutingSettingsHelper
 {
-    public static RoutingSettings SingleCluster_SingleHost_SingleRoute_SimplePattern_NoParams()
+    public static RoutingSettings MultipleClusters_MultipleRoutes()
     {
         return new RoutingSettings
         {
@@ -15,15 +15,128 @@ public static class RoutingSettingsHelper
                 {
                     Protocol = "Http",
                     Hosts = [
-                        "http://trololo:5000"
+                        "http://trololo1:5000",
+                        "http://trololo1:5001"
                     ],
                     Routes =
                     [
                         new RouteDto
                         {
                             Method = "GET",
-                            UpstreamPattern = "/api/test",
-                            DownstreamPattern = "/internal/test"
+                            UpstreamPattern = "/api/users",
+                            DownstreamPattern = "/internal/users"
+                        },
+                        new RouteDto
+                        {
+                            Method = "POST",
+                            UpstreamPattern = "/api/account",
+                            DownstreamPattern = "/internal/account"
+                        },
+                        new RouteDto
+                        {
+                            Method = "GET",
+                            UpstreamPattern = "/api/users/{id}/info",
+                            DownstreamPattern = "/internal/users/info?id={id}"
+                        },
+                        new RouteDto
+                        {
+                            Method = "GET",
+                            UpstreamPattern = "/api/users/new",
+                            DownstreamPattern = "/internal/users/new"
+                        },
+                        new RouteDto
+                        {
+                            Method = "GET",
+                            UpstreamPattern = "/api/users/{id}",
+                            DownstreamPattern = "/internal/users/{id}"
+                        },
+                        new RouteDto
+                        {
+                            Method = "DELETE",
+                            UpstreamPattern = "/api/account/{login}/delete",
+                            DownstreamPattern = "/internal/account/{login}/del"
+                        },
+                    ]
+                },
+                new ClusterDto
+                {
+                    Protocol = "Http",
+                    Hosts = [
+                        "http://trololo2:5000"
+                    ],
+                    Routes =
+                    [
+                        new RouteDto
+                        {
+                            Method = "GET",
+                            UpstreamPattern = "/catalog",
+                            DownstreamPattern = "/catalog"
+                        },
+                        new RouteDto
+                        {
+                            Method = "POST",
+                            UpstreamPattern = "/catalog/remove",
+                            DownstreamPattern = "/catalog/all"
+                        },
+                        new RouteDto
+                        {
+                            Method = "GET",
+                            UpstreamPattern = "/cart",
+                            DownstreamPattern = "/shop/cart"
+                        },
+                        new RouteDto
+                        {
+                            Method = "GET",
+                            UpstreamPattern = "/cart/clear",
+                            DownstreamPattern = "/shop/cart/clear"
+                        },
+                        new RouteDto
+                        {
+                            Method = "GET",
+                            UpstreamPattern = "/profile/{id}",
+                            DownstreamPattern = "/internal/profile?id={id}"
+                        },
+                        new RouteDto
+                        {
+                            Method = "PATCH",
+                            UpstreamPattern = "/profile/{id}/edit",
+                            DownstreamPattern = "/internal/profile/{id}/edit"
+                        },
+                        
+                    ]
+                },
+                new ClusterDto
+                {
+                    Protocol = "Http",
+                    Hosts = [
+                        "http://trololo3:5000",
+                        "http://trololo3:5001"
+                    ],
+                    Routes =
+                    [
+                        new RouteDto
+                        {
+                            Method = "POST",
+                            UpstreamPattern = "/api/register",
+                            DownstreamPattern = "/internal/register"
+                        },
+                        new RouteDto
+                        {
+                            Method = "GET",
+                            UpstreamPattern = "/profile/{login}/info",
+                            DownstreamPattern = "/profile/{login}/info"
+                        },
+                        new RouteDto
+                        {
+                            Method = "GET",
+                            UpstreamPattern = "/clients",
+                            DownstreamPattern = "/api/clients"
+                        },
+                        new RouteDto
+                        {
+                            Method = "PUT",
+                            UpstreamPattern = "/clients/{id}/edit",
+                            DownstreamPattern = "/api/clients/{id}/edit"
                         }
                     ]
                 }
