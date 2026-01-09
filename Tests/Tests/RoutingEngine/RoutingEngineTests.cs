@@ -120,7 +120,7 @@ public class RoutingEngineTests
                         {
                             Method = "GET",
                             UpstreamPattern = "/tests/users/{name}/info",
-                            DownstreamPattern = "/profile/{login}/info"
+                            DownstreamPattern = "/profile/{name}/info"
                         },
                         new RouteDto
                         {

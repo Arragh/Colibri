@@ -9,21 +9,18 @@ public class RoutingSnapshotBuilder
     public RoutingSnapshot Build(RoutingSettings settings)
     {
         var tempClusters = CreateTempClusters(settings);
+        var downstreamChunksPath = CreateTempDownstreamChunks(tempClusters);
         var hosts = CreateHosts(tempClusters);
         var trie = CreateTrie(tempClusters, hosts);
         SortTrieRecursively(trie);
-
-        var tempSegments = new List<TempSegment>();
-        string segmentNames = string.Empty;
-        var tempDownstreams = new List<TempDownstream>();
-        string downstreamPaths = string.Empty;
-        FillDataArraysRecursively(tempSegments, tempDownstreams, trie, ref segmentNames, ref downstreamPaths);
+        var result1 = CreateTempSegments(trie);
+        var result2 = CreateTempDownstreams(result1.tempSegments);
         
         var snapshot = CreateSnapshot(
-            tempSegments,
-            tempDownstreams,
-            segmentNames,
-            downstreamPaths,
+            result1.tempSegments,
+            result2.tempDownstreams,
+            result1.segmentNames,
+            result2.downstreamPaths,
             trie.ChildrenSegments.Count,
             hosts);
 
@@ -52,6 +49,52 @@ public class RoutingSnapshotBuilder
         return clusters;
     }
 
+    private string CreateTempDownstreamChunks(List<TempCluster> clusters)
+    {
+        var downstreamChunksPath = string.Empty;
+        
+        foreach (var cluster in clusters)
+        {
+            foreach (var route in cluster.Routes)
+            {
+                var upstreamParams = route.UpstreamSegments
+                    .Where(s => s.StartsWith('{') && s.EndsWith('}'))
+                    .ToArray();
+                var paramsMap = new Dictionary<string, byte>();
+
+                for (int i = 0; i < upstreamParams.Length; i++)
+                {
+                    paramsMap.Add(upstreamParams[i], (byte)i);
+                }
+            
+                var downstreamSegments = route.DownstreamPattern
+                    .Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+                foreach (var segment in downstreamSegments)
+                {
+                    var downstreamChunk = new TempDownstreamChunk
+                    {
+                        Name = '/' + segment,
+                        PathStartIndex = downstreamChunksPath.Length,
+                        PathLength = (byte)(segment.Length + 1)
+                    };
+            
+                    downstreamChunksPath += downstreamChunk.Name;
+                
+                    if (segment.StartsWith('{') && segment.EndsWith('}'))
+                    {
+                        downstreamChunk.IsParameter = true;
+                        downstreamChunk.ParamIndex = paramsMap[segment];
+                    }
+                
+                    route.TempDownstreamChunks.Add(downstreamChunk);
+                }
+            }
+        }
+        
+        return downstreamChunksPath;
+    }
+    
     private List<string> CreateHosts(List<TempCluster> clustersData)
     {
         var hosts = new List<string>();
@@ -140,64 +183,81 @@ public class RoutingSnapshotBuilder
         }
     }
 
-    private void FillDataArraysRecursively(
-            List<TempSegment> tempSegments,
-            List<TempDownstream> tempDownstreams,
-            TrieNode node,
-            ref string segmentNames,
-            ref string downstreamPaths)
+    private (List<TempSegment> tempSegments, string segmentNames) CreateTempSegments(TrieNode node)
     {
-        foreach (var child in node.ChildrenSegments)
+        var tempSegments = new List<TempSegment>();
+        var segmentNames = string.Empty;
+        
+        trololo(node);
+        Console.WriteLine();
+
+        void trololo(TrieNode node)
         {
-            var tempSegment = new TempSegment();
-            
-            tempSegment.PathStartIndex = segmentNames.Length;
-            segmentNames += '/' + child.SegmentName;
-            tempSegment.PathLength = (short)(segmentNames.Length - tempSegment.PathStartIndex);
-
-            tempSegments.Add(tempSegment);
-            
-            foreach (var method in  child.Methods)
+            foreach (var child in node.ChildrenSegments)
             {
-                var tempDownstream = new TempDownstream();
+                var tempSegment = new TempSegment();
+            
+                tempSegment.PathStartIndex = segmentNames.Length;
+                segmentNames += '/' + child.SegmentName;
+                tempSegment.PathLength = (short)(segmentNames.Length - tempSegment.PathStartIndex);
+                tempSegment.Methods = child.Methods;
+                tempSegment.HostStartIndex = (short)child.HostStartIndex;
+                tempSegment.HostsCount = (byte)child.HostsCount;
                 
-                tempDownstream.PathStartIndex = downstreamPaths.Length;
-                tempDownstream.PathLength = (short)method.Value.Length;
-                downstreamPaths += method.Value;
-                tempDownstream.MethodMask = HttpMethodMask.GetMask(method.Key);
-                tempDownstream.HostStartIndex = (short)child.HostStartIndex;
-                tempDownstream.HostsCount = (byte)child.HostsCount;
-                    
-                tempDownstreams.Add(tempDownstream);
+                tempSegments.Add(tempSegment);
+            }
+            
+            var justCreatedTempSegments = tempSegments
+                .TakeLast(node.ChildrenSegments.Count)
+                .ToList();
 
+            for (int i = 0; i < node.ChildrenSegments.Count; i++)
+            {
+                justCreatedTempSegments[i].ChildrenCount = (short)node.ChildrenSegments[i].ChildrenSegments.Count;
+
+                if (justCreatedTempSegments[i].ChildrenCount > 0)
+                {
+                    justCreatedTempSegments[i].FirstChildIndex = tempSegments.Count;
+                }
+                
+                trololo(node.ChildrenSegments[i]);
+            }
+        }
+        
+        return (tempSegments, segmentNames);
+    }
+
+    private (List<TempDownstream> tempDownstreams, string downstreamPaths) CreateTempDownstreams(List<TempSegment> tempSegments)
+    {
+        var downstreamPaths = string.Empty;
+        var tempDownstreams = new List<TempDownstream>();
+        
+        foreach (var tempSegment in tempSegments)
+        {
+            foreach (var method in tempSegment.Methods)
+            {
+                var tempDownstream = new TempDownstream
+                {
+                    PathStartIndex = downstreamPaths.Length,
+                    PathLength = (short)method.Value.Length,
+                    MethodMask = HttpMethodMask.GetMask(method.Key),
+                    HostStartIndex = (short)tempSegment.HostStartIndex,
+                    HostsCount = (byte)tempSegment.HostsCount
+                };
+                
+                downstreamPaths += method.Value;
+                
+                tempDownstreams.Add(tempDownstream);
+                
                 tempSegment.DownstreamStartIndex = (short)(tempDownstreams.Count - 1);
                 tempSegment.DownstreamCount++;
                 tempSegment.MethodMask |= HttpMethodMask.GetMask(method.Key);
             }
         }
-
-        var createdTempSegments = tempSegments
-            .TakeLast(node.ChildrenSegments.Count)
-            .ToList();
-
-        for (int i = 0; i < node.ChildrenSegments.Count; i++)
-        {
-            createdTempSegments[i].ChildrenCount = (short)node.ChildrenSegments[i].ChildrenSegments.Count;
-
-            if (createdTempSegments[i].ChildrenCount > 0)
-            {
-                createdTempSegments[i].FirstChildIndex = tempSegments.Count;
-            }
-            
-            FillDataArraysRecursively(
-                tempSegments,
-                tempDownstreams,
-                node.ChildrenSegments[i],
-                ref segmentNames,
-                ref downstreamPaths);
-        }
+        
+        return (tempDownstreams, downstreamPaths);
     }
-
+    
     private RoutingSnapshot CreateSnapshot(
         List<TempSegment> tempSegments,
         List<TempDownstream> tempDownstreams,

@@ -12,4 +12,9 @@ public sealed class TempSegment
     
     public short DownstreamStartIndex { get; set;}
     public byte DownstreamCount { get; set; } = 0;
+    
+    public int HostStartIndex { get; set; }
+    public int HostsCount { get; set; }
+
+    public Dictionary<string, string> Methods { get; set; } = null!;
 }

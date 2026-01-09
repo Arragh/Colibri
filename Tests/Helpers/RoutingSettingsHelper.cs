@@ -36,7 +36,7 @@ public static class RoutingSettingsHelper
                         {
                             Method = "GET",
                             UpstreamPattern = "/api/users/{id}/info",
-                            DownstreamPattern = "/internal/users/info?id={id}"
+                            DownstreamPattern = "/internal/users/{id}/info"
                         },
                         new RouteDto
                         {
@@ -94,12 +94,12 @@ public static class RoutingSettingsHelper
                         {
                             Method = "GET",
                             UpstreamPattern = "/profile/{longParameter}/lol",
-                            DownstreamPattern = "/internal/profile?id={id}"
+                            DownstreamPattern = "/internal/profile/{longParameter}"
                         },
                         new RouteDto
                         {
                             Method = "PATCH",
-                            UpstreamPattern = "/profile/me/edit",
+                            UpstreamPattern = "/profile/{id}/edit",
                             DownstreamPattern = "/internal/profile/{id}/edit"
                         },
                         
