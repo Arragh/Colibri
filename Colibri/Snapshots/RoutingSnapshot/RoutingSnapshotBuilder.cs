@@ -9,12 +9,12 @@ public class RoutingSnapshotBuilder
     public RoutingSnapshot Build(RoutingSettings settings)
     {
         var tempClusters = CreateTempClusters(settings);
-        var downstreamChunksPath = CreateTempDownstreamChunks(tempClusters);
+        // var downstreamChunksPath = CreateTempDownstreamChunks(tempClusters);
         var hosts = CreateHosts(tempClusters);
         var trie = CreateTrie(tempClusters, hosts);
         SortTrieRecursively(trie);
         var result1 = CreateTempSegments(trie);
-        var result2 = CreateTempDownstreams(result1.tempSegments);
+        var result2 = CreateTempDownstreamsWithChunks(result1.tempSegments);
         
         var snapshot = CreateSnapshot(
             result1.tempSegments,
@@ -227,10 +227,18 @@ public class RoutingSnapshotBuilder
         return (tempSegments, segmentNames);
     }
 
-    private (List<TempDownstream> tempDownstreams, string downstreamPaths) CreateTempDownstreams(List<TempSegment> tempSegments)
+    private (
+        List<TempDownstream> tempDownstreams,
+        string downstreamPaths,
+        List<TempDownstreamChunk> tempDownsreamChunks,
+        string downstreamChunksPath)
+        CreateTempDownstreamsWithChunks(List<TempSegment> tempSegments)
     {
-        var downstreamPaths = string.Empty;
         var tempDownstreams = new List<TempDownstream>();
+        var downstreamPaths = string.Empty;
+        
+        var tempDownsreamChunks = new List<TempDownstreamChunk>();
+        var downstreamChunksPath = string.Empty;
         
         foreach (var tempSegment in tempSegments)
         {
@@ -242,11 +250,36 @@ public class RoutingSnapshotBuilder
                     PathLength = (short)method.Value.Length,
                     MethodMask = HttpMethodMask.GetMask(method.Key),
                     HostStartIndex = (short)tempSegment.HostStartIndex,
-                    HostsCount = (byte)tempSegment.HostsCount
+                    HostsCount = (byte)tempSegment.HostsCount,
+                    ChunkStartIndex = tempDownsreamChunks.Count
                 };
                 
                 downstreamPaths += method.Value;
                 
+                var chunks = method.Value.Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+                short paramIdx = 0;
+                foreach (var chunk in chunks)
+                {
+                    var tempDownstreamChunk = new TempDownstreamChunk
+                    {
+                        Name = '/' + chunk,
+                        PathStartIndex = downstreamChunksPath.Length,
+                        PathLength = (short)chunk.Length + 1,
+                    };
+
+                    downstreamChunksPath += tempDownstreamChunk.Name;
+
+                    if (chunk.StartsWith('{') && chunk.EndsWith('}'))
+                    {
+                        tempDownstreamChunk.IsParameter = true;
+                        tempDownstreamChunk.ParamIndex = paramIdx++;
+                    }
+                    
+                    tempDownsreamChunks.Add(tempDownstreamChunk);
+                }
+                
+                tempDownstream.ChunksCount = tempDownsreamChunks.Count - tempDownstream.ChunkStartIndex;
                 tempDownstreams.Add(tempDownstream);
                 
                 tempSegment.DownstreamStartIndex = (short)(tempDownstreams.Count - 1);
@@ -255,7 +288,7 @@ public class RoutingSnapshotBuilder
             }
         }
         
-        return (tempDownstreams, downstreamPaths);
+        return (tempDownstreams, downstreamPaths, tempDownsreamChunks, downstreamChunksPath);
     }
     
     private RoutingSnapshot CreateSnapshot(

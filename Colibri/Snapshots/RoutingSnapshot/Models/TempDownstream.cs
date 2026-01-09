@@ -8,4 +8,7 @@ public class TempDownstream
     
     public short HostStartIndex { get; set; }
     public byte HostsCount { get; set; }
+    
+    public int ChunkStartIndex { get; set; }
+    public int ChunksCount { get; set; }
 }
