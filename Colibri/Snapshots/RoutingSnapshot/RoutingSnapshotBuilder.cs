@@ -188,10 +188,10 @@ public class RoutingSnapshotBuilder
         var tempSegments = new List<TempSegment>();
         var segmentNames = string.Empty;
         
-        trololo(node);
+        сreateTempSegmentsRecursively(node);
         Console.WriteLine();
 
-        void trololo(TrieNode node)
+        void сreateTempSegmentsRecursively(TrieNode node)
         {
             foreach (var child in node.ChildrenSegments)
             {
@@ -220,7 +220,7 @@ public class RoutingSnapshotBuilder
                     justCreatedTempSegments[i].FirstChildIndex = tempSegments.Count;
                 }
                 
-                trololo(node.ChildrenSegments[i]);
+                сreateTempSegmentsRecursively(node.ChildrenSegments[i]);
             }
         }
         
