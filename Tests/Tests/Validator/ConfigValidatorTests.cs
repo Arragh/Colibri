@@ -347,7 +347,7 @@ public class ConfigValidatorTests
                         Authorize = new AuthorizeDto
                         {
                             Required = false,
-                            Policy = string.Empty,
+                            PolicyId = string.Empty,
                             Roles = []
                         },
                         Protocol = "Http",
@@ -387,7 +387,7 @@ public class ConfigValidatorTests
                         Authorize = new AuthorizeDto
                         {
                             Required = false,
-                            Policy = "Policy",
+                            PolicyId = "Policy",
                             Roles = []
                         },
                         Protocol = "Http",
@@ -427,7 +427,7 @@ public class ConfigValidatorTests
                         Authorize = new AuthorizeDto
                         {
                             Required = true,
-                            Policy = "Policy",
+                            PolicyId = "Policy",
                             Roles = []
                         },
                         Protocol = "Http",
@@ -468,7 +468,7 @@ public class ConfigValidatorTests
                         Authorize = new AuthorizeDto
                         {
                             Required = true,
-                            Policy = "Policy",
+                            PolicyId = "Policy",
                             Roles = []
                         },
                         Protocol = "Http",
@@ -512,7 +512,7 @@ public class ConfigValidatorTests
                         Authorize = new AuthorizeDto
                         {
                             Required = true,
-                            Policy = "Policy",
+                            PolicyId = "Policy",
                             Roles = []
                         },
                         Protocol = "Http",
@@ -558,7 +558,7 @@ public class ConfigValidatorTests
                         Authorize = new AuthorizeDto
                         {
                             Required = true,
-                            Policy = "Policy",
+                            PolicyId = "Policy",
                             Roles = []
                         },
                         Protocol = "Http",
@@ -595,8 +595,8 @@ public class ConfigValidatorTests
                 Policies = [
                     new PolicyDto
                     {
-                        Name = string.Empty,
-                        PublicKey = string.Empty,
+                        PolicyId = string.Empty,
+                        TokenKey = string.Empty,
                     }
                 ]
             },
@@ -608,7 +608,7 @@ public class ConfigValidatorTests
                         Authorize = new AuthorizeDto
                         {
                             Required = true,
-                            Policy = "Policy",
+                            PolicyId = "Policy",
                             Roles = []
                         },
                         Protocol = "Http",
@@ -645,8 +645,8 @@ public class ConfigValidatorTests
                 Policies = [
                     new PolicyDto
                     {
-                        Name = "Policy",
-                        PublicKey = string.Empty,
+                        PolicyId = "Policy",
+                        TokenKey = string.Empty,
                     }
                 ]
             },
@@ -658,7 +658,7 @@ public class ConfigValidatorTests
                         Authorize = new AuthorizeDto
                         {
                             Required = true,
-                            Policy = "Policy",
+                            PolicyId = "Policy",
                             Roles = []
                         },
                         Protocol = "Http",
@@ -695,8 +695,8 @@ public class ConfigValidatorTests
                 Policies = [
                     new PolicyDto
                     {
-                        Name = "Policy",
-                        PublicKey = "secret-key",
+                        PolicyId = "Policy",
+                        TokenKey = "secret-key",
                     }
                 ]
             },
@@ -708,7 +708,7 @@ public class ConfigValidatorTests
                         Authorize = new AuthorizeDto
                         {
                             Required = true,
-                            Policy = "Policy",
+                            PolicyId = "Policy",
                             Roles = []
                         },
                         Protocol = "Http",

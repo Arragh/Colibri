@@ -22,7 +22,7 @@ public static class ConfigValidator
                 }
                     
                 var policy = settings.Authorization.Policies
-                    .FirstOrDefault(p => p.Name == cluster.Authorize!.Policy);
+                    .FirstOrDefault(p => p.PolicyId == cluster.Authorize.PolicyId);
 
                 if (policy == null)
                 {
@@ -103,12 +103,12 @@ public static class ConfigValidator
 
         foreach (var policy in authSettings.Policies)
         {
-            if (string.IsNullOrWhiteSpace(policy.Name))
+            if (string.IsNullOrWhiteSpace(policy.PolicyId))
             {
                 return false;
             }
 
-            if (string.IsNullOrWhiteSpace(policy.PublicKey))
+            if (string.IsNullOrWhiteSpace(policy.TokenKey))
             {
                 return false;
             }
