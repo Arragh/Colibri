@@ -2,8 +2,8 @@ namespace Colibri.Configuration.Models;
 
 public sealed class RouteCfg
 {
-    public required string ClusterId { get; set; }
-    public required string Method { get; set; }
-    public required string UpstreamPattern { get; set; }
-    public required string DownstreamPattern { get; set; }
+    public string ClusterId { get; set; } = null!;
+    public string Method { get; set; } = null!;
+    public string UpstreamPattern { get; set; } = null!;
+    public string DownstreamPattern { get; set; } = null!;
 }

@@ -4,5 +4,5 @@ namespace Colibri.Configuration;
 
 public sealed class AuthorizationSettings
 {
-    public required PolicyCfg[] Policies { get; set; }
+    public PolicyCfg[] Policies { get; set; } = null!;
 }

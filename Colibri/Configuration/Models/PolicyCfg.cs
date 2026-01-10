@@ -2,6 +2,6 @@ namespace Colibri.Configuration.Models;
 
 public sealed class PolicyCfg
 {
-    public required string PolicyId { get; set; }
-    public required string TokenKey { get; set; }
+    public string PolicyId { get; set; } = null!;
+    public string TokenKey { get; set; } = null!;
 }
