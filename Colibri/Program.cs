@@ -1,17 +1,6 @@
 using Colibri.Configuration;
-using Colibri.Helpers;
-using Colibri.Services.CircuitBreaker;
-using Colibri.Services.CircuitBreaker.Interfaces;
-using Colibri.Services.LoadBalancer;
-using Colibri.Services.LoadBalancer.Interfaces;
-using Colibri.Services.Terminal;
-using Colibri.Services.RateLimiter;
-using Colibri.Services.RateLimiter.Interfaces;
-using Colibri.Services.Retrier;
-using Colibri.Services.Pipeline;
-using Colibri.Services.Pipeline.Models;
-using Colibri.Services.RoutingEngine;
-using Colibri.Services.RoutingEngine.Interfaces;
+using Colibri.Runtime.Pipeline;
+using Colibri.Runtime.Pipeline.ClusterEngine;
 using Colibri.Services.SnapshotProvider;
 using Colibri.Services.SnapshotProvider.Interfaces;
 
@@ -19,55 +8,34 @@ var builder = WebApplication.CreateSlimBuilder(args);
 
 builder.Services.AddColibriSettings();
 
-builder.Services.AddSingleton<ICircuitBreaker, CircuitBreaker>();
-builder.Services.AddSingleton<ILoadBalancer, LoadBalancer>();
-builder.Services.AddSingleton<IRateLimiter, RateLimiter>();
 builder.Services.AddSingleton<ISnapshotProvider, SnapshotProvider>();
-builder.Services.AddSingleton<IRoutingEngine, RoutingEngine>();
+builder.Services.AddSingleton<ClusterEngine>();
+builder.Services.AddSingleton<ClusterEngineMiddleware>();
 
-builder.Services.AddSingleton<RoutingEngineMiddleware>();
-builder.Services.AddSingleton<RateLimiterMiddleware>();
-builder.Services.AddSingleton<RetryMiddleware>();
-builder.Services.AddSingleton<CircuitBreakerMiddleware>();
-builder.Services.AddSingleton<LoadBalancerMiddleware>();
-builder.Services.AddSingleton<TerminalMiddleware>();
-
-builder.Services.AddSingleton<UnstableTerminalMiddleware>();
-// builder.Services.AddSingleton<RetryMiddleware>(_ => new RetryMiddleware(maxAttempts: 3));
-
-builder.Services.AddSingleton<Pipeline>(sp => new Pipeline([
-    sp.GetRequiredService<RoutingEngineMiddleware>(),
-    sp.GetRequiredService<RateLimiterMiddleware>(),
-    sp.GetRequiredService<RetryMiddleware>(),
-    sp.GetRequiredService<CircuitBreakerMiddleware>(),
-    sp.GetRequiredService<LoadBalancerMiddleware>(),
-    sp.GetRequiredService<TerminalMiddleware>()
-    // sp.GetRequiredService<UnstableTerminalMiddleware>()
+builder.Services.AddSingleton<Pipeline>(sp => new([
+    sp.GetRequiredService<ClusterEngineMiddleware>()
 ]));
 
 var app = builder.Build();
 
+// var snapshotProvider = app.Services.GetRequiredService<ISnapshotProvider>();
 var pipeline = app.Services.GetRequiredService<Pipeline>();
-var routingEngine = app.Services.GetRequiredService<IRoutingEngine>();
-
-var snapshotProvider = app.Services.GetRequiredService<ISnapshotProvider>();
 
 app.Run(async ctx =>
 {
-    var globalSnapshot = snapshotProvider.GlobalSnapshot;
-    var routingSnapshot = snapshotProvider.RoutingSnapshot;
-
     var pipelineCtx = new PipelineContext
     {
         HttpContext = ctx,
-        RoutingSnapshot = routingSnapshot,
-        TransportSnapshot = globalSnapshot.TransportSnapshot,
-        CancellationToken = ctx.RequestAborted,
-        ClusterId = HttpMethodCache.Get(ctx.Request.Method) == HttpMethod.Get ? 0 : 1, // Заглушка
-        EndpointId = 0, // Заглушка
+        CancellationToken = ctx.RequestAborted
     };
     
+    // var clusterSnapshot = snapshotProvider.ClusterSnapshot;
+    // var cluster = clusterSnapshot.Clusters.First();
+    // await cluster.Pipeline.ExecuteAsync(pipelineCtx);
+    
     await pipeline.ExecuteAsync(pipelineCtx);
+    
+    Console.WriteLine();
 });
 
 app.Run();

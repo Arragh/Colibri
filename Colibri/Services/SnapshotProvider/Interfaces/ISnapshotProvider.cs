@@ -1,10 +1,8 @@
-using Colibri.Snapshots;
-using Colibri.Snapshots.RoutingSnapshot;
+using Colibri.Snapshots.Cluster;
 
 namespace Colibri.Services.SnapshotProvider.Interfaces;
 
 public interface ISnapshotProvider
 {
-    GlobalSnapshot GlobalSnapshot { get; }
-    RoutingSnapshot RoutingSnapshot { get; }
+    ClusterSnapshot ClusterSnapshot { get; }
 }

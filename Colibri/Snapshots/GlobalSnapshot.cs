@@ -1,10 +1,8 @@
-using Colibri.Snapshots.ClusterSnapshot;
-using Colibri.Snapshots.TransportSnapshot;
+using Colibri.Snapshots.Cluster;
 
 namespace Colibri.Snapshots;
 
-public sealed class GlobalSnapshot
+public class GlobalSnapshot
 {
-    public required ClusterConfigSnapshot ClusterSnapshot { get; init; }
-    public required TransportRuntimeSnapshot TransportSnapshot { get; init; }
+    public ClusterSnapshot ClusterSnapshot { get; set; }
 }

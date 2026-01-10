@@ -1,0 +1,18 @@
+namespace Colibri.Runtime.Pipeline;
+
+public sealed class PipelineContext
+{
+    public required HttpContext HttpContext { get; init; }
+    public required CancellationToken CancellationToken { get; set; }
+    public int ClusterId { get; init; }
+    public int EndpointId { get; init; }
+
+    public int SelectedHost { get; set; }
+    public int Attempts { get; set; }
+
+    public bool IsCompleted { get; set; }
+    public int StatusCode { get; set; }
+    
+    public Uri[] Hosts { get; set; }
+    public string DownstreamPattern { get; set; }
+}
