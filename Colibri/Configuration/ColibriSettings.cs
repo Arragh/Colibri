@@ -1,7 +1,7 @@
 namespace Colibri.Configuration;
 
-public class ColibriSettings
+public sealed class ColibriSettings
 {
-    public AuthorizationSettings Authorization { get; set; } = null!;
-    public RoutingSettings Routing { get; set; } = null!;
+    public required AuthorizationSettings Authorization { get; set; }
+    public required RoutingSettings Routing { get; set; }
 }

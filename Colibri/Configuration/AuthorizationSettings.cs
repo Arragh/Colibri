@@ -2,7 +2,7 @@ using Colibri.Configuration.Models;
 
 namespace Colibri.Configuration;
 
-public class AuthorizationSettings
+public sealed class AuthorizationSettings
 {
-    public PolicyDto[] Policies { get; set; } = null!;
+    public required PolicyCfg[] Policies { get; set; }
 }

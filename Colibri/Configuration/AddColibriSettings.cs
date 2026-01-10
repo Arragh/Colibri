@@ -6,7 +6,7 @@ internal static class AddColibriSettingsExtension
     {
         services
             .AddOptions<ColibriSettings>()
-            .BindConfiguration("ColibriSettings:Routing")
+            .BindConfiguration("Colibri:Routing")
             .Validate(settings =>
                     ConfigValidator.Validate(settings),
                 "Invalid Settings configuration")
