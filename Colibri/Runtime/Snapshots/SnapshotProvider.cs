@@ -1,10 +1,8 @@
 using Colibri.Configuration;
-using Colibri.Services.SnapshotProvider.Interfaces;
-using Colibri.Snapshots;
-using Colibri.Snapshots.Cluster;
+using Colibri.Runtime.Snapshots.Cluster;
 using Microsoft.Extensions.Options;
 
-namespace Colibri.Services.SnapshotProvider;
+namespace Colibri.Runtime.Snapshots;
 
 public sealed class SnapshotProvider : ISnapshotProvider
 {
@@ -14,6 +12,15 @@ public sealed class SnapshotProvider : ISnapshotProvider
     public SnapshotProvider(IOptionsMonitor<ColibriSettings> monitor)
     {
         _globalSnapshot = _snapshotBuilder.Build(monitor.CurrentValue);
+
+        monitor.OnChange(c =>
+        {
+            Console.WriteLine("SNAPSHOT CHANGED\n\n\n");
+            
+            var newGlobalSnapshot = _snapshotBuilder.Build(c);
+            Volatile.Write(ref _globalSnapshot, newGlobalSnapshot);
+            
+        });
     }
 
     public ClusterSnapshot ClusterSnapshot => Volatile.Read(ref _globalSnapshot).ClusterSnapshot;

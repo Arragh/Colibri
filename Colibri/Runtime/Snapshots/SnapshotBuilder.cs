@@ -6,11 +6,9 @@ using Colibri.Runtime.Pipeline.CircuitBreaker;
 using Colibri.Runtime.Pipeline.LoadBalancer;
 using Colibri.Runtime.Pipeline.RateLimiter;
 using Colibri.Runtime.Pipeline.Retrier;
-using Colibri.Snapshots;
-using Colibri.Snapshots.Cluster;
-using Colibri.Snapshots.Cluster.Models;
+using Colibri.Runtime.Snapshots.Cluster;
 
-namespace Colibri.Services.SnapshotProvider;
+namespace Colibri.Runtime.Snapshots;
 
 public sealed class SnapshotBuilder
 {
@@ -59,7 +57,7 @@ public sealed class SnapshotBuilder
                 Hosts = cfgCluster.Hosts
                     .Select(h => new Uri(h))
                     .ToArray(),
-                Pipeline = new Pipeline(clusterMiddlewares.ToArray())
+                Pipeline = new PipelineSrv(clusterMiddlewares.ToArray())
             };
             
             snpClusters.Add(snpCluster);

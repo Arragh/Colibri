@@ -1,5 +1,5 @@
-using Colibri.Services.SnapshotProvider.Interfaces;
-using Colibri.Snapshots.Cluster.Models;
+using Colibri.Runtime.Snapshots;
+using Colibri.Runtime.Snapshots.Cluster;
 
 namespace Colibri.Runtime.Pipeline.ClusterEngine;
 

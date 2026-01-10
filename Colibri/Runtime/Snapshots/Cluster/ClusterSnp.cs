@@ -1,6 +1,6 @@
 using Colibri.Runtime.Pipeline;
 
-namespace Colibri.Snapshots.Cluster.Models;
+namespace Colibri.Runtime.Snapshots.Cluster;
 
 public sealed class ClusterSnp
 {
@@ -9,5 +9,5 @@ public sealed class ClusterSnp
     public required string Protocol { get; init; }
     public required string Prefix { get; init; }
     public required Uri[] Hosts { get; init; }
-    public required Pipeline Pipeline { get; init; }
+    public required PipelineSrv Pipeline { get; init; }
 }

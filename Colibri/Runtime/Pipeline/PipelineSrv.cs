@@ -1,10 +1,10 @@
 namespace Colibri.Runtime.Pipeline;
 
-public sealed class Pipeline
+public sealed class PipelineSrv
 {
     private readonly PipelineDelegate _entry;
 
-    public Pipeline(IPipelineMiddleware[] middlewares)
+    public PipelineSrv(IPipelineMiddleware[] middlewares)
     {
         PipelineDelegate next = _ => ValueTask.CompletedTask;
 
