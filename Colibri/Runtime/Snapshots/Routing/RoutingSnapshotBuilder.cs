@@ -1,92 +1,21 @@
-using System.Collections.Immutable;
 using Colibri.Configuration;
 using Colibri.Configuration.Models;
-using Colibri.Runtime.Pipeline;
-using Colibri.Runtime.Pipeline.CircuitBreaker;
-using Colibri.Runtime.Pipeline.LoadBalancer;
-using Colibri.Runtime.Pipeline.RateLimiter;
-using Colibri.Runtime.Pipeline.Retrier;
-using Colibri.Runtime.Pipeline.Terminal;
-using Colibri.Runtime.Snapshots.Cluster;
 
-namespace Colibri.Runtime.Snapshots;
+namespace Colibri.Runtime.Snapshots.Routing;
 
-public sealed class SnapshotBuilder
+public class RoutingSnapshotBuilder
 {
-    public GlobalSnapshot Build(ColibriSettings settings)
+    
+    public static RoutingSnapshot Build(ColibriSettings settings)
     {
         var tempClusters = BuildTempClusters(settings.Routing.Clusters, settings.Routing.Routes);
         SortDataInTempClusters(tempClusters);
         var preparedData = PrepareDataForRoutingSnapshot(tempClusters);
         
-        return new GlobalSnapshot
-        {
-            ClusterSnapshot = BuildClusterSnapshot(settings.Routing.Clusters)
-        };
+        throw new NotImplementedException();
     }
     
-    private ClusterSnapshot BuildClusterSnapshot(ClusterCfg[] cfgClusters)
-    {
-        var snpClusters = new List<ClusterSnp>();
-        
-        foreach (var cfgCluster in cfgClusters)
-        {
-            if (!cfgCluster.Enabled)
-            {
-                continue;
-            }
-            
-            List<IPipelineMiddleware> clusterMiddlewares = new();
-
-            if (cfgCluster.RateLimit.Enabled)
-            {
-                clusterMiddlewares.Add(new RateLimiterMiddleware());
-            }
-            
-            if (cfgCluster.LoadBalancing.Enabled)
-            {
-                clusterMiddlewares.Add(new LoadBalancerMiddleware());
-            }
-
-            if (cfgCluster.Retry.Enabled)
-            {
-                clusterMiddlewares.Add(new RetryMiddleware());
-            }
-            
-            if (cfgCluster.CircuitBreaker.Enabled)
-            {
-                clusterMiddlewares.Add(new CircuitBreakerMiddleware());
-            }
-
-            switch (cfgCluster.Protocol)
-            {
-                case "http":
-                    clusterMiddlewares.Add(new HttpTerminalMiddleware(cfgCluster.Hosts));
-                    break;
-                
-                default:
-                    throw new ArgumentException($"Invalid protocol {cfgCluster.Protocol}");
-            }
-            
-            var snpCluster = new ClusterSnp
-            {
-                ClusterId = cfgCluster.ClusterId,
-                Protocol = cfgCluster.Protocol,
-                Prefix = cfgCluster.Prefix,
-                HostsCount = cfgCluster.Hosts.Length,
-                Pipeline = new PipelineSrv(clusterMiddlewares.ToArray())
-            };
-            
-            snpClusters.Add(snpCluster);
-        }
-
-        return new ClusterSnapshot
-        {
-            Clusters = snpClusters.ToImmutableArray()
-        };
-    }
-
-    private PreparedData PrepareDataForRoutingSnapshot(List<TempCluster> tempClusters)
+    private static PreparedData PrepareDataForRoutingSnapshot(List<TempCluster> tempClusters)
     {
         List<TempPrefix> tempPrefixes = [];
         List<char> prefixesChars = [];
@@ -110,7 +39,7 @@ public sealed class SnapshotBuilder
         };
     }
     
-    private List<TempCluster> BuildTempClusters(ClusterCfg[] cfgClusters, RouteCfg[] cfgRoutes)
+    private static List<TempCluster> BuildTempClusters(ClusterCfg[] cfgClusters, RouteCfg[] cfgRoutes)
     {
         var tempClusters = new List<TempCluster>();
         
@@ -177,7 +106,7 @@ public sealed class SnapshotBuilder
         }
     }
 
-    private void SortDataInTempClusters(List<TempCluster> tempClusters)
+    private static void SortDataInTempClusters(List<TempCluster> tempClusters)
     {
         foreach (var tempCluster in tempClusters)
         {

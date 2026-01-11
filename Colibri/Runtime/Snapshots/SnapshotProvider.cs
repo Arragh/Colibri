@@ -7,17 +7,17 @@ namespace Colibri.Runtime.Snapshots;
 public sealed class SnapshotProvider : ISnapshotProvider
 {
     private GlobalSnapshot _globalSnapshot;
-    private SnapshotBuilder _snapshotBuilder = new();
+    private GlobalSnapshotBuilder _globalSnapshotBuilder = new();
     
     public SnapshotProvider(IOptionsMonitor<ColibriSettings> monitor)
     {
-        _globalSnapshot = _snapshotBuilder.Build(monitor.CurrentValue);
+        _globalSnapshot = _globalSnapshotBuilder.Build(monitor.CurrentValue);
 
         monitor.OnChange(c =>
         {
             Console.WriteLine("SNAPSHOT CHANGED\n\n\n");
             
-            var newGlobalSnapshot = _snapshotBuilder.Build(c);
+            var newGlobalSnapshot = _globalSnapshotBuilder.Build(c);
             Volatile.Write(ref _globalSnapshot, newGlobalSnapshot);
             
         });
