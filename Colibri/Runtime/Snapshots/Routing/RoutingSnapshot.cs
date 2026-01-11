@@ -5,5 +5,5 @@ public sealed class RoutingSnapshot(
     char[] prefixesNames)
 {
     public ReadOnlySpan<Prefix> Prefixes => prefixes;
-    public ReadOnlySpan<char> PrefixesNames => prefixesNames;
+    public ReadOnlySpan<char> PrefixesChars => prefixesNames;
 }

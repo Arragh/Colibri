@@ -16,6 +16,8 @@ public sealed class SnapshotBuilder
     public GlobalSnapshot Build(ColibriSettings settings)
     {
         var tempClusters = BuildTempClusters(settings.Routing.Clusters, settings.Routing.Routes);
+        SortDataInTempClusters(tempClusters);
+        var preparedData = PrepareDataForRoutingSnapshot(tempClusters);
         
         return new GlobalSnapshot
         {
@@ -58,7 +60,7 @@ public sealed class SnapshotBuilder
 
             switch (cfgCluster.Protocol)
             {
-                case "Http":
+                case "http":
                     clusterMiddlewares.Add(new HttpTerminalMiddleware(cfgCluster.Hosts));
                     break;
                 
@@ -84,6 +86,30 @@ public sealed class SnapshotBuilder
         };
     }
 
+    private PreparedData PrepareDataForRoutingSnapshot(List<TempCluster> tempClusters)
+    {
+        List<TempPrefix> tempPrefixes = [];
+        List<char> prefixesChars = [];
+
+        for (int i = 0; i < tempClusters.Count; i++)
+        {
+            var tempPrefix = new TempPrefix
+            {
+                ClusterIndex = (short)i,
+                PrefixStartIndex = prefixesChars.Count,
+                PrefixLength = (byte)tempClusters[i].Prefix.Length
+            };
+            prefixesChars.AddRange(tempClusters[i].Prefix.ToArray());
+            tempPrefixes.Add(tempPrefix);
+        }
+
+        return new PreparedData
+        {
+            TempPrefixes = tempPrefixes.ToArray(),
+            PrefixesChars = prefixesChars.ToArray()
+        };
+    }
+    
     private List<TempCluster> BuildTempClusters(ClusterCfg[] cfgClusters, RouteCfg[] cfgRoutes)
     {
         var tempClusters = new List<TempCluster>();
@@ -139,15 +165,49 @@ public sealed class SnapshotBuilder
                 childrenNodes.Add(node);
             }
 
-            tempRoute.UpstreamPattern = tempRoute.UpstreamPattern[1..];
+            var nextTempRoute = tempRoute with { UpstreamPattern = tempRoute.UpstreamPattern[1..] };
 
-            if (tempRoute.UpstreamPattern.Length == 0)
+            if (nextTempRoute.UpstreamPattern.Length == 0)
             {
-                node.Methods.Add(tempRoute.Method, tempRoute.DownstreamPattern);
+                node.Methods.Add(nextTempRoute.Method, nextTempRoute.DownstreamPattern);
                 return;
             }
             
-            fillTrieRecursively(node.ChildrenNodes, tempRoute);
+            fillTrieRecursively(node.ChildrenNodes, nextTempRoute);
+        }
+    }
+
+    private void SortDataInTempClusters(List<TempCluster> tempClusters)
+    {
+        foreach (var tempCluster in tempClusters)
+        {
+            sortNodesInCluster(tempCluster);
+        }
+        
+        void sortNodesInCluster(TempCluster tempCluster)
+        {
+            tempCluster.ChildrenNodes = tempCluster.ChildrenNodes
+                .OrderBy(n => n.IsParameter)
+                .ThenByDescending(n => n.Name!.Length)
+                .ToList();
+            
+            foreach (var child in tempCluster.ChildrenNodes)
+            {
+                sortNodesRecursively(child);
+            }
+            
+            void sortNodesRecursively(TrieNode node)
+            {
+                node.ChildrenNodes = node.ChildrenNodes
+                    .OrderBy(s => s.IsParameter)
+                    .ThenByDescending(s => s.Name!.Length)
+                    .ToList();
+            
+                foreach (var child in node.ChildrenNodes)
+                {
+                    sortNodesRecursively(child);
+                }
+            }
         }
     }
 
@@ -155,10 +215,10 @@ public sealed class SnapshotBuilder
     {
         public required string Prefix { get; init; }
         public List<TempRoute> Routes { get; } = [];
-        public List<TrieNode> ChildrenNodes { get; } = [];
+        public List<TrieNode> ChildrenNodes { get; set; } = [];
     }
 
-    private sealed class TempRoute
+    private sealed record TempRoute
     {
         public required string Method { get; init; }
         public required string[] UpstreamPattern { get; set; }
@@ -169,7 +229,20 @@ public sealed class SnapshotBuilder
     {
         public required string? Name { get; init; }
         public required bool IsParameter { get; init; }
-        public List<TrieNode> ChildrenNodes { get; } = [];
+        public List<TrieNode> ChildrenNodes { get; set; } = [];
         public Dictionary<string, string[]> Methods { get; } = [];
+    }
+    
+    private sealed class TempPrefix
+    {
+        public short ClusterIndex { get; set; }
+        public int PrefixStartIndex { get; set; }
+        public byte PrefixLength { get; set; }
+    }
+
+    private sealed class PreparedData
+    {
+        public required TempPrefix[] TempPrefixes { get; init; }
+        public required char[] PrefixesChars { get; init; }
     }
 }
