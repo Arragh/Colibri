@@ -77,7 +77,7 @@ public sealed class RoutingSnapshotBuilder
                 return;
             }
             
-            fillTrieRecursively(node.ChildrenNodes, nextTempRoute);
+            fillTrieRecursively(node.Children, nextTempRoute);
         }
     }
 
@@ -102,12 +102,12 @@ public sealed class RoutingSnapshotBuilder
             
             void sortNodesRecursively(TrieNode node)
             {
-                node.ChildrenNodes = node.ChildrenNodes
+                node.Children = node.Children
                     .OrderBy(s => s.IsParameter)
                     .ThenByDescending(s => s.Name!.Length)
                     .ToList();
             
-                foreach (var child in node.ChildrenNodes)
+                foreach (var child in node.Children)
                 {
                     sortNodesRecursively(child);
                 }
@@ -133,15 +133,15 @@ public sealed class RoutingSnapshotBuilder
     {
         public string? Name { get; init; }
         public bool IsParameter { get; init; }
-        public List<TrieNode> ChildrenNodes { get; set; } = [];
+        public List<TrieNode> Children { get; set; } = [];
         public Dictionary<string, string[]> Methods { get; } = [];
     }
     
     private sealed class TempPrefix
     {
-        public short ClusterIndex { get; set; }
+        public int ClusterIndex { get; set; }
         public int PrefixStartIndex { get; set; }
-        public byte PrefixLength { get; set; }
+        public int PrefixLength { get; set; }
         public int FirstChildIndex { get; set; }
         public int ChildrenCount { get; set; }
     }
