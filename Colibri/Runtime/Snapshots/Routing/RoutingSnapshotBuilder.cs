@@ -10,6 +10,14 @@ public sealed class RoutingSnapshotBuilder
     {
         var tempClusters = BuildTempClusters(settings.Routing.Clusters, settings.Routing.Routes);
         SortDataInTempClusters(tempClusters);
+        var trie = BuildTrieFromClusters(tempClusters);
+
+        List<TempPrefix> prefixes = [];
+        List<char> prefixesChars = [];
+        List<TempUpstreamSegment> segments = [];
+        List<char> segmentsChars = [];
+        
+        Trololo1(trie, segments, segmentsChars,  prefixes, prefixesChars);
         
         throw new NotImplementedException();
     }
@@ -115,6 +123,105 @@ public sealed class RoutingSnapshotBuilder
         }
     }
 
+    private static TrieNode BuildTrieFromClusters(List<TempCluster> tempClusters)
+    {
+        var trie = new TrieNode();
+
+        foreach (var tempCluster in tempClusters)
+        {
+            trie.Children.Add(new TrieNode
+            {
+                Name = tempCluster.Prefix,
+                Children = tempCluster.Children
+            });
+        }
+        
+        return trie;
+    }
+    
+    static void Trololo1(
+        TrieNode trie,
+        List<TempUpstreamSegment> segments,
+        List<char> segmentsChars,
+        List<TempPrefix> prefixes,
+        List<char> prefixesChars)
+    {
+        if (prefixes.Count == 0)
+        {
+            foreach (var child in trie.Children)
+            {
+                var prefix = new TempPrefix
+                {
+                    PrefixStartIndex = prefixesChars.Count,
+                    PrefixLength = child.Name!.Length
+                };
+
+                prefixesChars.AddRange(child.Name!);
+                prefixes.Add(prefix);
+            }
+
+            for (int i = 0; i < trie.Children.Count; i++)
+            {
+                prefixes[i].ChildrenCount = (short)trie.Children[i].Children.Count;
+
+                if (prefixes[i].ChildrenCount > 0)
+                {
+                    prefixes[i].FirstChildIndex = segments.Count;
+                }
+                
+                Trololo1(trie.Children[i], segments, segmentsChars, prefixes, prefixesChars);
+            }
+        }
+        else
+        {
+            foreach (var child in trie.Children)
+            {
+                var segment = new TempUpstreamSegment
+                {
+                    PathStartIndex = segmentsChars.Count,
+                    PathLength = child.Name!.Length + 1
+                };
+
+                segmentsChars.AddRange('/' + child.Name!);
+                segments.Add(segment);
+                
+                // foreach (var method in  child.Methods)
+                // {
+                //     var tempDownstream = new TempDownstream();
+                //
+                //     tempDownstream.PathStartIndex = downstreamPaths.Length;
+                //     tempDownstream.PathLength = (short)method.Value.Length;
+                //     downstreamPaths += method.Value;
+                //     tempDownstream.MethodMask = HttpMethodMask.GetMask(method.Key);
+                //     tempDownstream.HostStartIndex = (short)child.HostStartIndex;
+                //     tempDownstream.HostsCount = (byte)child.HostsCount;
+                //     
+                //     tempDownstreams.Add(tempDownstream);
+                //
+                //     tempSegment.DownstreamStartIndex = (short)(tempDownstreams.Count - 1);
+                //     tempSegment.DownstreamCount++;
+                //     tempSegment.MethodMask |= HttpMethodMask.GetMask(method.Key);
+                // }
+            }
+            
+            var createdTempSegments = segments
+                .TakeLast(trie.Children.Count)
+                .ToList();
+     
+            for (int i = 0; i < trie.Children.Count; i++)
+            {
+                createdTempSegments[i].ChildrenCount = (short)trie.Children[i].Children.Count;
+
+                if (createdTempSegments[i].ChildrenCount > 0)
+                {
+                    createdTempSegments[i].FirstChildIndex = segments.Count;
+                }
+            
+                Trololo1(trie.Children[i], segments, segmentsChars, prefixes, prefixesChars);
+            }
+        }
+    }
+    
     private sealed class TempCluster
     {
         public required string Prefix { get; init; }
@@ -152,11 +259,5 @@ public sealed class RoutingSnapshotBuilder
         public int PathLength { get; set; }
         public int FirstChildIndex { get; set; }
         public int ChildrenCount { get; set; }
-    }
-
-    private sealed class PreparedData
-    {
-        public required TempPrefix[] TempPrefixes { get; init; }
-        public required char[] PrefixesChars { get; init; }
     }
 }
