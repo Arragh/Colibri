@@ -9,16 +9,8 @@ public sealed class RoutingSnapshotBuilder
     public static RoutingSnapshot Build(ColibriSettings settings)
     {
         var tempClusters = BuildTempClusters(settings.Routing.Clusters, settings.Routing.Routes);
-        SortDataInTempClusters(tempClusters);
-        var trie = BuildTrieFromClusters(tempClusters);
+        var trie = BuildTrie(tempClusters);
 
-        List<TempPrefix> prefixes = [];
-        List<char> prefixesChars = [];
-        List<TempUpstreamSegment> segments = [];
-        List<char> segmentsChars = [];
-        
-        Trololo1(trie, segments, segmentsChars,  prefixes, prefixesChars);
-        
         throw new NotImplementedException();
     }
     
@@ -39,225 +31,166 @@ public sealed class RoutingSnapshotBuilder
 
             foreach (var route in clusterRoutes)
             {
-                foreach (var method in route.Methods)
+                var tempRoute = new TempRoute
                 {
-                    tempCluster.Routes.Add(new TempRoute
+                    Methods = route.Methods,
+                    UpstreamPattern = route.UpstreamPattern
+                        .Split('/', StringSplitOptions.RemoveEmptyEntries),
+                    DownstreamPattern = route.DownstreamPattern
+                        .Split('/', StringSplitOptions.RemoveEmptyEntries),
+                };
+
+                var paramIndex = 0;
+                foreach (var segment in tempRoute.UpstreamPattern)
+                {
+                    var upstreamChunk = new UpstreamChunk
                     {
-                        Method = method,
-                        UpstreamPattern = route.UpstreamPattern.Split('/', StringSplitOptions.RemoveEmptyEntries),
-                        DownstreamPattern = route.DownstreamPattern.Split('/', StringSplitOptions.RemoveEmptyEntries),
-                    });
+                        Name = segment
+                    };
+                    
+                    if (segment.StartsWith('{') && segment.EndsWith('}'))
+                    {
+                        upstreamChunk.IsParameter = true;
+                        upstreamChunk.ParamIndex = paramIndex++;
+                    }
+                    
+                    tempRoute.UpstreamChunks.Add(upstreamChunk);
                 }
+
+                foreach (var segment in tempRoute.DownstreamPattern)
+                {
+                    var downstreamChunk = new DownstreamChunk
+                    {
+                        Name = segment
+                    };
+                    
+                    var upstreamChunk = tempRoute.UpstreamChunks
+                        .FirstOrDefault(c => c.Name == segment);
+                    
+                    if (upstreamChunk != null)
+                    {
+                        downstreamChunk.IsParameter = upstreamChunk.IsParameter;
+                        downstreamChunk.ParamIndex = upstreamChunk.ParamIndex;
+                    }
+                    
+                    tempRoute.DownstreamChunks.Add(downstreamChunk);
+                }
+
+                tempCluster.Routes.Add(tempRoute);
             }
 
-            foreach (var tempRoute in tempCluster.Routes)
-            {
-                fillTrieRecursively(tempCluster.Children, tempRoute);
-            }
-            
             tempClusters.Add(tempCluster);
         }
 
         return tempClusters;
-
-        void fillTrieRecursively(List<TrieNode> childrenNodes, TempRoute tempRoute)
-        {
-            var node = childrenNodes
-                .FirstOrDefault(n => n.Name ==  tempRoute.UpstreamPattern[0]);
-
-            if (node == null)
-            {
-                node = new TrieNode
-                {
-                    Name = tempRoute.UpstreamPattern[0],
-                    IsParameter = tempRoute.UpstreamPattern[0].StartsWith('{')
-                                  && tempRoute.UpstreamPattern[0].EndsWith('}')
-                };
-                
-                childrenNodes.Add(node);
-            }
-
-            var nextTempRoute = tempRoute with { UpstreamPattern = tempRoute.UpstreamPattern[1..] };
-
-            if (nextTempRoute.UpstreamPattern.Length == 0)
-            {
-                node.Methods.Add(nextTempRoute.Method, nextTempRoute.DownstreamPattern);
-                return;
-            }
-            
-            fillTrieRecursively(node.Children, nextTempRoute);
-        }
     }
 
-    private static void SortDataInTempClusters(List<TempCluster> tempClusters)
+    private static TrieNode BuildTrie(List<TempCluster> tempClusters)
     {
-        foreach (var tempCluster in tempClusters)
-        {
-            sortNodesInCluster(tempCluster);
-        }
-        
-        void sortNodesInCluster(TempCluster tempCluster)
-        {
-            tempCluster.Children = tempCluster.Children
-                .OrderBy(n => n.IsParameter)
-                .ThenByDescending(n => n.Name!.Length)
-                .ToList();
-            
-            foreach (var child in tempCluster.Children)
-            {
-                sortNodesRecursively(child);
-            }
-            
-            void sortNodesRecursively(TrieNode node)
-            {
-                node.Children = node.Children
-                    .OrderBy(s => s.IsParameter)
-                    .ThenByDescending(s => s.Name!.Length)
-                    .ToList();
-            
-                foreach (var child in node.Children)
-                {
-                    sortNodesRecursively(child);
-                }
-            }
-        }
-    }
-
-    private static TrieNode BuildTrieFromClusters(List<TempCluster> tempClusters)
-    {
-        var trie = new TrieNode();
+        var root = new TrieNode();
 
         foreach (var tempCluster in tempClusters)
         {
-            trie.Children.Add(new TrieNode
+            var node = new TrieNode
             {
-                Name = tempCluster.Prefix,
-                Children = tempCluster.Children
-            });
+                Name = tempCluster.Prefix
+            };
+            
+            root.Children.Add(node);
+        }
+
+        for (int i = 0; i < tempClusters.Count; i++)
+        {
+            foreach (var tempRoute in tempClusters[i].Routes)
+            {
+                createChildrenRecursively(root.Children[i], tempRoute);
+            }
         }
         
-        return trie;
-    }
-    
-    static void Trololo1(
-        TrieNode trie,
-        List<TempUpstreamSegment> segments,
-        List<char> segmentsChars,
-        List<TempPrefix> prefixes,
-        List<char> prefixesChars)
-    {
-        if (prefixes.Count == 0)
+        orderTrieRecursively(root);
+
+        return root;
+
+        void createChildrenRecursively(TrieNode root, TempRoute tempRoute)
         {
-            foreach (var child in trie.Children)
+            var segment = tempRoute.UpstreamPattern[0];
+            
+            var child = root.Children
+                .FirstOrDefault(c => c.Name == segment);
+
+            if (child == null)
             {
-                var prefix = new TempPrefix
+                child = new TrieNode
                 {
-                    PrefixStartIndex = prefixesChars.Count,
-                    PrefixLength = child.Name!.Length
+                    Name = segment,
+                    IsParameter = segment.StartsWith('{') && segment.EndsWith('}')
                 };
-
-                prefixesChars.AddRange(child.Name!);
-                prefixes.Add(prefix);
-            }
-
-            for (int i = 0; i < trie.Children.Count; i++)
-            {
-                prefixes[i].ChildrenCount = (short)trie.Children[i].Children.Count;
-
-                if (prefixes[i].ChildrenCount > 0)
-                {
-                    prefixes[i].FirstChildIndex = segments.Count;
-                }
                 
-                Trololo1(trie.Children[i], segments, segmentsChars, prefixes, prefixesChars);
+                root.Children.Add(child);
+            }
+            
+            var nextRoute = tempRoute with { UpstreamPattern = tempRoute.UpstreamPattern[1..] };
+            if (nextRoute.UpstreamPattern.Length > 0)
+            {
+                createChildrenRecursively(child, nextRoute);
+            }
+            else
+            {
+                foreach (var method in tempRoute.Methods)
+                {
+                    child.Methods.Add(method, tempRoute.DownstreamChunks);
+                }
             }
         }
-        else
+
+        void orderTrieRecursively(TrieNode root)
         {
-            foreach (var child in trie.Children)
-            {
-                var segment = new TempUpstreamSegment
-                {
-                    PathStartIndex = segmentsChars.Count,
-                    PathLength = child.Name!.Length + 1
-                };
-
-                segmentsChars.AddRange('/' + child.Name!);
-                segments.Add(segment);
-                
-                // foreach (var method in  child.Methods)
-                // {
-                //     var tempDownstream = new TempDownstream();
-                //
-                //     tempDownstream.PathStartIndex = downstreamPaths.Length;
-                //     tempDownstream.PathLength = (short)method.Value.Length;
-                //     downstreamPaths += method.Value;
-                //     tempDownstream.MethodMask = HttpMethodMask.GetMask(method.Key);
-                //     tempDownstream.HostStartIndex = (short)child.HostStartIndex;
-                //     tempDownstream.HostsCount = (byte)child.HostsCount;
-                //     
-                //     tempDownstreams.Add(tempDownstream);
-                //
-                //     tempSegment.DownstreamStartIndex = (short)(tempDownstreams.Count - 1);
-                //     tempSegment.DownstreamCount++;
-                //     tempSegment.MethodMask |= HttpMethodMask.GetMask(method.Key);
-                // }
-            }
-            
-            var createdTempSegments = segments
-                .TakeLast(trie.Children.Count)
+            root.Children = root.Children
+                .OrderBy(c => c.IsParameter)
+                .ThenByDescending(c => c.Name!.Length)
                 .ToList();
-     
-            for (int i = 0; i < trie.Children.Count; i++)
-            {
-                createdTempSegments[i].ChildrenCount = (short)trie.Children[i].Children.Count;
 
-                if (createdTempSegments[i].ChildrenCount > 0)
-                {
-                    createdTempSegments[i].FirstChildIndex = segments.Count;
-                }
-            
-                Trololo1(trie.Children[i], segments, segmentsChars, prefixes, prefixesChars);
+            foreach (var child in root.Children)
+            {
+                orderTrieRecursively(child);
             }
         }
     }
     
     private sealed class TempCluster
     {
-        public required string Prefix { get; init; }
+        public string Prefix { get; set; }
         public List<TempRoute> Routes { get; } = [];
-        public List<TrieNode> Children { get; set; } = [];
     }
 
     private sealed record TempRoute
     {
-        public required string Method { get; init; }
-        public required string[] UpstreamPattern { get; set; }
-        public required string[] DownstreamPattern { get; init; }
+        public string[] Methods { get; set; }
+        public string[] UpstreamPattern { get; set; }
+        public string[] DownstreamPattern { get; set; }
+        public List<UpstreamChunk> UpstreamChunks { get; } = [];
+        public List<DownstreamChunk> DownstreamChunks { get; } = [];
     }
 
     private sealed class TrieNode
     {
-        public string? Name { get; init; }
-        public bool IsParameter { get; init; }
+        public string? Name { get; set; }
+        public bool IsParameter { get; set; }
         public List<TrieNode> Children { get; set; } = [];
-        public Dictionary<string, string[]> Methods { get; } = [];
+        public Dictionary<string, List<DownstreamChunk>> Methods { get; } = [];
     }
     
-    private sealed class TempPrefix
+    private sealed class UpstreamChunk
     {
-        public int ClusterIndex { get; set; }
-        public int PrefixStartIndex { get; set; }
-        public int PrefixLength { get; set; }
-        public int FirstChildIndex { get; set; }
-        public int ChildrenCount { get; set; }
+        public string Name { get; set; }
+        public bool IsParameter { get; set; }
+        public int ParamIndex { get; set; }
     }
-
-    private sealed class TempUpstreamSegment
+    
+    private sealed class DownstreamChunk
     {
-        public int PathStartIndex { get; set; }
-        public int PathLength { get; set; }
-        public int FirstChildIndex { get; set; }
-        public int ChildrenCount { get; set; }
+        public string Name { get; set; }
+        public bool IsParameter { get; set; }
+        public int ParamIndex { get; set; }
     }
 }
