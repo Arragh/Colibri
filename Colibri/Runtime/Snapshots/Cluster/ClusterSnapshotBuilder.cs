@@ -9,7 +9,7 @@ using Colibri.Runtime.Pipeline.Terminal;
 
 namespace Colibri.Runtime.Snapshots.Cluster;
 
-public class ClusterSnapshotBuilder
+public sealed class ClusterSnapshotBuilder
 {
     public static ClusterSnapshot Build(ColibriSettings settings)
     {

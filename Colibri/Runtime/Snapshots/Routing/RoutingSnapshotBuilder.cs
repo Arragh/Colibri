@@ -3,40 +3,15 @@ using Colibri.Configuration.Models;
 
 namespace Colibri.Runtime.Snapshots.Routing;
 
-public class RoutingSnapshotBuilder
+public sealed class RoutingSnapshotBuilder
 {
     
     public static RoutingSnapshot Build(ColibriSettings settings)
     {
         var tempClusters = BuildTempClusters(settings.Routing.Clusters, settings.Routing.Routes);
         SortDataInTempClusters(tempClusters);
-        var preparedData = PrepareDataForRoutingSnapshot(tempClusters);
         
         throw new NotImplementedException();
-    }
-    
-    private static PreparedData PrepareDataForRoutingSnapshot(List<TempCluster> tempClusters)
-    {
-        List<TempPrefix> tempPrefixes = [];
-        List<char> prefixesChars = [];
-
-        for (int i = 0; i < tempClusters.Count; i++)
-        {
-            var tempPrefix = new TempPrefix
-            {
-                ClusterIndex = (short)i,
-                PrefixStartIndex = prefixesChars.Count,
-                PrefixLength = (byte)tempClusters[i].Prefix.Length
-            };
-            prefixesChars.AddRange(tempClusters[i].Prefix.ToArray());
-            tempPrefixes.Add(tempPrefix);
-        }
-
-        return new PreparedData
-        {
-            TempPrefixes = tempPrefixes.ToArray(),
-            PrefixesChars = prefixesChars.ToArray()
-        };
     }
     
     private static List<TempCluster> BuildTempClusters(ClusterCfg[] cfgClusters, RouteCfg[] cfgRoutes)
@@ -69,7 +44,7 @@ public class RoutingSnapshotBuilder
 
             foreach (var tempRoute in tempCluster.Routes)
             {
-                fillTrieRecursively(tempCluster.ChildrenNodes, tempRoute);
+                fillTrieRecursively(tempCluster.Children, tempRoute);
             }
             
             tempClusters.Add(tempCluster);
@@ -115,12 +90,12 @@ public class RoutingSnapshotBuilder
         
         void sortNodesInCluster(TempCluster tempCluster)
         {
-            tempCluster.ChildrenNodes = tempCluster.ChildrenNodes
+            tempCluster.Children = tempCluster.Children
                 .OrderBy(n => n.IsParameter)
                 .ThenByDescending(n => n.Name!.Length)
                 .ToList();
             
-            foreach (var child in tempCluster.ChildrenNodes)
+            foreach (var child in tempCluster.Children)
             {
                 sortNodesRecursively(child);
             }
@@ -144,7 +119,7 @@ public class RoutingSnapshotBuilder
     {
         public required string Prefix { get; init; }
         public List<TempRoute> Routes { get; } = [];
-        public List<TrieNode> ChildrenNodes { get; set; } = [];
+        public List<TrieNode> Children { get; set; } = [];
     }
 
     private sealed record TempRoute
@@ -156,8 +131,8 @@ public class RoutingSnapshotBuilder
 
     private sealed class TrieNode
     {
-        public required string? Name { get; init; }
-        public required bool IsParameter { get; init; }
+        public string? Name { get; init; }
+        public bool IsParameter { get; init; }
         public List<TrieNode> ChildrenNodes { get; set; } = [];
         public Dictionary<string, string[]> Methods { get; } = [];
     }
@@ -167,6 +142,16 @@ public class RoutingSnapshotBuilder
         public short ClusterIndex { get; set; }
         public int PrefixStartIndex { get; set; }
         public byte PrefixLength { get; set; }
+        public int FirstChildIndex { get; set; }
+        public int ChildrenCount { get; set; }
+    }
+
+    private sealed class TempUpstreamSegment
+    {
+        public int PathStartIndex { get; set; }
+        public int PathLength { get; set; }
+        public int FirstChildIndex { get; set; }
+        public int ChildrenCount { get; set; }
     }
 
     private sealed class PreparedData
