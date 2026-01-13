@@ -1,13 +1,13 @@
 namespace Colibri.Runtime.Snapshots.Routing;
 
 public readonly struct ClusterSegment(
-    int pathStartIndex,
-    int pathLength,
-    int firstChildIndex,
-    int childrenCount)
+    ushort pathStartIndex,
+    byte pathLength,
+    ushort firstChildIndex,
+    ushort childrenCount)
 {
-    public readonly int PathStartIndex = pathStartIndex;
-    public readonly int FirstChildIndex = firstChildIndex;
-    public readonly int ChildrenCount = childrenCount;
-    public readonly int PathLength = pathLength;
+    public readonly ushort FirstChildIndex = firstChildIndex;
+    public readonly ushort ChildrenCount = childrenCount;
+    public readonly ushort PathStartIndex = pathStartIndex;
+    public readonly byte PathLength = pathLength;
 }

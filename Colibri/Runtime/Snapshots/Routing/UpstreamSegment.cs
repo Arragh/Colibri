@@ -2,20 +2,20 @@ namespace Colibri.Runtime.Snapshots.Routing;
 
 public readonly struct UpstreamSegment(
     int pathStartIndex,
-    int pathLength,
+    byte pathLength,
     int firstChildIndex,
-    int childrenCount,
+    ushort childrenCount,
     bool isParameter,
-    int paramIndex,
-    int downstreamStartIndex,
-    int downstreamsCount)
+    byte paramIndex,
+    ushort downstreamStartIndex,
+    byte downstreamsCount)
 {
     public readonly int PathStartIndex = pathStartIndex;
-    public readonly int PathLength = pathLength;
     public readonly int FirstChildIndex = firstChildIndex;
-    public readonly int ChildrenCount = childrenCount;
+    public readonly ushort ChildrenCount = childrenCount;
+    public readonly ushort DownstreamStartIndex = downstreamStartIndex;
+    public readonly byte PathLength = pathLength;
     public readonly bool IsParameter = isParameter;
-    public readonly int ParamIndex = paramIndex;
-    public readonly int DownstreamStartIndex = downstreamStartIndex;
-    public readonly int DownstreamsCount = downstreamsCount;
+    public readonly byte ParamIndex = paramIndex;
+    public readonly byte DownstreamsCount = downstreamsCount;
 }

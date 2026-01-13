@@ -1,11 +1,11 @@
 namespace Colibri.Runtime.Snapshots.Routing;
 
 public readonly struct Downstream(
-    int firstChildIndex,
-    int childrenCount,
+    ushort firstChildIndex,
+    byte childrenCount,
     byte methodMask)
 {
-    public readonly int FirstChildIndex = firstChildIndex;
-    public readonly int ChildrenCount = childrenCount;
+    public readonly ushort FirstChildIndex = firstChildIndex;
+    public readonly byte ChildrenCount = childrenCount;
     public readonly byte MethodMask = methodMask;
 }

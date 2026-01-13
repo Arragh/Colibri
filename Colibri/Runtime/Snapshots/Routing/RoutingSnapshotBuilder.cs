@@ -227,10 +227,10 @@ public sealed class RoutingSnapshotBuilder
         {
             var clasterSegment = new TempClusterSegment
             {
-                PathStartIndex = clustersPaths.Count,
-                PathLength = cluster.Name!.Length,
-                FirstChildIndex = upstreamSegments.Count,
-                ChildrenCount = cluster.Children.Count
+                PathStartIndex = (ushort)clustersPaths.Count,
+                PathLength = (byte)cluster.Name!.Length,
+                FirstChildIndex = (ushort)upstreamSegments.Count,
+                ChildrenCount = (ushort)cluster.Children.Count
             };
                 
             clustersPaths.AddRange(cluster.Name);
@@ -247,10 +247,10 @@ public sealed class RoutingSnapshotBuilder
                 var upstreamSegment = new TempUpstreamSegment
                 {
                     PathStartIndex = upstreamSegmentsPaths.Count,
-                    PathLength = segmentName.Length,
+                    PathLength = (byte)segmentName.Length,
                     IsParameter = child.IsParameter,
-                    ParamIndex = child.ParamIndex,
-                    ChildrenCount = child.Children.Count
+                    ParamIndex = (byte)child.ParamIndex,
+                    ChildrenCount = (ushort)child.Children.Count
                 };
                 
                 upstreamSegmentsPaths.AddRange(segmentName);
@@ -270,14 +270,14 @@ public sealed class RoutingSnapshotBuilder
                 }
                 else
                 {
-                    justCreatedUpstreamSegments[i].DownstreamStartIndex = downstreams.Count;
+                    justCreatedUpstreamSegments[i].DownstreamStartIndex = (ushort)downstreams.Count;
 
                     foreach (var method in root.Children[i].Methods)
                     {
                         var tempDownstream = new TempDownstream
                         {
-                            FirstChildIndex = downstreamSegments.Count,
-                            ChildrenCount = method.Value.Count,
+                            FirstChildIndex = (ushort)downstreamSegments.Count,
+                            ChildrenCount = (byte)method.Value.Count,
                             MethodMask = HttpMethodMask.GetMask(method.Key),
                         };
 
@@ -287,9 +287,9 @@ public sealed class RoutingSnapshotBuilder
                             var tempDownstreamSegment = new TempDownstreamSegment
                             {
                                 PathStartIndex = downstreamSegmentsPaths.Count,
-                                PathLength = segmentName.Length,
+                                PathLength = (byte)segmentName.Length,
                                 IsParameter = chunk.IsParameter,
-                                ParamIndex = chunk.ParamIndex,
+                                ParamIndex = (byte)chunk.ParamIndex,
                             };
                             
                             downstreamSegmentsPaths.AddRange(segmentName);
@@ -299,7 +299,7 @@ public sealed class RoutingSnapshotBuilder
                         downstreams.Add(tempDownstream);
                     }
                     
-                    justCreatedUpstreamSegments[i].DownstreamsCount = downstreams.Count - justCreatedUpstreamSegments[i].DownstreamStartIndex;
+                    justCreatedUpstreamSegments[i].DownstreamsCount = (byte)(downstreams.Count - justCreatedUpstreamSegments[i].DownstreamStartIndex);
                 }
             }
         }
@@ -356,37 +356,37 @@ public sealed class RoutingSnapshotBuilder
 
     private sealed class TempClusterSegment
     {
-        public int PathStartIndex { get; set; }
-        public int PathLength { get; set; }
-        public int FirstChildIndex { get; set; }
-        public int ChildrenCount { get; set; }
+        public ushort PathStartIndex { get; set; }
+        public byte PathLength { get; set; }
+        public ushort FirstChildIndex { get; set; }
+        public ushort ChildrenCount { get; set; }
     }
 
     private sealed class TempUpstreamSegment
     {
         public int PathStartIndex { get; set; }
-        public int PathLength { get; set; }
+        public byte PathLength { get; set; }
         public int FirstChildIndex { get; set; }
-        public int ChildrenCount { get; set; }
+        public ushort ChildrenCount { get; set; }
         public bool IsParameter { get; set; }
-        public int ParamIndex { get; set; }
-        public int DownstreamStartIndex { get; set; }
-        public int DownstreamsCount { get; set; }
+        public byte ParamIndex { get; set; }
+        public ushort DownstreamStartIndex { get; set; }
+        public byte DownstreamsCount { get; set; }
     }
     
     private sealed class TempDownstream
     {
-        public int FirstChildIndex { get; set; }
-        public int ChildrenCount { get; set; }
+        public ushort FirstChildIndex { get; set; }
+        public byte ChildrenCount { get; set; }
         public byte MethodMask { get; set; }
     }
 
     private sealed class TempDownstreamSegment
     {
         public int PathStartIndex { get; set; }
-        public int PathLength { get; set; }
+        public byte PathLength { get; set; }
         public bool IsParameter { get; set; }
-        public int ParamIndex { get; set; }
+        public byte ParamIndex { get; set; }
     }
     
     private sealed class DataForSnapshot
