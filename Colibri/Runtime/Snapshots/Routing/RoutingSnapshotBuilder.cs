@@ -1,5 +1,6 @@
 using Colibri.Configuration;
 using Colibri.Configuration.Models;
+using Colibri.Helpers;
 
 namespace Colibri.Runtime.Snapshots.Routing;
 
@@ -165,7 +166,11 @@ public sealed class RoutingSnapshotBuilder
         List<char> clustersPaths = [];
         
         List<TempUpstreamSegment> upstreamSegments = [];
-        List<char> upstreamPaths = [];
+        List<char> upstreamSegmentsPaths = [];
+        
+        List<TempDownstream> downstreams = [];
+        List<TempDownstreamSegment> downstreamSegments = [];
+        List<char> downstreamSegmentsPaths = [];
 
         foreach (var cluster in root.Children)
         {
@@ -193,14 +198,14 @@ public sealed class RoutingSnapshotBuilder
                 
                 var upstreamSegment = new TempUpstreamSegment
                 {
-                    PathStartIndex = upstreamPaths.Count,
+                    PathStartIndex = upstreamSegmentsPaths.Count,
                     PathLength = segmentName.Length,
                     IsParameter = child.IsParameter,
                     ParamIndex = child.ParamIndex,
                     ChildrenCount = child.Children.Count
                 };
                 
-                upstreamPaths.AddRange(segmentName);
+                upstreamSegmentsPaths.AddRange(segmentName);
                 upstreamSegments.Add(upstreamSegment);
             }
 
@@ -213,9 +218,42 @@ public sealed class RoutingSnapshotBuilder
                 if (root.Children[i].Children.Count > 0)
                 {
                     justCreatedUpstreamSegments[i].FirstChildIndex = upstreamSegments.Count;
+                    trololo1(root.Children[i]);
                 }
-                
-                trololo1(root.Children[i]);
+                else
+                {
+                    var lol = root.Children[i];
+                    
+                    justCreatedUpstreamSegments[i].DownstreamStartIndex = downstreams.Count;
+
+                    foreach (var method in root.Children[i].Methods)
+                    {
+                        var tempDownstream = new TempDownstream
+                        {
+                            FirstChildIndex = downstreamSegments.Count,
+                            ChildrenCount = method.Value.Count,
+                            MethodMask = HttpMethodMask.GetMask(method.Key),
+                        };
+
+                        foreach (var chunk in method.Value)
+                        {
+                            var tempDownstreamSegment = new TempDownstreamSegment
+                            {
+                                PathStartIndex = downstreamSegmentsPaths.Count,
+                                PathLength = chunk.Name.Length,
+                                IsParameter = chunk.IsParameter,
+                                ParamIndex = chunk.ParamIndex,
+                            };
+                            
+                            downstreamSegmentsPaths.AddRange(chunk.Name);
+                            downstreamSegments.Add(tempDownstreamSegment);
+                        }
+                        
+                        downstreams.Add(tempDownstream);
+                    }
+                    
+                    justCreatedUpstreamSegments[i].DownstreamsCount = downstreams.Count - justCreatedUpstreamSegments[i].DownstreamStartIndex;
+                }
             }
         }
     }
@@ -272,6 +310,23 @@ public sealed class RoutingSnapshotBuilder
         public int PathLength { get; set; }
         public int FirstChildIndex { get; set; }
         public int ChildrenCount { get; set; }
+        public bool IsParameter { get; set; }
+        public int ParamIndex { get; set; }
+        public int DownstreamStartIndex { get; set; }
+        public int DownstreamsCount { get; set; }
+    }
+    
+    private sealed class TempDownstream
+    {
+        public int FirstChildIndex { get; set; }
+        public int ChildrenCount { get; set; }
+        public byte MethodMask { get; set; }
+    }
+
+    private sealed class TempDownstreamSegment
+    {
+        public int PathStartIndex { get; set; }
+        public int PathLength { get; set; }
         public bool IsParameter { get; set; }
         public int ParamIndex { get; set; }
     }
