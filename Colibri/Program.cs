@@ -17,7 +17,7 @@ builder.Services.AddSingleton<PipelineSrv>(sp => new([
 
 var app = builder.Build();
 
-// var snapshotProvider = app.Services.GetRequiredService<ISnapshotProvider>();
+var snapshotProvider = app.Services.GetRequiredService<SnapshotProvider>();
 var pipeline = app.Services.GetRequiredService<PipelineSrv>();
 
 app.Run(async ctx =>
@@ -28,7 +28,11 @@ app.Run(async ctx =>
         CancellationToken = ctx.RequestAborted
     };
     
-    // var clusterSnapshot = snapshotProvider.ClusterSnapshot;
+    var clusterSnapshot = snapshotProvider.ClusterSnapshot;
+    var routingSnapshot = snapshotProvider.RoutingSnapshot;
+
+    Console.WriteLine();
+    
     // var cluster = clusterSnapshot.Clusters.First();
     // await cluster.Pipeline.ExecuteAsync(pipelineCtx);
     

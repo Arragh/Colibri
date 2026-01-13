@@ -11,9 +11,60 @@ public sealed class RoutingSnapshotBuilder
     {
         var tempClusters = BuildTempClusters(settings.Routing.Clusters, settings.Routing.Routes);
         var trie = BuildTrie(tempClusters);
-        Trololo(trie);
+        var snapshotData = BuildDataForSnapshot(trie);
 
-        throw new NotImplementedException();
+        var clusterSegments = new ClusterSegment[snapshotData.TempClusterSegments.Length];
+        var upstreamSegments = new UpstreamSegment[snapshotData.TempUpstreamSegments.Length];
+        var downstreams = new Downstream[snapshotData.TempDownstreams.Length];
+        var downstreamSegments = new DownstreamSegment[snapshotData.TempDownstreamSegments.Length];
+
+        for (int i = 0; i < snapshotData.TempClusterSegments.Length; i++)
+        {
+            clusterSegments[i] = new ClusterSegment(
+                snapshotData.TempClusterSegments[i].PathStartIndex,
+                snapshotData.TempClusterSegments[i].PathLength,
+                snapshotData.TempClusterSegments[i].FirstChildIndex,
+                snapshotData.TempClusterSegments[i].ChildrenCount);
+        }
+
+        for (int i = 0; i < snapshotData.TempUpstreamSegments.Length; i++)
+        {
+            upstreamSegments[i] = new UpstreamSegment(
+                snapshotData.TempUpstreamSegments[i].PathStartIndex,
+                snapshotData.TempUpstreamSegments[i].PathLength,
+                snapshotData.TempUpstreamSegments[i].FirstChildIndex,
+                snapshotData.TempUpstreamSegments[i].ChildrenCount,
+                snapshotData.TempUpstreamSegments[i].IsParameter,
+                snapshotData.TempUpstreamSegments[i].ParamIndex,
+                snapshotData.TempUpstreamSegments[i].DownstreamStartIndex,
+                snapshotData.TempUpstreamSegments[i].DownstreamsCount);
+        }
+
+        for (int i = 0; i < snapshotData.TempDownstreams.Length; i++)
+        {
+            downstreams[i] = new Downstream(
+                snapshotData.TempDownstreams[i].FirstChildIndex,
+                snapshotData.TempDownstreams[i].ChildrenCount,
+                snapshotData.TempDownstreams[i].MethodMask);
+        }
+
+        for (int i = 0; i < snapshotData.TempDownstreamSegments.Length; i++)
+        {
+            downstreamSegments[i] = new DownstreamSegment(
+                snapshotData.TempDownstreamSegments[i].PathStartIndex,
+                snapshotData.TempDownstreamSegments[i].PathLength,
+                snapshotData.TempDownstreamSegments[i].IsParameter,
+                snapshotData.TempDownstreamSegments[i].ParamIndex);
+        }
+
+        return new RoutingSnapshot(
+            clusterSegments,
+            snapshotData.TempClusterPaths,
+            upstreamSegments,
+            snapshotData.TempUpstreamSegmentPaths,
+            downstreams,
+            downstreamSegments,
+            snapshotData.TempDownstreamSegmentPaths);
     }
     
     private static List<TempCluster> BuildTempClusters(ClusterCfg[] cfgClusters, RouteCfg[] cfgRoutes)
@@ -160,7 +211,7 @@ public sealed class RoutingSnapshotBuilder
         }
     }
 
-    private static void Trololo(TrieNode root)
+    private static DataForSnapshot BuildDataForSnapshot(TrieNode root)
     {
         List<TempClusterSegment> clustersSegments = [];
         List<char> clustersPaths = [];
@@ -188,14 +239,11 @@ public sealed class RoutingSnapshotBuilder
             trololo1(cluster);
         }
 
-        Console.WriteLine();
-
         void trololo1(TrieNode root)
         {
             foreach (var child in root.Children)
             {
                 var segmentName = '/' + child.Name;
-                
                 var upstreamSegment = new TempUpstreamSegment
                 {
                     PathStartIndex = upstreamSegmentsPaths.Count,
@@ -222,8 +270,6 @@ public sealed class RoutingSnapshotBuilder
                 }
                 else
                 {
-                    var lol = root.Children[i];
-                    
                     justCreatedUpstreamSegments[i].DownstreamStartIndex = downstreams.Count;
 
                     foreach (var method in root.Children[i].Methods)
@@ -237,15 +283,16 @@ public sealed class RoutingSnapshotBuilder
 
                         foreach (var chunk in method.Value)
                         {
+                            var segmentName = '/' + chunk.Name;
                             var tempDownstreamSegment = new TempDownstreamSegment
                             {
                                 PathStartIndex = downstreamSegmentsPaths.Count,
-                                PathLength = chunk.Name.Length,
+                                PathLength = segmentName.Length,
                                 IsParameter = chunk.IsParameter,
                                 ParamIndex = chunk.ParamIndex,
                             };
                             
-                            downstreamSegmentsPaths.AddRange(chunk.Name);
+                            downstreamSegmentsPaths.AddRange(segmentName);
                             downstreamSegments.Add(tempDownstreamSegment);
                         }
                         
@@ -256,6 +303,17 @@ public sealed class RoutingSnapshotBuilder
                 }
             }
         }
+
+        return new DataForSnapshot
+        {
+            TempClusterSegments = clustersSegments.ToArray(),
+            TempClusterPaths = clustersPaths.ToArray(),
+            TempUpstreamSegments = upstreamSegments.ToArray(),
+            TempUpstreamSegmentPaths = upstreamSegmentsPaths.ToArray(),
+            TempDownstreams = downstreams.ToArray(),
+            TempDownstreamSegments = downstreamSegments.ToArray(),
+            TempDownstreamSegmentPaths = downstreamSegmentsPaths.ToArray()
+        };
     }
     
     private sealed class TempCluster
@@ -329,5 +387,16 @@ public sealed class RoutingSnapshotBuilder
         public int PathLength { get; set; }
         public bool IsParameter { get; set; }
         public int ParamIndex { get; set; }
+    }
+    
+    private sealed class DataForSnapshot
+    {
+        public required TempClusterSegment[] TempClusterSegments { get; init; }
+        public required char[] TempClusterPaths { get; init; }
+        public required TempUpstreamSegment[] TempUpstreamSegments { get; init; }
+        public required char[] TempUpstreamSegmentPaths { get; init; }
+        public required TempDownstream[] TempDownstreams { get; init; }
+        public required TempDownstreamSegment[] TempDownstreamSegments { get; init; }
+        public required char[] TempDownstreamSegmentPaths { get; init; }
     }
 }

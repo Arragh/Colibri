@@ -1,5 +1,6 @@
 using Colibri.Configuration;
 using Colibri.Runtime.Snapshots.Cluster;
+using Colibri.Runtime.Snapshots.Routing;
 using Microsoft.Extensions.Options;
 
 namespace Colibri.Runtime.Snapshots;
@@ -24,4 +25,5 @@ public sealed class SnapshotProvider
     }
 
     public ClusterSnapshot ClusterSnapshot => Volatile.Read(ref _globalSnapshot).ClusterSnapshot;
+    public RoutingSnapshot RoutingSnapshot => Volatile.Read(ref _globalSnapshot).RoutingSnapshot;
 }
