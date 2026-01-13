@@ -10,6 +10,7 @@ public sealed class RoutingSnapshotBuilder
     {
         var tempClusters = BuildTempClusters(settings.Routing.Clusters, settings.Routing.Routes);
         var trie = BuildTrie(tempClusters);
+        Trololo(trie);
 
         throw new NotImplementedException();
     }
@@ -113,24 +114,25 @@ public sealed class RoutingSnapshotBuilder
 
         void createChildrenRecursively(TrieNode root, TempRoute tempRoute)
         {
-            var segment = tempRoute.UpstreamPattern[0];
+            var chunk = tempRoute.UpstreamChunks[0];
             
             var child = root.Children
-                .FirstOrDefault(c => c.Name == segment);
+                .FirstOrDefault(c => c.Name == chunk.Name);
 
             if (child == null)
             {
                 child = new TrieNode
                 {
-                    Name = segment,
-                    IsParameter = segment.StartsWith('{') && segment.EndsWith('}')
+                    Name = chunk.Name,
+                    IsParameter = chunk.IsParameter,
+                    ParamIndex = chunk.ParamIndex
                 };
                 
                 root.Children.Add(child);
             }
             
-            var nextRoute = tempRoute with { UpstreamPattern = tempRoute.UpstreamPattern[1..] };
-            if (nextRoute.UpstreamPattern.Length > 0)
+            var nextRoute = tempRoute with { UpstreamChunks = tempRoute.UpstreamChunks[1..] };
+            if (nextRoute.UpstreamChunks.Count > 0)
             {
                 createChildrenRecursively(child, nextRoute);
             }
@@ -156,6 +158,67 @@ public sealed class RoutingSnapshotBuilder
             }
         }
     }
+
+    private static void Trololo(TrieNode root)
+    {
+        List<TempClusterSegment> clustersSegments = [];
+        List<char> clustersPaths = [];
+        
+        List<TempUpstreamSegment> upstreamSegments = [];
+        List<char> upstreamPaths = [];
+
+        foreach (var cluster in root.Children)
+        {
+            var clasterSegment = new TempClusterSegment
+            {
+                PathStartIndex = clustersPaths.Count,
+                PathLength = cluster.Name!.Length,
+                FirstChildIndex = upstreamSegments.Count,
+                ChildrenCount = cluster.Children.Count
+            };
+                
+            clustersPaths.AddRange(cluster.Name);
+            clustersSegments.Add(clasterSegment);
+
+            trololo1(cluster);
+        }
+
+        Console.WriteLine();
+
+        void trololo1(TrieNode root)
+        {
+            foreach (var child in root.Children)
+            {
+                var segmentName = '/' + child.Name;
+                
+                var upstreamSegment = new TempUpstreamSegment
+                {
+                    PathStartIndex = upstreamPaths.Count,
+                    PathLength = segmentName.Length,
+                    IsParameter = child.IsParameter,
+                    ParamIndex = child.ParamIndex,
+                    ChildrenCount = child.Children.Count
+                };
+                
+                upstreamPaths.AddRange(segmentName);
+                upstreamSegments.Add(upstreamSegment);
+            }
+
+            var justCreatedUpstreamSegments = upstreamSegments
+                .TakeLast(root.Children.Count)
+                .ToArray();
+
+            for (int i = 0; i < root.Children.Count; i++)
+            {
+                if (root.Children[i].Children.Count > 0)
+                {
+                    justCreatedUpstreamSegments[i].FirstChildIndex = upstreamSegments.Count;
+                }
+                
+                trololo1(root.Children[i]);
+            }
+        }
+    }
     
     private sealed class TempCluster
     {
@@ -168,14 +231,15 @@ public sealed class RoutingSnapshotBuilder
         public string[] Methods { get; set; }
         public string[] UpstreamPattern { get; set; }
         public string[] DownstreamPattern { get; set; }
-        public List<UpstreamChunk> UpstreamChunks { get; } = [];
-        public List<DownstreamChunk> DownstreamChunks { get; } = [];
+        public List<UpstreamChunk> UpstreamChunks { get; set; } = [];
+        public List<DownstreamChunk> DownstreamChunks { get; set; } = [];
     }
 
     private sealed class TrieNode
     {
         public string? Name { get; set; }
         public bool IsParameter { get; set; }
+        public int ParamIndex { get; set; }
         public List<TrieNode> Children { get; set; } = [];
         public Dictionary<string, List<DownstreamChunk>> Methods { get; } = [];
     }
@@ -190,6 +254,24 @@ public sealed class RoutingSnapshotBuilder
     private sealed class DownstreamChunk
     {
         public string Name { get; set; }
+        public bool IsParameter { get; set; }
+        public int ParamIndex { get; set; }
+    }
+
+    private sealed class TempClusterSegment
+    {
+        public int PathStartIndex { get; set; }
+        public int PathLength { get; set; }
+        public int FirstChildIndex { get; set; }
+        public int ChildrenCount { get; set; }
+    }
+
+    private sealed class TempUpstreamSegment
+    {
+        public int PathStartIndex { get; set; }
+        public int PathLength { get; set; }
+        public int FirstChildIndex { get; set; }
+        public int ChildrenCount { get; set; }
         public bool IsParameter { get; set; }
         public int ParamIndex { get; set; }
     }

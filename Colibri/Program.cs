@@ -7,7 +7,7 @@ var builder = WebApplication.CreateSlimBuilder(args);
 
 builder.Services.AddColibriSettings();
 
-builder.Services.AddSingleton<ISnapshotProvider, SnapshotProvider>();
+builder.Services.AddSingleton<SnapshotProvider>();
 builder.Services.AddSingleton<ClusterEngine>();
 builder.Services.AddSingleton<ClusterEngineMiddleware>();
 

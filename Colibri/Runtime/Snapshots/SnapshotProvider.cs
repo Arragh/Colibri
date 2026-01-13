@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 
 namespace Colibri.Runtime.Snapshots;
 
-public sealed class SnapshotProvider : ISnapshotProvider
+public sealed class SnapshotProvider
 {
     private GlobalSnapshot _globalSnapshot;
     private GlobalSnapshotBuilder _globalSnapshotBuilder = new();

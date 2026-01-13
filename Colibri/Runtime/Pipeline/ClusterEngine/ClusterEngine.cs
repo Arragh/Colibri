@@ -3,7 +3,7 @@ using Colibri.Runtime.Snapshots.Cluster;
 
 namespace Colibri.Runtime.Pipeline.ClusterEngine;
 
-public sealed class ClusterEngine(ISnapshotProvider provider)
+public sealed class ClusterEngine(SnapshotProvider provider)
 {
     public ClusterSnp TryMatch(string prefix)
     {
