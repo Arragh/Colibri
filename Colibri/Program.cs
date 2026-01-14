@@ -1,6 +1,6 @@
 using Colibri.Configuration;
 using Colibri.Runtime.Pipeline;
-using Colibri.Runtime.Pipeline.ClusterEngine;
+using Colibri.Runtime.Pipeline.ClusterMatcher;
 using Colibri.Runtime.Snapshots;
 
 var builder = WebApplication.CreateSlimBuilder(args);
@@ -8,11 +8,10 @@ var builder = WebApplication.CreateSlimBuilder(args);
 builder.Services.AddColibriSettings();
 
 builder.Services.AddSingleton<SnapshotProvider>();
-builder.Services.AddSingleton<ClusterEngine>();
-builder.Services.AddSingleton<ClusterEngineMiddleware>();
+builder.Services.AddSingleton<ClusterMatcherMiddleware>();
 
 builder.Services.AddSingleton<PipelineSrv>(sp => new([
-    sp.GetRequiredService<ClusterEngineMiddleware>()
+    sp.GetRequiredService<ClusterMatcherMiddleware>()
 ]));
 
 var app = builder.Build();
@@ -24,21 +23,12 @@ app.Run(async ctx =>
 {
     var pipelineCtx = new PipelineContext
     {
+        GlobalSnapshot = snapshotProvider.GlobalSnapshot,
         HttpContext = ctx,
         CancellationToken = ctx.RequestAborted
     };
     
-    var clusterSnapshot = snapshotProvider.ClusterSnapshot;
-    var routingSnapshot = snapshotProvider.RoutingSnapshot;
-
-    Console.WriteLine();
-    
-    // var cluster = clusterSnapshot.Clusters.First();
-    // await cluster.Pipeline.ExecuteAsync(pipelineCtx);
-    
     await pipeline.ExecuteAsync(pipelineCtx);
-    
-    Console.WriteLine();
 });
 
 app.Run();
