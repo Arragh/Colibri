@@ -7,10 +7,10 @@ public sealed class ClusterMatcher
     public bool TryMatch(
         ReadOnlySpan<char> path,
         RoutingSnapshot routingSnapshot,
-        out int clusterId)
+        out int clusterId,
+        out ushort firstChildIndex,
+        out ushort childrenCount)
     {
-        clusterId = 0;
-        
         var clusters = routingSnapshot.Clusters;
         var clusterNames = routingSnapshot.ClusterNames;
         
@@ -26,10 +26,15 @@ public sealed class ClusterMatcher
                 && path[clusterName.Length] == '/')
             {
                 clusterId = i;
+                firstChildIndex = clusterSegment.FirstChildIndex;
+                childrenCount = clusterSegment.ChildrenCount;
                 return true;
             }
         }
 
+        clusterId = 0;
+        firstChildIndex = 0;
+        childrenCount = 0;
         return false;
     }
 }

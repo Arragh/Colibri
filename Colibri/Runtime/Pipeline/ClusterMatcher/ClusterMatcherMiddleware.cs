@@ -11,13 +11,17 @@ public sealed class ClusterMatcherMiddleware : IPipelineMiddleware
         if (!_clusterMatcher.TryMatch(
                 path,
                 ctx.GlobalSnapshot.RoutingSnapshot,
-                out var clusterId))
+                out var clusterId,
+                out var firstChildIndex,
+                out var childrenCount))
         {
             ctx.HttpContext.Response.StatusCode = 404;
             return;
         }
         
-        ctx.ClusterId = clusterId;
+        ctx.FirstClusterChildIndex = firstChildIndex;
+        ctx.ClusterChildrenCount = childrenCount;
+        
         var cluster = ctx.GlobalSnapshot.ClusterSnapshot.Clusters[clusterId];
         await cluster.Pipeline.ExecuteAsync(ctx);
     }
