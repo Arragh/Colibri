@@ -271,33 +271,34 @@ public sealed class RoutingSnapshotBuilder
                 else
                 {
                     justCreatedUpstreamSegments[i].DownstreamStartIndex = (ushort)downstreams.Count;
+                    
+                    var tempDownstream = new TempDownstream
+                    {
+                        FirstChildIndex = (ushort)downstreamSegments.Count,
+                        ChildrenCount = (byte)root.Children[i].Methods.Values.First().Count
+                    };
 
                     foreach (var method in root.Children[i].Methods)
                     {
-                        var tempDownstream = new TempDownstream
-                        {
-                            FirstChildIndex = (ushort)downstreamSegments.Count,
-                            ChildrenCount = (byte)method.Value.Count,
-                            MethodMask = HttpMethodMask.GetMask(method.Key),
-                        };
-
-                        foreach (var chunk in method.Value)
-                        {
-                            var segmentName = '/' + chunk.Name;
-                            var tempDownstreamSegment = new TempDownstreamSegment
-                            {
-                                PathStartIndex = downstreamSegmentsPaths.Count,
-                                PathLength = (byte)segmentName.Length,
-                                IsParameter = chunk.IsParameter,
-                                ParamIndex = (byte)chunk.ParamIndex,
-                            };
-                            
-                            downstreamSegmentsPaths.AddRange(segmentName);
-                            downstreamSegments.Add(tempDownstreamSegment);
-                        }
-                        
-                        downstreams.Add(tempDownstream);
+                        tempDownstream.MethodMask |= HttpMethodMask.GetMask(method.Key);
                     }
+
+                    foreach (var chunk in root.Children[i].Methods.Values.First())
+                    {
+                        var segmentName = '/' + chunk.Name;
+                        var tempDownstreamSegment = new TempDownstreamSegment
+                        {
+                            PathStartIndex = downstreamSegmentsPaths.Count,
+                            PathLength = (byte)segmentName.Length,
+                            IsParameter = chunk.IsParameter,
+                            ParamIndex = (byte)chunk.ParamIndex,
+                        };
+                            
+                        downstreamSegmentsPaths.AddRange(segmentName);
+                        downstreamSegments.Add(tempDownstreamSegment);
+                    }
+                        
+                    downstreams.Add(tempDownstream);
                     
                     justCreatedUpstreamSegments[i].DownstreamsCount = (byte)(downstreams.Count - justCreatedUpstreamSegments[i].DownstreamStartIndex);
                 }
