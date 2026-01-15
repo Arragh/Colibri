@@ -11,14 +11,11 @@ public sealed class RoutingEngineMiddleware : IPipelineMiddleware
     public async ValueTask InvokeAsync(PipelineContext ctx, PipelineDelegate next)
     {
         var path = ctx.HttpContext.Request.Path.Value.AsSpan();
-
-        if (path[^1] == '/')
-        {
-            path = path[..^1];
-        }
+        Span<char> buffer = stackalloc char[path.Length];
+        var normalizedPath = NormalizePath(path, buffer);
         
         if (!_clusterMatcher.TryMatch(
-                path,
+                normalizedPath,
                 ctx.GlobalSnapshot.RoutingSnapshot,
                 out var clusterId,
                 out var clusterLength,
@@ -29,11 +26,11 @@ public sealed class RoutingEngineMiddleware : IPipelineMiddleware
             return;
         }
 
-        path = path[clusterLength..];
+        normalizedPath = normalizedPath[clusterLength..];
 
         if (!_upstreamMatcher.TryMatch(
                 ctx.GlobalSnapshot.RoutingSnapshot,
-                path,
+                normalizedPath,
                 HttpMethodMask.GetMask(ctx.HttpContext.Request.Method),
                 firstUpstreamIndex,
                 upstreamsCount,
@@ -47,7 +44,7 @@ public sealed class RoutingEngineMiddleware : IPipelineMiddleware
         
         var pathUrl = _pathBuilder.Build(
             ctx.GlobalSnapshot.RoutingSnapshot,
-            path,
+            normalizedPath,
             routeParams,
             downstreamFirstChildIndex,
             downstreamChildrenCount);
@@ -56,5 +53,29 @@ public sealed class RoutingEngineMiddleware : IPipelineMiddleware
         
         var cluster = ctx.GlobalSnapshot.ClusterSnapshot.Clusters[clusterId];
         await cluster.Pipeline.ExecuteAsync(ctx);
+    }
+    
+    static ReadOnlySpan<char> NormalizePath(ReadOnlySpan<char> path, Span<char> buffer)
+    {
+        int x = 0;
+    
+        for (int i = 0; i < path.Length; i++)
+        {
+            char c = path[i];
+
+            if (c == '/' && x > 0 && buffer[x - 1] == '/')
+            {
+                continue;
+            }
+
+            buffer[x++] = c;
+        }
+
+        if (x > 1 && buffer[x - 1] == '/')
+        {
+            x--;
+        }
+
+        return buffer[..x];
     }
 }
