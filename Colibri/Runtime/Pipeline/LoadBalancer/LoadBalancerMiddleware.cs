@@ -8,8 +8,6 @@ public sealed class LoadBalancerMiddleware : IPipelineMiddleware
         PipelineContext ctx,
         PipelineDelegate next)
     {
-        Console.WriteLine("LOAD BALANCER");
-        
         ctx.SelectedHost = _lb.SelectHost(ctx.ClusterId);
         return next(ctx);
     }

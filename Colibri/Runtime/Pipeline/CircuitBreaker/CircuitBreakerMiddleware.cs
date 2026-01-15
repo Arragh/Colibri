@@ -8,8 +8,6 @@ public sealed class CircuitBreakerMiddleware : IPipelineMiddleware
         PipelineContext ctx,
         PipelineDelegate next)
     {
-        Console.WriteLine("CIRCUIT BREAKER");
-        
         if (!_breaker.CanExecute(ctx.ClusterId, ctx.EndpointId))
         {
             ctx.StatusCode = 503;

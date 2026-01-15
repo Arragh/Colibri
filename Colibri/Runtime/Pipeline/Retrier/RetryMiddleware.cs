@@ -8,8 +8,6 @@ public sealed class RetryMiddleware : IPipelineMiddleware
         PipelineContext ctx,
         PipelineDelegate next)
     {
-        Console.WriteLine("RETRIER");
-        
         for (int attempt = 1; attempt <= _maxAttempts; attempt++)
         {
             ctx.Attempts = attempt;

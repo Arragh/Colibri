@@ -43,14 +43,13 @@ public sealed class UpstreamMatcher
                 {
                     if (localPath.StartsWith(segmentPath))
                     {
-                        matched = true;
-                            
                         if (localPath.Length > segmentPath.Length
                             && localPath[segmentPath.Length] == '/')
                         {
                             start = upstreamSegment.FirstChildIndex;
                             limiter = upstreamSegment.FirstChildIndex + upstreamSegment.ChildrenCount;
                             localPath = localPath[segmentPath.Length..];
+                            matched = true;
                             totalSlice += segmentPath.Length;
                             break;
                         }
@@ -70,8 +69,6 @@ public sealed class UpstreamMatcher
                 }
                 else
                 {
-                    matched = true;
-                    
                     var paramStart = totalSlice;
                     byte paramCount = 0;
 
@@ -92,13 +89,12 @@ public sealed class UpstreamMatcher
                         break;
                     }
                     
-                    var paramValue = path.Slice(paramStart, paramCount);
-
                     routeParams[upstreamSegment.ParamIndex] = new ParamValue((ushort)paramStart, paramCount);
                     
                     start = upstreamSegment.FirstChildIndex;
                     limiter = upstreamSegment.FirstChildIndex + upstreamSegment.ChildrenCount;
                     localPath = localPath[paramCount..];
+                    matched = true;
                     totalSlice += paramCount;
 
                     if (localPath.Length == 0)

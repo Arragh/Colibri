@@ -1,4 +1,5 @@
 using System.Net;
+using Colibri.Helpers;
 
 namespace Colibri.Runtime.Pipeline.Terminal;
 
@@ -35,9 +36,27 @@ public class HttpTerminalMiddleware : IPipelineMiddleware, IDisposable
         }
     }
     
-    public ValueTask InvokeAsync(PipelineContext ctx, PipelineDelegate next)
+    public async ValueTask InvokeAsync(PipelineContext ctx, PipelineDelegate next)
     {
-        return next(ctx);
+        var requestUri = new Uri(_uris[0], ctx.DownstreamPath + ctx.HttpContext.Request.QueryString);
+        
+        using var request = new HttpRequestMessage(HttpMethodCache.Get(ctx.HttpContext.Request.Method), requestUri);
+        if (ctx.HttpContext.Request.ContentLength > 0 || ctx.HttpContext.Request.Headers.ContainsKey("Transfer-Encoding"))
+        {
+            request.Content = new StreamContent(ctx.HttpContext.Request.Body);
+                            
+            if (!string.IsNullOrEmpty(ctx.HttpContext.Request.ContentType))
+            {
+                request.Content.Headers.TryAddWithoutValidation("Content-Type", ctx.HttpContext.Request.ContentType);
+            }
+        }
+        request.Headers.ExpectContinue = false;
+        
+        using var response = await _invokers[0]
+            .SendAsync(request, ctx.HttpContext.RequestAborted);
+        
+        ctx.HttpContext.Response.StatusCode = (int)response.StatusCode;
+        await response.Content.CopyToAsync(ctx.HttpContext.Response.Body, ctx.HttpContext.RequestAborted);
     }
 
     public void Dispose()

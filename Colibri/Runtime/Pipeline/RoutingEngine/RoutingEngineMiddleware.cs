@@ -52,7 +52,7 @@ public sealed class RoutingEngineMiddleware : IPipelineMiddleware
             downstreamFirstChildIndex,
             downstreamChildrenCount);
         
-        ctx.PathUrl = pathUrl;
+        ctx.DownstreamPath = pathUrl;
         
         var cluster = ctx.GlobalSnapshot.ClusterSnapshot.Clusters[clusterId];
         await cluster.Pipeline.ExecuteAsync(ctx);

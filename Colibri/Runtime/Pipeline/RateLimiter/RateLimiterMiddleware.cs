@@ -8,8 +8,6 @@ public sealed class RateLimiterMiddleware : IPipelineMiddleware
         PipelineContext ctx,
         PipelineDelegate next)
     {
-        Console.WriteLine("RATE LIMITER");
-        
         if (!_limiter.Allow(ctx.ClusterId, ctx.EndpointId))
         {
             ctx.StatusCode = 429;
