@@ -1,6 +1,6 @@
 using Colibri.Configuration;
 using Colibri.Runtime.Pipeline;
-using Colibri.Runtime.Pipeline.ClusterMatcher;
+using Colibri.Runtime.Pipeline.RoutingEngine;
 using Colibri.Runtime.Snapshots;
 
 var builder = WebApplication.CreateSlimBuilder(args);
@@ -8,10 +8,10 @@ var builder = WebApplication.CreateSlimBuilder(args);
 builder.Services.AddColibriSettings();
 
 builder.Services.AddSingleton<SnapshotProvider>();
-builder.Services.AddSingleton<ClusterMatcherMiddleware>();
+builder.Services.AddSingleton<RoutingEngineMiddleware>();
 
 builder.Services.AddSingleton<PipelineSrv>(sp => new([
-    sp.GetRequiredService<ClusterMatcherMiddleware>()
+    sp.GetRequiredService<RoutingEngineMiddleware>()
 ]));
 
 var app = builder.Build();

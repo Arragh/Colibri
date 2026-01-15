@@ -8,8 +8,7 @@ public sealed class PipelineContext
     public required HttpContext HttpContext { get; init; }
     public required CancellationToken CancellationToken { get; init; }
     public int ClusterId { get; set; }
-    public ushort FirstClusterChildIndex { get; set; }
-    public ushort ClusterChildrenCount { get; set; }
+    public string PathUrl { get; set; }
     
     public int EndpointId { get; set; }
     public int SelectedHost { get; set; }

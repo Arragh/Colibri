@@ -6,7 +6,6 @@ namespace Colibri.Runtime.Snapshots.Routing;
 
 public sealed class RoutingSnapshotBuilder
 {
-    
     public static RoutingSnapshot Build(ColibriSettings settings)
     {
         var tempClusters = BuildTempClusters(settings.Routing.Clusters, settings.Routing.Routes);
@@ -36,8 +35,7 @@ public sealed class RoutingSnapshotBuilder
                 snapshotData.TempUpstreamSegments[i].ChildrenCount,
                 snapshotData.TempUpstreamSegments[i].IsParameter,
                 snapshotData.TempUpstreamSegments[i].ParamIndex,
-                snapshotData.TempUpstreamSegments[i].DownstreamStartIndex,
-                snapshotData.TempUpstreamSegments[i].DownstreamsCount);
+                snapshotData.TempUpstreamSegments[i].DownstreamIndex);
         }
 
         for (int i = 0; i < snapshotData.TempDownstreams.Length; i++)
@@ -265,12 +263,12 @@ public sealed class RoutingSnapshotBuilder
             {
                 if (root.Children[i].Children.Count > 0)
                 {
-                    justCreatedUpstreamSegments[i].FirstChildIndex = upstreamSegments.Count;
+                    justCreatedUpstreamSegments[i].FirstChildIndex = (ushort)upstreamSegments.Count;
                     trololo1(root.Children[i]);
                 }
                 else
                 {
-                    justCreatedUpstreamSegments[i].DownstreamStartIndex = (ushort)downstreams.Count;
+                    justCreatedUpstreamSegments[i].DownstreamIndex = (ushort)downstreams.Count;
                     
                     var tempDownstream = new TempDownstream
                     {
@@ -299,8 +297,6 @@ public sealed class RoutingSnapshotBuilder
                     }
                         
                     downstreams.Add(tempDownstream);
-                    
-                    justCreatedUpstreamSegments[i].DownstreamsCount = (byte)(downstreams.Count - justCreatedUpstreamSegments[i].DownstreamStartIndex);
                 }
             }
         }
@@ -367,12 +363,11 @@ public sealed class RoutingSnapshotBuilder
     {
         public int PathStartIndex { get; set; }
         public byte PathLength { get; set; }
-        public int FirstChildIndex { get; set; }
+        public ushort FirstChildIndex { get; set; }
         public ushort ChildrenCount { get; set; }
         public bool IsParameter { get; set; }
         public byte ParamIndex { get; set; }
-        public ushort DownstreamStartIndex { get; set; }
-        public byte DownstreamsCount { get; set; }
+        public ushort DownstreamIndex { get; set; }
     }
     
     private sealed class TempDownstream

@@ -43,7 +43,7 @@ public sealed class ClusterSnapshotBuilder
             {
                 clusterMiddlewares.Add(new CircuitBreakerMiddleware());
             }
-
+            
             switch (cfgCluster.Protocol)
             {
                 case "http":
