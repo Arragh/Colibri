@@ -1,0 +1,26 @@
+using Colibri.Configuration;
+using Microsoft.Extensions.Options;
+
+namespace Colibri.Runtime.Snapshots;
+
+public sealed class SnapshotProvider
+{
+    private GlobalSnapshot _globalSnapshot;
+    private GlobalSnapshotBuilder _globalSnapshotBuilder = new();
+    
+    public SnapshotProvider(IOptionsMonitor<ColibriSettings> monitor)
+    {
+        _globalSnapshot = _globalSnapshotBuilder.Build(monitor.CurrentValue);
+
+        monitor.OnChange(c =>
+        {
+            Console.WriteLine("SNAPSHOT CHANGED\n\n\n");
+            
+            var newGlobalSnapshot = _globalSnapshotBuilder.Build(c);
+            Volatile.Write(ref _globalSnapshot, newGlobalSnapshot);
+            
+        });
+    }
+
+    public GlobalSnapshot GlobalSnapshot => Volatile.Read(ref _globalSnapshot);
+}
