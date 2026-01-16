@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Net.Http.Json;
 
-const string getUrl = "http://192.168.1.102:5790/cluster1/test1/get/Петюня/trololo/21";
+const string getUrl = "http://192.168.1.102:5790/cluster1/test1/get/Vasya/info/22";
 const string postUrl = "http://192.168.1.102:5790/cluster2/test2/post";
 
 const int concurrency = 500;

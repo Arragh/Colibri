@@ -35,7 +35,8 @@ public sealed class RoutingSnapshotBuilder
                 snapshotData.TempUpstreamSegments[i].ChildrenCount,
                 snapshotData.TempUpstreamSegments[i].IsParameter,
                 snapshotData.TempUpstreamSegments[i].ParamIndex,
-                snapshotData.TempUpstreamSegments[i].DownstreamIndex);
+                snapshotData.TempUpstreamSegments[i].DownstreamIndex,
+                snapshotData.TempUpstreamSegments[i].HasDownstream);
         }
 
         for (int i = 0; i < snapshotData.TempDownstreams.Length; i++)
@@ -263,6 +264,7 @@ public sealed class RoutingSnapshotBuilder
             {
                 if(root.Children[i].Methods.Count > 0)
                 {
+                    justCreatedUpstreamSegments[i].HasDownstream = true;
                     justCreatedUpstreamSegments[i].DownstreamIndex = (ushort)downstreams.Count;
                     
                     var tempDownstream = new TempDownstream
@@ -368,6 +370,7 @@ public sealed class RoutingSnapshotBuilder
         public ushort ChildrenCount { get; set; }
         public bool IsParameter { get; set; }
         public byte ParamIndex { get; set; }
+        public bool HasDownstream { get; set; }
         public ushort DownstreamIndex { get; set; }
     }
     
