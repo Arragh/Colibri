@@ -35,7 +35,8 @@ public sealed class RoutingSnapshotBuilder
                 snapshotData.TempUpstreamSegments[i].ChildrenCount,
                 snapshotData.TempUpstreamSegments[i].IsParameter,
                 snapshotData.TempUpstreamSegments[i].ParamIndex,
-                snapshotData.TempUpstreamSegments[i].DownstreamIndex);
+                snapshotData.TempUpstreamSegments[i].DownstreamIndex,
+                snapshotData.TempUpstreamSegments[i].HasDownstream);
         }
 
         for (int i = 0; i < snapshotData.TempDownstreams.Length; i++)
@@ -261,13 +262,9 @@ public sealed class RoutingSnapshotBuilder
 
             for (int i = 0; i < root.Children.Count; i++)
             {
-                if (root.Children[i].Children.Count > 0)
+                if(root.Children[i].Methods.Count > 0)
                 {
-                    justCreatedUpstreamSegments[i].FirstChildIndex = (ushort)upstreamSegments.Count;
-                    trololo1(root.Children[i]);
-                }
-                else
-                {
+                    justCreatedUpstreamSegments[i].HasDownstream = true;
                     justCreatedUpstreamSegments[i].DownstreamIndex = (ushort)downstreams.Count;
                     
                     var tempDownstream = new TempDownstream
@@ -297,6 +294,12 @@ public sealed class RoutingSnapshotBuilder
                     }
                         
                     downstreams.Add(tempDownstream);
+                }
+                
+                if (root.Children[i].Children.Count > 0)
+                {
+                    justCreatedUpstreamSegments[i].FirstChildIndex = (ushort)upstreamSegments.Count;
+                    trololo1(root.Children[i]);
                 }
             }
         }
@@ -367,6 +370,7 @@ public sealed class RoutingSnapshotBuilder
         public ushort ChildrenCount { get; set; }
         public bool IsParameter { get; set; }
         public byte ParamIndex { get; set; }
+        public bool HasDownstream { get; set; }
         public ushort DownstreamIndex { get; set; }
     }
     

@@ -43,18 +43,19 @@ public sealed class UpstreamMatcher
                 {
                     if (localPath.StartsWith(segmentPath))
                     {
-                        if (localPath.Length > segmentPath.Length
-                            && localPath[segmentPath.Length] == '/')
+                        if (localPath.Length > segmentPath.Length)
                         {
-                            start = upstreamSegment.FirstChildIndex;
-                            limiter = upstreamSegment.FirstChildIndex + upstreamSegment.ChildrenCount;
-                            localPath = localPath[segmentPath.Length..];
-                            matched = true;
-                            totalSlice += segmentPath.Length;
-                            break;
+                            if (localPath[segmentPath.Length] == '/')
+                            {
+                                start = upstreamSegment.FirstChildIndex;
+                                limiter = upstreamSegment.FirstChildIndex + upstreamSegment.ChildrenCount;
+                                localPath = localPath[segmentPath.Length..];
+                                matched = true;
+                                totalSlice += segmentPath.Length;
+                                break;
+                            }
                         }
-
-                        if (localPath.Length == segmentPath.Length)
+                        else if (upstreamSegment.HasDownstream)
                         {
                             ref readonly var downstream = ref routingSnapshot.Downstreams[upstreamSegment.DownstreamIndex];
 
@@ -97,7 +98,8 @@ public sealed class UpstreamMatcher
                     matched = true;
                     totalSlice += paramCount;
 
-                    if (localPath.Length == 0)
+                    if (localPath.Length == 0
+                        && upstreamSegment.HasDownstream)
                     {
                         ref readonly var downstream = ref routingSnapshot.Downstreams[upstreamSegment.DownstreamIndex];
 
