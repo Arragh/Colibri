@@ -11,7 +11,7 @@ namespace Colibri.Runtime.Snapshots.Cluster;
 
 public sealed class ClusterSnapshotBuilder
 {
-    public static ClusterSnapshot Build(ColibriSettings settings)
+    public ClusterSnapshot Build(ColibriSettings settings)
     {
         var snpClusters = new List<ClusterSnp>();
         
@@ -44,7 +44,7 @@ public sealed class ClusterSnapshotBuilder
                 clusterMiddlewares.Add(new CircuitBreakerMiddleware());
             }
             
-            switch (cfgCluster.Protocol)
+            switch (cfgCluster.Protocol.ToLower())
             {
                 case "http":
                     clusterMiddlewares.Add(new HttpTerminalMiddleware(cfgCluster.Hosts));

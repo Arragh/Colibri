@@ -8,8 +8,8 @@ public sealed class UpstreamMatcher
         RoutingSnapshot routingSnapshot,
         ReadOnlySpan<char> path,
         byte methodMask,
-        ushort firstUpstreamIndex,
-        ushort upstreamsCount,
+        int rootSegmentsCount,
+        out ushort clusterId,
         out ParamValue[] routeParams,
         out ushort downstreamFirstChildIndex,
         out byte downstreamChildrenCount)
@@ -17,14 +17,14 @@ public sealed class UpstreamMatcher
         var upstreams = routingSnapshot.UpstreamSegments;
         var upstreamPaths = routingSnapshot.UpstreamSegmentPaths;
 
-        var start = firstUpstreamIndex;
-        var limiter = firstUpstreamIndex + upstreamsCount;
+        var start = 0;
+        var limiter = rootSegmentsCount;
         
         var localPath = path;
         var totalSlice = 0;
         
         routeParams = new ParamValue[16];
-        
+        clusterId = 0;
         downstreamFirstChildIndex = 0;
         downstreamChildrenCount = 0;
 
@@ -57,13 +57,18 @@ public sealed class UpstreamMatcher
                         }
                         else if (upstreamSegment.HasDownstream)
                         {
-                            ref readonly var downstream = ref routingSnapshot.Downstreams[upstreamSegment.DownstreamIndex];
+                            var downstreams = routingSnapshot.Downstreams
+                                .Slice(upstreamSegment.DownstreamStartIndex, upstreamSegment.DownstreamsCount);
 
-                            if ((downstream.MethodMask & methodMask) != 0)
+                            foreach (var downstream in downstreams)
                             {
-                                downstreamFirstChildIndex = downstream.FirstChildIndex;
-                                downstreamChildrenCount = downstream.ChildrenCount;
-                                return true;
+                                if (downstream.MethodMask == methodMask)
+                                {
+                                    clusterId = downstream.ClusterId;
+                                    downstreamFirstChildIndex = downstream.FirstChildIndex;
+                                    downstreamChildrenCount = downstream.ChildrenCount;
+                                    return true;
+                                }
                             }
                         }
                     }
@@ -101,13 +106,18 @@ public sealed class UpstreamMatcher
                     if (localPath.Length == 0
                         && upstreamSegment.HasDownstream)
                     {
-                        ref readonly var downstream = ref routingSnapshot.Downstreams[upstreamSegment.DownstreamIndex];
+                        var downstreams = routingSnapshot.Downstreams
+                            .Slice(upstreamSegment.DownstreamStartIndex, upstreamSegment.DownstreamsCount);
 
-                        if ((downstream.MethodMask & methodMask) != 0)
+                        foreach (var downstream in downstreams)
                         {
-                            downstreamFirstChildIndex = downstream.FirstChildIndex;
-                            downstreamChildrenCount = downstream.ChildrenCount;
-                            return true;
+                            if (downstream.MethodMask == methodMask)
+                            {
+                                clusterId = downstream.ClusterId;
+                                downstreamFirstChildIndex = downstream.FirstChildIndex;
+                                downstreamChildrenCount = downstream.ChildrenCount;
+                                return true;
+                            }
                         }
                     }
 
