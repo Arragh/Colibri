@@ -4,36 +4,22 @@ namespace Colibri.Runtime.Pipeline.RoutingEngine;
 
 public sealed class RoutingEngineMiddleware : IPipelineMiddleware
 {
-    private readonly ClusterMatcher _clusterMatcher = new();
     private readonly UpstreamMatcher _upstreamMatcher = new();
     private readonly DownstreamPathBuilder _pathBuilder = new();
     
     public async ValueTask InvokeAsync(PipelineContext ctx, PipelineDelegate next)
     {
+        var routingSnapshot = ctx.GlobalSnapshot.RoutingSnapshot;
         var path = ctx.HttpContext.Request.Path.Value.AsSpan();
         Span<char> buffer = stackalloc char[path.Length];
         var normalizedPath = NormalizePath(path, buffer);
         
-        if (!_clusterMatcher.TryMatch(
-                normalizedPath,
-                ctx.GlobalSnapshot.RoutingSnapshot,
-                out var clusterId,
-                out var clusterLength,
-                out var firstUpstreamIndex,
-                out var upstreamsCount))
-        {
-            ctx.HttpContext.Response.StatusCode = 404;
-            return;
-        }
-
-        normalizedPath = normalizedPath[clusterLength..];
-
         if (!_upstreamMatcher.TryMatch(
-                ctx.GlobalSnapshot.RoutingSnapshot,
+                routingSnapshot,
                 normalizedPath,
                 HttpMethodMask.GetMask(ctx.HttpContext.Request.Method),
-                firstUpstreamIndex,
-                upstreamsCount,
+                routingSnapshot.RootSegmentsCount,
+                out var clusterId,
                 out var routeParams,
                 out var downstreamFirstChildIndex,
                 out var downstreamChildrenCount))

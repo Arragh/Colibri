@@ -5,7 +5,18 @@ app.MapGet("/get/{name}/info/{age}", (string name, int age) =>
 {
     var response = new
     {
-        Name = name,
+        Name = name + " - #1 - GET",
+        Age = age
+    };
+
+    return Results.Ok(response);
+});
+
+app.MapPost("/get/{name}/info/{age}", (string name, int age) =>
+{
+    var response = new
+    {
+        Name = name + " - #1 - POST",
         Age = age
     };
 

@@ -6,12 +6,15 @@ namespace Colibri.Runtime.Snapshots;
 
 public sealed class GlobalSnapshotBuilder
 {
+    private readonly ClusterSnapshotBuilder _clusterSnapshotBuilder = new();
+    private readonly RoutingSnapshotBuilder _routingSnapshotBuilder = new();
+    
     public GlobalSnapshot Build(ColibriSettings settings)
     {
         return new GlobalSnapshot
         {
-            ClusterSnapshot = ClusterSnapshotBuilder.Build(settings),
-            RoutingSnapshot = RoutingSnapshotBuilder.Build(settings)
+            ClusterSnapshot = _clusterSnapshotBuilder.Build(settings),
+            RoutingSnapshot = _routingSnapshotBuilder.Build(settings)
         };
     }
 }
