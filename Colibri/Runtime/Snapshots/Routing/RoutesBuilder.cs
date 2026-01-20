@@ -55,7 +55,6 @@ public class RoutesBuilder
                 {
                     var downstreamChunk = new DownstreamChunk
                     {
-                        ClusterId = tempRoute.ClusterId,
                         Name = segment
                     };
                     
@@ -91,7 +90,6 @@ public sealed record TempRoute
 
 public sealed class DownstreamChunk
 {
-    public int ClusterId { get; set; }
     public string Name { get; set; }
     public bool IsParameter { get; set; }
     public int ParamIndex { get; set; }

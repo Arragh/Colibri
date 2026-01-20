@@ -21,34 +21,17 @@ public sealed class RoutingSnapshotBuilder
 
         for (int i = 0; i < snapshotData.TempUpstreamSegments.Length; i++)
         {
-            upstreamSegments[i] = new UpstreamSegment(
-                snapshotData.TempUpstreamSegments[i].PathStartIndex,
-                snapshotData.TempUpstreamSegments[i].PathLength,
-                snapshotData.TempUpstreamSegments[i].FirstChildIndex,
-                snapshotData.TempUpstreamSegments[i].ChildrenCount,
-                snapshotData.TempUpstreamSegments[i].IsParameter,
-                snapshotData.TempUpstreamSegments[i].ParamIndex,
-                snapshotData.TempUpstreamSegments[i].DownstreamStartIndex,
-                snapshotData.TempUpstreamSegments[i].DownstreamsCount,
-                snapshotData.TempUpstreamSegments[i].HasDownstream);
+            upstreamSegments[i] = new UpstreamSegment(snapshotData.TempUpstreamSegments[i]);
         }
 
         for (int i = 0; i < snapshotData.TempDownstreams.Length; i++)
         {
-            downstreams[i] = new Downstream(
-                snapshotData.TempDownstreams[i].ClusterId,
-                snapshotData.TempDownstreams[i].FirstChildIndex,
-                snapshotData.TempDownstreams[i].ChildrenCount,
-                snapshotData.TempDownstreams[i].MethodMask);
+            downstreams[i] = new Downstream(snapshotData.TempDownstreams[i]);
         }
 
         for (int i = 0; i < snapshotData.TempDownstreamSegments.Length; i++)
         {
-            downstreamSegments[i] = new DownstreamSegment(
-                snapshotData.TempDownstreamSegments[i].PathStartIndex,
-                snapshotData.TempDownstreamSegments[i].PathLength,
-                snapshotData.TempDownstreamSegments[i].IsParameter,
-                snapshotData.TempDownstreamSegments[i].ParamIndex);
+            downstreamSegments[i] = new DownstreamSegment(snapshotData.TempDownstreamSegments[i]);
         }
         
         return new RoutingSnapshot(

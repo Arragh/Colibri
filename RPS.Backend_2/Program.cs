@@ -11,7 +11,7 @@ app.MapPost("/post", (RequestModel  request) =>
     return Results.Ok("Logged in");
 });
 
-app.MapDelete("/get/{name}/info/{age}", (string name, int age) =>
+app.MapDelete("/get", (string name, int age) =>
 {
     var response = new
     {

@@ -43,7 +43,13 @@ public sealed class TrieBuilder
             {
                 foreach (var method in tempRoute.Methods)
                 {
-                    child.Methods.Add(method, tempRoute.DownstreamChunks);
+                    var chunksHolder = new ChunksHolder
+                    {
+                        ClusterId = tempRoute.ClusterId,
+                        Chunks = tempRoute.DownstreamChunks
+                    };
+                    
+                    child.Methods.Add(method, chunksHolder);
                 }
             }
         }
@@ -69,5 +75,11 @@ public sealed class TrieNode
     public bool IsParameter { get; set; }
     public int ParamIndex { get; set; }
     public List<TrieNode> Children { get; set; } = [];
-    public Dictionary<string, List<DownstreamChunk>> Methods { get; } = [];
+    public Dictionary<string, ChunksHolder> Methods { get; } = [];
+}
+
+public sealed class ChunksHolder
+{
+    public int ClusterId { get; set; }
+    public List<DownstreamChunk> Chunks { get; set; } = [];
 }
