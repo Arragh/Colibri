@@ -98,8 +98,8 @@ string formattedSuccess = success > 0 ? $"{Green}{success}{Reset}" : $"{Gray}{su
 string formattedFailed = failed > 0 ? $"{Red}{failed}{Reset}" : $"{Gray}{failed}{Reset}";
 string formattedRps = rps switch
 {
-    < 50000 => $"{Red}{rps:F0}{Reset}",
-    < 55000 => $"{Yellow}{rps:F0}{Reset}",
+    < 45000 => $"{Red}{rps:F0}{Reset}",
+    < 50000 => $"{Yellow}{rps:F0}{Reset}",
     _ => $"{Green}{rps:F0}{Reset}"
 };
 

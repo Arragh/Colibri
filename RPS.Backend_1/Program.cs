@@ -5,33 +5,23 @@ app.MapGet("/get", (string name, int age) =>
 {
     var response = new
     {
-        Name = name + " - #1 - GET",
+        Name = name + " - Cluster-1",
         Age = age
     };
 
     return Results.Ok(response);
 });
 
-app.MapPost("/get", (string name, int age) =>
+app.MapPost("/post", (RequestModel  request) =>
 {
-    var response = new
+    if (request.Login != "user123" || request.Password != "pass123")
     {
-        Name = name + " - #1 - POST",
-        Age = age
-    };
+        return Results.Forbid();
+    }
 
-    return Results.Ok(response);
-});
-
-app.MapGet("/get/{name}", (string name) =>
-{
-    var response = new
-    {
-        Name = name,
-        Age = 7
-    };
-
-    return Results.Ok(response);
+    return Results.Ok("Logged in");
 });
 
 app.Run();
+
+record RequestModel(string Login, string Password);

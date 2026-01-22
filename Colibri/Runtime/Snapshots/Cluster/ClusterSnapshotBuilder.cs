@@ -31,7 +31,14 @@ public sealed class ClusterSnapshotBuilder
             
             if (cfgCluster.LoadBalancing.Enabled)
             {
-                clusterMiddlewares.Add(new LoadBalancerMiddleware());
+                ILoadBalancer loadBalancer = cfgCluster.LoadBalancing.Type switch
+                {
+                    "RR" => new RoundRobinBalancer(cfgCluster.Hosts.Length),
+                    "RND" => new RandomBalancer(cfgCluster.Hosts.Length),
+                    _ => throw new ArgumentException($"Invalid load balancing type {cfgCluster.LoadBalancing.Type}")
+                };
+                
+                clusterMiddlewares.Add(new LoadBalancerMiddleware(loadBalancer));
             }
 
             if (cfgCluster.Retry.Enabled)

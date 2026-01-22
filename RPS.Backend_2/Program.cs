@@ -11,11 +11,11 @@ app.MapPost("/post", (RequestModel  request) =>
     return Results.Ok("Logged in");
 });
 
-app.MapDelete("/get", (string name, int age) =>
+app.MapGet("/get", (string name, int age) =>
 {
     var response = new
     {
-        Name = name + " - #2 - DELETE",
+        Name = name + " - Cluster-2",
         Age = age
     };
 

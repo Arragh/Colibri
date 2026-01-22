@@ -28,9 +28,16 @@ public class RoutesBuilder
 
                 if (cfgClusters[i].UsePrefix)
                 {
+                    var prefix = cfgClusters[i].Prefix;
+                    
+                    if (prefix[0] == '/')
+                    {
+                        prefix = prefix[1..];
+                    }
+                    
                     tempRoute.UpstreamChunks.Add(new UpstreamChunk
                     {
-                        Name = cfgClusters[i].Prefix
+                        Name = prefix
                     });
                 }
                 
