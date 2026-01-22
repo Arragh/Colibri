@@ -45,16 +45,17 @@ public class SnapshotDataBuilder
 
                     foreach (var method in root.Children[i].Methods)
                     {
+                        var chunksHolder = method.Value;
                         var tempDownstream = new TempDownstream
                         {
-                            ClusterId = (ushort)method.Value.First().ClusterId,
+                            ClusterId = (ushort)chunksHolder.ClusterId,
                             MethodMask = HttpMethodMask.GetMask(method.Key),
                             FirstChildIndex = (ushort)downstreamSegments.Count,
-                            ChildrenCount = (byte)method.Value.Count
+                            ChildrenCount = (byte)chunksHolder.Chunks.Count
                         };
                         downstreams.Add(tempDownstream);
 
-                        foreach (var chunk in method.Value)
+                        foreach (var chunk in chunksHolder.Chunks)
                         {
                             var segmentName = '/' + chunk.Name;
                             var downstreamSegment = new TempDownstreamSegment

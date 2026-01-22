@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Net.Http.Json;
 
-const string getUrl = "http://192.168.1.102:5790/test1/get/Vasya/info/22";
-const string postUrl = "http://192.168.1.102:5790/test2/post";
+const string getUrl = "http://192.168.1.102:5790/cluster1/test1/get?name=Vasya&age=21";
+const string postUrl = "http://192.168.1.102:5790/cluster2/test2/post";
 
 const int concurrency = 500;
 const int durationSec = 5;
@@ -98,8 +98,8 @@ string formattedSuccess = success > 0 ? $"{Green}{success}{Reset}" : $"{Gray}{su
 string formattedFailed = failed > 0 ? $"{Red}{failed}{Reset}" : $"{Gray}{failed}{Reset}";
 string formattedRps = rps switch
 {
-    < 50000 => $"{Red}{rps:F0}{Reset}",
-    < 55000 => $"{Yellow}{rps:F0}{Reset}",
+    < 45000 => $"{Red}{rps:F0}{Reset}",
+    < 50000 => $"{Yellow}{rps:F0}{Reset}",
     _ => $"{Green}{rps:F0}{Reset}"
 };
 
