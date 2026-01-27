@@ -57,8 +57,8 @@ API Gateway на базе ASP.NET 10 - единая точка входа для
         {
           "ClusterId": "Cluster1",
           "Methods": [ "POST", "DELETE" ], // Можно указать несколько методов
-          "UpstreamPattern": "/service1/method2/{id}",
-          "DownstreamPattern": "/method2/{id}" // В маршрут можно добавить до 16 параметров
+          "UpstreamPattern": "/service1/method2/{id}", // В маршрут можно добавить до 16 параметров
+          "DownstreamPattern": "/method2/{id}" // Эти параметры будут переданы в запрос ко внутреннему сервису
         }
       ]
     }
