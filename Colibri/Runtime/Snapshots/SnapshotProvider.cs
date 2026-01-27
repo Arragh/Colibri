@@ -1,3 +1,4 @@
+using System.Threading.Channels;
 using Colibri.Configuration;
 using Microsoft.Extensions.Options;
 
@@ -8,17 +9,21 @@ public sealed class SnapshotProvider
     private GlobalSnapshot _globalSnapshot;
     private GlobalSnapshotBuilder _globalSnapshotBuilder = new();
     
-    public SnapshotProvider(IOptionsMonitor<ColibriSettings> monitor)
+    public SnapshotProvider(
+        IOptionsMonitor<ColibriSettings> monitor,
+        Channel<IAsyncDisposable> channel)
     {
         _globalSnapshot = _globalSnapshotBuilder.Build(monitor.CurrentValue);
 
         monitor.OnChange(c =>
         {
-            Console.WriteLine("SNAPSHOT CHANGED\n\n\n");
-            
             var newGlobalSnapshot = _globalSnapshotBuilder.Build(c);
-            Volatile.Write(ref _globalSnapshot, newGlobalSnapshot);
-            
+            var oldGlobalSnapshot = Interlocked.Exchange(ref _globalSnapshot, newGlobalSnapshot);
+
+            if (!channel.Writer.TryWrite(oldGlobalSnapshot))
+            {
+                Console.WriteLine("SNAPSHOT DISPOSE ERROR"); // TODO: заменить на логгер (когда тот будет добавлен)
+            }
         });
     }
 

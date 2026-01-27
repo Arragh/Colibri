@@ -38,7 +38,15 @@ public sealed class RoutingEngineMiddleware : IPipelineMiddleware
         ctx.DownstreamPath = pathUrl;
         
         var cluster = ctx.GlobalSnapshot.ClusterSnapshot.Clusters[clusterId];
-        await cluster.Pipeline.ExecuteAsync(ctx);
+        cluster.Take();
+        try
+        {
+            await cluster.Pipeline.ExecuteAsync(ctx);
+        }
+        finally
+        {
+            cluster.Release();
+        }
     }
     
     static ReadOnlySpan<char> NormalizePath(ReadOnlySpan<char> path, Span<char> buffer)
