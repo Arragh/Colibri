@@ -1,14 +1,12 @@
 namespace Colibri.Runtime.Pipeline.Retrier;
 
-public sealed class RetryMiddleware : IPipelineMiddleware
+public sealed class RetryMiddleware(int maxAttempts) : IPipelineMiddleware
 {
-    private readonly int _maxAttempts = 3;
-    
     public async ValueTask InvokeAsync(
         PipelineContext ctx,
         PipelineDelegate next)
     {
-        for (int i = 1; i <= _maxAttempts; i++)
+        for (int i = 1; i <= maxAttempts; i++)
         {
             ctx.Attempts = i;
 
@@ -19,7 +17,7 @@ public sealed class RetryMiddleware : IPipelineMiddleware
                 return;
             }
 
-            if (i == _maxAttempts)
+            if (i == maxAttempts)
             {
                 return;
             }

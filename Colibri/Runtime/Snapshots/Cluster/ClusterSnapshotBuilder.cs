@@ -24,10 +24,10 @@ public sealed class ClusterSnapshotBuilder
             
             List<IPipelineMiddleware> clusterMiddlewares = new();
 
-            if (cfgCluster.RateLimit.Enabled)
-            {
-                clusterMiddlewares.Add(new RateLimiterMiddleware());
-            }
+            // if (cfgCluster.RateLimit.Enabled)
+            // {
+            //     clusterMiddlewares.Add(new RateLimiterMiddleware());
+            // }
             
             if (cfgCluster.LoadBalancing.Enabled)
             {
@@ -45,13 +45,13 @@ public sealed class ClusterSnapshotBuilder
 
             if (cfgCluster.Retry.Enabled)
             {
-                clusterMiddlewares.Add(new RetryMiddleware());
+                clusterMiddlewares.Add(new RetryMiddleware(cfgCluster.Retry.Attempts));
             }
             
-            if (cfgCluster.CircuitBreaker.Enabled)
-            {
-                clusterMiddlewares.Add(new CircuitBreakerMiddleware());
-            }
+            // if (cfgCluster.CircuitBreaker.Enabled)
+            // {
+            //     clusterMiddlewares.Add(new CircuitBreakerMiddleware());
+            // }
             
             switch (cfgCluster.Protocol.ToLower())
             {
