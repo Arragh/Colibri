@@ -8,9 +8,9 @@ public sealed class RetryMiddleware : IPipelineMiddleware
         PipelineContext ctx,
         PipelineDelegate next)
     {
-        for (int attempt = 1; attempt <= _maxAttempts; attempt++)
+        for (int i = 1; i <= _maxAttempts; i++)
         {
-            ctx.Attempts = attempt;
+            ctx.Attempts = i;
 
             await next(ctx);
 
@@ -19,7 +19,7 @@ public sealed class RetryMiddleware : IPipelineMiddleware
                 return;
             }
 
-            if (attempt == _maxAttempts)
+            if (i == _maxAttempts)
             {
                 return;
             }
