@@ -33,12 +33,10 @@ public sealed class ClusterSnapshotBuilder
             
             if (cfgCluster.LoadBalancing.Enabled)
             {
-                var hostsCount = cfgCluster.Hosts.Length;
-                
                 ILoadBalancer loadBalancer = cfgCluster.LoadBalancing.Type switch
                 {
-                    "RR" => new RoundRobinBalancer(hostsCount, hostsStates),
-                    "RND" => new RandomBalancer(hostsCount, hostsStates),
+                    "RR" => new RoundRobinBalancer(hostsStates),
+                    "RND" => new RandomBalancer(hostsStates),
                     _ => throw new ArgumentException($"Invalid load balancing type {cfgCluster.LoadBalancing.Type}")
                 };
                 
