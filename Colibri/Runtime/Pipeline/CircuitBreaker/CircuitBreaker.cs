@@ -2,12 +2,15 @@ namespace Colibri.Runtime.Pipeline.CircuitBreaker;
 
 public sealed class CircuitBreaker
 {
-    private readonly byte _maxErrors = 3;
-    private readonly int _timeout = 10_000;
+    private readonly int _failures;
+    private readonly int _timeout;
     private readonly HostState[] _hostsStates;
 
-    public CircuitBreaker(int hostsCount)
+    public CircuitBreaker(int hostsCount, int failures, int timeout)
     {
+        _failures = failures;
+        _timeout = 1000 * timeout;
+        
         _hostsStates = new HostState[hostsCount];
         for (var i = 0; i < _hostsStates.Length; i++)
         {
@@ -57,8 +60,8 @@ public sealed class CircuitBreaker
             Volatile.Write(ref host.State, 0);
         }
         
-        var errors = Interlocked.Increment(ref host.Failures);
-        if (errors >= _maxErrors)
+        var fails = Interlocked.Increment(ref host.Failures);
+        if (fails >= _failures)
         {
             Interlocked.Exchange(ref host.OpenedAtTicks, Environment.TickCount64);
             Volatile.Write(ref host.State, 1);
