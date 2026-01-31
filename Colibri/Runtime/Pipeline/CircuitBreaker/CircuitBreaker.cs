@@ -1,13 +1,23 @@
 namespace Colibri.Runtime.Pipeline.CircuitBreaker;
 
-public sealed class CircuitBreaker(HostState[]  hostStates)
+public sealed class CircuitBreaker
 {
     private readonly byte _maxErrors = 3;
     private readonly int _timeout = 10_000;
+    private readonly HostState[] _hostsStates;
+
+    public CircuitBreaker(int hostsCount)
+    {
+        _hostsStates = new HostState[hostsCount];
+        for (var i = 0; i < _hostsStates.Length; i++)
+        {
+            _hostsStates[i] = new HostState();
+        }
+    }
     
     public bool CanExecute(int hostIdx)
     {
-        var host = hostStates[hostIdx];
+        var host = _hostsStates[hostIdx];
 
         var state = Volatile.Read(ref host.State);
 
@@ -34,12 +44,12 @@ public sealed class CircuitBreaker(HostState[]  hostStates)
             }
         }
         
-        return false; // Заглушка
+        return false;
     }
 
     public void ReportResult(int hostIdx, bool success)
     {
-        var host = hostStates[hostIdx];
+        var host = _hostsStates[hostIdx];
 
         if (success)
         {

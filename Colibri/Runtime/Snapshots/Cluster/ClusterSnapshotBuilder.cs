@@ -24,33 +24,33 @@ public sealed class ClusterSnapshotBuilder
             
             List<IPipelineMiddleware> clusterMiddlewares = new();
             
-            var hostsStates = new HostState[cfgCluster.Hosts.Length];
-
+            var hostsCount = cfgCluster.Hosts.Length;
+            
             if (cfgCluster.RateLimit.Enabled)
             {
                 clusterMiddlewares.Add(new RateLimiterMiddleware());
+            }
+            
+            if (cfgCluster.Retry.Enabled)
+            {
+                clusterMiddlewares.Add(new RetryMiddleware(cfgCluster.Retry.Attempts));
             }
             
             if (cfgCluster.LoadBalancing.Enabled)
             {
                 ILoadBalancer loadBalancer = cfgCluster.LoadBalancing.Type switch
                 {
-                    "RR" => new RoundRobinBalancer(hostsStates),
-                    "RND" => new RandomBalancer(hostsStates),
+                    "RR" => new RoundRobinBalancer(hostsCount),
+                    "RND" => new RandomBalancer(hostsCount),
                     _ => throw new ArgumentException($"Invalid load balancing type {cfgCluster.LoadBalancing.Type}")
                 };
                 
                 clusterMiddlewares.Add(new LoadBalancerMiddleware(loadBalancer));
             }
-
-            if (cfgCluster.Retry.Enabled)
-            {
-                clusterMiddlewares.Add(new RetryMiddleware(cfgCluster.Retry.Attempts));
-            }
             
             if (cfgCluster.CircuitBreaker.Enabled)
             {
-                var breaker = new CircuitBreaker(hostsStates);
+                var breaker = new CircuitBreaker(hostsCount);
                 clusterMiddlewares.Add(new CircuitBreakerMiddleware(breaker));
             }
             
