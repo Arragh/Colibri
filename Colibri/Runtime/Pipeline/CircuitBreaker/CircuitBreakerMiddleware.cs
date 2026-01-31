@@ -1,14 +1,12 @@
 namespace Colibri.Runtime.Pipeline.CircuitBreaker;
 
-public sealed class CircuitBreakerMiddleware : IPipelineMiddleware
+public sealed class CircuitBreakerMiddleware(CircuitBreaker breaker) : IPipelineMiddleware
 {
-    private readonly CircuitBreaker _breaker = new();
-
     public async ValueTask InvokeAsync(
         PipelineContext ctx,
         PipelineDelegate next)
     {
-        if (!_breaker.CanExecute(ctx.ClusterId, ctx.EndpointId))
+        if (!breaker.CanExecute(ctx.HostIdx))
         {
             ctx.StatusCode = 503;
             ctx.IsCompleted = true;
@@ -17,9 +15,8 @@ public sealed class CircuitBreakerMiddleware : IPipelineMiddleware
 
         await next(ctx);
 
-        _breaker.ReportResult(
-            ctx.ClusterId,
-            ctx.EndpointId,
+        breaker.ReportResult(
+            ctx.HostIdx,
             ctx.StatusCode < 500);
     }
 }

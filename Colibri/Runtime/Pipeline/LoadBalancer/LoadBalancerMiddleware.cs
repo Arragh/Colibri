@@ -6,7 +6,7 @@ public sealed class LoadBalancerMiddleware(ILoadBalancer lb) : IPipelineMiddlewa
         PipelineContext ctx,
         PipelineDelegate next)
     {
-        ctx.SelectedHost = lb.SelectHost();
+        ctx.HostIdx = lb.SelectHost();
         return next(ctx);
     }
 }

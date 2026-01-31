@@ -11,7 +11,7 @@ public sealed class PipelineContext
     public string DownstreamPath { get; set; }
     
     public int EndpointId { get; set; }
-    public int SelectedHost { get; set; }
+    public int HostIdx { get; set; }
     public int Attempts { get; set; }
     public bool IsCompleted { get; set; }
     public int StatusCode { get; set; }

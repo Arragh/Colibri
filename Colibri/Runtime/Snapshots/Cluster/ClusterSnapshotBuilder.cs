@@ -23,16 +23,21 @@ public sealed class ClusterSnapshotBuilder
             }
             
             List<IPipelineMiddleware> clusterMiddlewares = new();
-
-            // if (cfgCluster.RateLimit.Enabled)
-            // {
-            //     clusterMiddlewares.Add(new RateLimiterMiddleware());
-            // }
+            
+            var hostsCount = cfgCluster.Hosts.Length;
+            
+            if (cfgCluster.RateLimit.Enabled)
+            {
+                clusterMiddlewares.Add(new RateLimiterMiddleware());
+            }
+            
+            if (cfgCluster.Retry.Enabled)
+            {
+                clusterMiddlewares.Add(new RetryMiddleware(cfgCluster.Retry.Attempts));
+            }
             
             if (cfgCluster.LoadBalancing.Enabled)
             {
-                var hostsCount = cfgCluster.Hosts.Length;
-                
                 ILoadBalancer loadBalancer = cfgCluster.LoadBalancing.Type switch
                 {
                     "RR" => new RoundRobinBalancer(hostsCount),
@@ -42,16 +47,12 @@ public sealed class ClusterSnapshotBuilder
                 
                 clusterMiddlewares.Add(new LoadBalancerMiddleware(loadBalancer));
             }
-
-            if (cfgCluster.Retry.Enabled)
-            {
-                clusterMiddlewares.Add(new RetryMiddleware(cfgCluster.Retry.Attempts));
-            }
             
-            // if (cfgCluster.CircuitBreaker.Enabled)
-            // {
-            //     clusterMiddlewares.Add(new CircuitBreakerMiddleware());
-            // }
+            if (cfgCluster.CircuitBreaker.Enabled)
+            {
+                var breaker = new CircuitBreaker(hostsCount);
+                clusterMiddlewares.Add(new CircuitBreakerMiddleware(breaker));
+            }
             
             switch (cfgCluster.Protocol.ToLower())
             {

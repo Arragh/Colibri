@@ -38,7 +38,7 @@ public class HttpTerminalMiddleware : IPipelineMiddleware, IDisposable
     
     public async ValueTask InvokeAsync(PipelineContext ctx, PipelineDelegate next)
     {
-        var requestUri = new Uri(_uris[ctx.SelectedHost], ctx.DownstreamPath + ctx.HttpContext.Request.QueryString);
+        var requestUri = new Uri(_uris[ctx.HostIdx], ctx.DownstreamPath + ctx.HttpContext.Request.QueryString);
         
         using var request = new HttpRequestMessage(HttpMethodCache.Get(ctx.HttpContext.Request.Method), requestUri);
         if (ctx.HttpContext.Request.ContentLength > 0 || ctx.HttpContext.Request.Headers.ContainsKey("Transfer-Encoding"))
@@ -54,9 +54,19 @@ public class HttpTerminalMiddleware : IPipelineMiddleware, IDisposable
         
         using var response = await _invokers[0]
             .SendAsync(request, ctx.HttpContext.RequestAborted);
+
+        var responseStatusCode = (int)response.StatusCode;
         
-        ctx.HttpContext.Response.StatusCode = (int)response.StatusCode;
-        await response.Content.CopyToAsync(ctx.HttpContext.Response.Body, ctx.HttpContext.RequestAborted);
+        if (responseStatusCode < 500)
+        {
+            ctx.HttpContext.Response.StatusCode = responseStatusCode;
+            ctx.StatusCode = responseStatusCode;
+            await response.Content.CopyToAsync(ctx.HttpContext.Response.Body, ctx.HttpContext.RequestAborted);
+        }
+        else
+        {
+            ctx.StatusCode = (int)response.StatusCode;
+        }
     }
 
     public void Dispose()
