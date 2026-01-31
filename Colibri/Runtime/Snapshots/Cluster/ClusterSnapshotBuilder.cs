@@ -23,11 +23,13 @@ public sealed class ClusterSnapshotBuilder
             }
             
             List<IPipelineMiddleware> clusterMiddlewares = new();
+            
+            var hostsStates = new HostState[cfgCluster.Hosts.Length];
 
-            // if (cfgCluster.RateLimit.Enabled)
-            // {
-            //     clusterMiddlewares.Add(new RateLimiterMiddleware());
-            // }
+            if (cfgCluster.RateLimit.Enabled)
+            {
+                clusterMiddlewares.Add(new RateLimiterMiddleware());
+            }
             
             if (cfgCluster.LoadBalancing.Enabled)
             {
@@ -35,8 +37,8 @@ public sealed class ClusterSnapshotBuilder
                 
                 ILoadBalancer loadBalancer = cfgCluster.LoadBalancing.Type switch
                 {
-                    "RR" => new RoundRobinBalancer(hostsCount),
-                    "RND" => new RandomBalancer(hostsCount),
+                    "RR" => new RoundRobinBalancer(hostsCount, hostsStates),
+                    "RND" => new RandomBalancer(hostsCount, hostsStates),
                     _ => throw new ArgumentException($"Invalid load balancing type {cfgCluster.LoadBalancing.Type}")
                 };
                 
@@ -48,10 +50,11 @@ public sealed class ClusterSnapshotBuilder
                 clusterMiddlewares.Add(new RetryMiddleware(cfgCluster.Retry.Attempts));
             }
             
-            // if (cfgCluster.CircuitBreaker.Enabled)
-            // {
-            //     clusterMiddlewares.Add(new CircuitBreakerMiddleware());
-            // }
+            if (cfgCluster.CircuitBreaker.Enabled)
+            {
+                var breaker = new CircuitBreaker(hostsStates);
+                clusterMiddlewares.Add(new CircuitBreakerMiddleware(breaker));
+            }
             
             switch (cfgCluster.Protocol.ToLower())
             {

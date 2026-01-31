@@ -1,6 +1,6 @@
 namespace Colibri.Runtime.Pipeline.LoadBalancer;
 
-public sealed class RoundRobinBalancer(int hostsCount) : ILoadBalancer
+public sealed class RoundRobinBalancer(int hostsCount, HostState[] hostStates) : ILoadBalancer
 {
     private int _counter = 0;
 

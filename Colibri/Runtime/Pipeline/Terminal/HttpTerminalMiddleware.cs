@@ -38,7 +38,7 @@ public class HttpTerminalMiddleware : IPipelineMiddleware, IDisposable
     
     public async ValueTask InvokeAsync(PipelineContext ctx, PipelineDelegate next)
     {
-        var requestUri = new Uri(_uris[ctx.SelectedHost], ctx.DownstreamPath + ctx.HttpContext.Request.QueryString);
+        var requestUri = new Uri(_uris[ctx.HostIdx], ctx.DownstreamPath + ctx.HttpContext.Request.QueryString);
         
         using var request = new HttpRequestMessage(HttpMethodCache.Get(ctx.HttpContext.Request.Method), requestUri);
         if (ctx.HttpContext.Request.ContentLength > 0 || ctx.HttpContext.Request.Headers.ContainsKey("Transfer-Encoding"))
