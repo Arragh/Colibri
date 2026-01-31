@@ -44,6 +44,11 @@ API Gateway на базе ASP.NET 10 - единая точка входа для
           "LoadBalancing": {
             "Enabled": true,
             "Type": "RND" // RND - random, RR - round-robin
+          },
+          "CircuitBreaker": {
+            "Enabled": true,
+            "Failures": 5, // Количество ошибок подряд для срабатывания
+            "Timeout": 30 // Сколько секунд на хост не будут отправляться запросы
           }
         }
       ],

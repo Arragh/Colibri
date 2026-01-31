@@ -50,7 +50,11 @@ public sealed class ClusterSnapshotBuilder
             
             if (cfgCluster.CircuitBreaker.Enabled)
             {
-                var breaker = new CircuitBreaker(hostsCount);
+                var breaker = new CircuitBreaker(
+                    hostsCount,
+                    cfgCluster.CircuitBreaker.Failures,
+                    cfgCluster.CircuitBreaker.Timeout);
+                
                 clusterMiddlewares.Add(new CircuitBreakerMiddleware(breaker));
             }
             
