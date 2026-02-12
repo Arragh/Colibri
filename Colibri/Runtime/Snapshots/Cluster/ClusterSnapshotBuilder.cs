@@ -64,6 +64,10 @@ public sealed class ClusterSnapshotBuilder
                     clusterMiddlewares.Add(new HttpTerminalMiddleware(cfgCluster.Hosts));
                     break;
                 
+                case "ws":
+                    clusterMiddlewares.Add(new WebsocketTerminalMiddleware(cfgCluster.Hosts));
+                    break;
+                
                 default:
                     throw new ArgumentException($"Invalid protocol {cfgCluster.Protocol}");
             }

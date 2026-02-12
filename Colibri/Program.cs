@@ -19,6 +19,7 @@ builder.Services.AddSingleton<PipelineSrv>(sp => new([
 builder.Services.AddHostedService<GlobalAsyncDisposer>();
 
 var app = builder.Build();
+app.UseWebSockets();
 
 var snapshotProvider = app.Services.GetRequiredService<SnapshotProvider>();
 var pipeline = app.Services.GetRequiredService<PipelineSrv>();
