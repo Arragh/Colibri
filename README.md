@@ -28,10 +28,10 @@ API Gateway на базе ASP.NET 10 - единая точка входа для
         {
           "Enabled": true,
           "ClusterId": "Cluster1", // Идентификатор кластера, должен быть уникальным
-          "Protocol": "http", // Пока только http, websocket в разработке
+          "Protocol": "http", // Или ws
           "Prefix": "/cluster1", // Префикс маршрута (http://cluster1/service1/method1)
           "UsePrefix": true, // Можно отключить использование префикса для маршрутов
-          "Hosts": [ "http://192.168.1.100:6000", "http://192.168.1.102:6002" ],
+          "Hosts": [ "192.168.1.100:6000", "192.168.1.102:6002" ],
           "Retry": {
             "Enabled": true,
             "Attempts": 3 // Количество попыток
