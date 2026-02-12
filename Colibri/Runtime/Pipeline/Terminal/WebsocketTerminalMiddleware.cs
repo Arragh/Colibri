@@ -4,6 +4,7 @@ namespace Colibri.Runtime.Pipeline.Terminal;
 
 public class WebsocketTerminalMiddleware : IPipelineMiddleware
 {
+    private const string Protocol = "ws";
     private readonly Uri[] _uris;
 
     public WebsocketTerminalMiddleware(string[] hosts)
@@ -11,7 +12,7 @@ public class WebsocketTerminalMiddleware : IPipelineMiddleware
         _uris = new Uri[hosts.Length];
         for (int i = 0; i < hosts.Length; i++)
         {
-            _uris[i] = new Uri(hosts[i]);
+            _uris[i] = new Uri($"{Protocol}://{hosts[i]}");
         }
     }
     

@@ -5,6 +5,7 @@ namespace Colibri.Runtime.Pipeline.Terminal;
 
 public class HttpTerminalMiddleware : IPipelineMiddleware, IDisposable
 {
+    private const string Protocol = "http";
     private readonly HttpMessageInvoker[] _invokers;
     private readonly Uri[] _uris;
     
@@ -32,7 +33,7 @@ public class HttpTerminalMiddleware : IPipelineMiddleware, IDisposable
         _uris = new Uri[hosts.Length];
         for (int i = 0; i < hosts.Length; i++)
         {
-            _uris[i] = new Uri(hosts[i]);
+            _uris[i] = new Uri($"{Protocol}://{hosts[i]}");
         }
     }
     
