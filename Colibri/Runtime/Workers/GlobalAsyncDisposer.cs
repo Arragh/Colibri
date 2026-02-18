@@ -1,4 +1,5 @@
 using System.Threading.Channels;
+using Microsoft.Extensions.Hosting;
 
 namespace Colibri.Runtime.Workers;
 
