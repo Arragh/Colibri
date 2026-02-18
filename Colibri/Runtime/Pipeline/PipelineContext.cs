@@ -1,4 +1,5 @@
 using Colibri.Runtime.Snapshots;
+using Microsoft.AspNetCore.Http;
 
 namespace Colibri.Runtime.Pipeline;
 

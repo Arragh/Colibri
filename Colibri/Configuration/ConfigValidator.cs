@@ -1,4 +1,4 @@
-// namespace Colibri.Configuration;
+// namespace Colibri..Configuration;
 //
 // public static class ConfigValidator
 // {
