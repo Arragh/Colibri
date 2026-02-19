@@ -25,12 +25,7 @@ public sealed class ClusterSnapshotBuilder
             List<IPipelineMiddleware> clusterMiddlewares = new();
             
             var hostsCount = cfgCluster.Hosts.Length;
-            
-            if (cfgCluster.RateLimit.Enabled)
-            {
-                clusterMiddlewares.Add(new RateLimiterMiddleware());
-            }
-            
+           
             if (cfgCluster.Retry.Enabled)
             {
                 clusterMiddlewares.Add(new RetryMiddleware(cfgCluster.Retry.Attempts));
