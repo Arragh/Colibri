@@ -15,7 +15,9 @@ public static class ColibriExtensions
     {
         services
             .AddOptions<ColibriSettings>()
-            .BindConfiguration("Colibri");
+            .BindConfiguration("Colibri")
+            .Validate(settings => ConfigValidator.Validate(settings))
+            .ValidateOnStart();
 
         services.AddSingleton<SnapshotProvider>();
         services.AddSingleton<RoutingEngineMiddleware>();
