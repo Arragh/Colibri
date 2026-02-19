@@ -33,7 +33,6 @@ app.UseColibri();
     }
   },
   "Colibri": {
-    "Authorization": {
     "Routing": {
       "Clusters": [
         {
