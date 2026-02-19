@@ -6,12 +6,13 @@
         <RootNamespace>Colibri</RootNamespace>
         
         <PackageId>Colibri</PackageId>
-        <Version>0.1.3</Version>
+        <Version>0.1.4</Version>
         <Authors>Sergei Sokolov</Authors>
         <Description>AOT-friendly API-Gateway</Description>
         <RepositoryUrl>https://github.com/Arragh/Colibri</RepositoryUrl>
         <PackageTags>API;Gateway;API-Gateway;AOT</PackageTags>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
