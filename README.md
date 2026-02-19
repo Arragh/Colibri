@@ -1,4 +1,7 @@
 # 🐥 Colibri 🐥
+
+[![NuGet](https://img.shields.io/nuget/v/Colibri.svg?style=flat-square)](https://www.nuget.org/packages/Colibri/)
+
 AOT-friendly API Gateway based on ASP.NET 10
 
 This project is in an early stage, please be understanding.
