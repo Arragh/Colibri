@@ -4,6 +4,14 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <RootNamespace>Colibri</RootNamespace>
+        
+        <PackageId>Colibri</PackageId>
+        <Version>0.1.0</Version>
+        <Authors>Sergei Sokolov</Authors>
+        <Description>AOT-friendly API-Gateway</Description>
+        <RepositoryUrl>https://github.com/Arragh/Colibri</RepositoryUrl>
+        <PackageTags>API;Gateway;API-Gateway;AOT</PackageTags>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
     </PropertyGroup>
 
     <ItemGroup>
