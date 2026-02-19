@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+    
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -6,7 +7,7 @@
         <RootNamespace>Colibri</RootNamespace>
         
         <PackageId>Colibri</PackageId>
-        <Version>0.1.4</Version>
+        <Version>0.1.5</Version>
         <Authors>Sergei Sokolov</Authors>
         <Description>AOT-friendly API-Gateway</Description>
         <RepositoryUrl>https://github.com/Arragh/Colibri</RepositoryUrl>
@@ -16,26 +17,26 @@
     </PropertyGroup>
 
     <ItemGroup>
-        
         <PackageReference
                 Include="Microsoft.Extensions.DependencyInjection.Abstractions"
                 Version="10.0.3"
                 PrivateAssets="all" />
-
         <PackageReference
                 Include="Microsoft.Extensions.Hosting.Abstractions"
                 Version="10.0.3"
                 PrivateAssets="all" />
-
         <PackageReference
                 Include="Microsoft.Extensions.Options.ConfigurationExtensions"
                 Version="10.0.3"
                 PrivateAssets="all" />
-
         <PackageReference
                 Include="Microsoft.AspNetCore.Http.Abstractions"
                 Version="2.3.9"
                 PrivateAssets="all" />
-        
     </ItemGroup>
+    
+    <ItemGroup>
+        <None Include="README.md" Pack="true" PackagePath="" />
+    </ItemGroup>
+    
 </Project>
