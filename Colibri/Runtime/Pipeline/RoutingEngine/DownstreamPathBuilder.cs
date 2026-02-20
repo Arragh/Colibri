@@ -7,7 +7,7 @@ public sealed class DownstreamPathBuilder
 {
     public string Build(
         RoutingSnapshot routingSnapshot,
-        ReadOnlySpan<char> path,
+        ReadOnlySpan<char> normalizedPath,
         ParamValue[] routeParams,
         ushort downstreamFirstChildIndex,
         byte downstreamChildrenCount)
@@ -24,7 +24,7 @@ public sealed class DownstreamPathBuilder
             ref readonly var segment = ref segments[i];
 
             var pathChunk = segment.IsParameter
-                ? path.Slice(routeParams[segment.ParamIndex].Start, routeParams[segment.ParamIndex].Length)
+                ? normalizedPath.Slice(routeParams[segment.ParamIndex].Start, routeParams[segment.ParamIndex].Length)
                 : downstreamSegmentPaths.Slice(segment.PathStartIndex, segment.PathLength);
             
             stringBuilder.Append(pathChunk);

@@ -8,7 +8,7 @@ public sealed class UpstreamMatcher
     
     public bool TryMatch(
         RoutingSnapshot routingSnapshot,
-        ReadOnlySpan<char> path,
+        ReadOnlySpan<char> normalizedPath,
         byte methodMask,
         int rootSegmentsCount,
         out ushort clusterId,
@@ -22,7 +22,7 @@ public sealed class UpstreamMatcher
         var start = 0;
         var limiter = rootSegmentsCount;
         
-        var localPath = path;
+        var localPath = normalizedPath;
         var totalSlice = 0;
         
         routeParams = new ParamValue[16];
@@ -80,14 +80,14 @@ public sealed class UpstreamMatcher
                     int paramStart = totalSlice;
                     ushort paramCount = 0;
 
-                    for (int j = paramStart; j < path.Length; j++)
+                    for (int j = paramStart; j < normalizedPath.Length; j++)
                     {
                         if (paramCount > MaxParamLength)
                         {
                             return false;
                         }
 
-                        char c = path[j];
+                        char c = normalizedPath[j];
                         
                         if (j == paramStart && c == '/')
                         {

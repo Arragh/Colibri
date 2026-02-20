@@ -5,7 +5,7 @@ namespace Colibri.Runtime.Pipeline.RoutingEngine;
 public sealed class RoutingEngineMiddleware : IPipelineMiddleware
 {
     private readonly UpstreamMatcher _upstreamMatcher = new();
-    private readonly DownstreamPathBuilder _pathBuilder = new();
+    private readonly DownstreamPathBuilder _downstreamPathBuilder = new();
     
     public async ValueTask InvokeAsync(PipelineContext ctx, PipelineDelegate next)
     {
@@ -28,7 +28,7 @@ public sealed class RoutingEngineMiddleware : IPipelineMiddleware
             return;
         }
         
-        var pathUrl = _pathBuilder.Build(
+        var pathUrl = _downstreamPathBuilder.Build(
             ctx.GlobalSnapshot.RoutingSnapshot,
             normalizedPath,
             routeParams,
