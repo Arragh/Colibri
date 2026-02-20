@@ -19,6 +19,9 @@ jobs:
       - name: Restore
         run: dotnet restore
 
+      - name: Copy README for NuGet
+        run: cp README.md Colibri/README.md
+
       - name: Extract version from tag
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
 
