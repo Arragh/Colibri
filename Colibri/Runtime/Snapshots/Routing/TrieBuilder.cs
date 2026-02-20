@@ -80,6 +80,6 @@ public sealed class TrieNode
 
 public sealed class ChunksHolder
 {
-    public int ClusterId { get; set; }
+    public ushort ClusterId { get; set; }
     public List<DownstreamChunk> Chunks { get; set; } = [];
 }
