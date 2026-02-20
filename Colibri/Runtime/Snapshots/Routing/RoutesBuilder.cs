@@ -8,7 +8,7 @@ public class RoutesBuilder
     {
         var tempRoutes = new List<TempRoute>();
 
-        for (int i = 0; i < cfgClusters.Length; i++)
+        for (ushort i = 0; i < cfgClusters.Length; i++)
         {
             var clusterRoutes = cfgRoutes
                 .Where(r => r.ClusterId == cfgClusters[i].ClusterId)
@@ -87,7 +87,7 @@ public class RoutesBuilder
 
 public sealed record TempRoute
 {
-    public int ClusterId { get; set; }
+    public ushort ClusterId { get; set; }
     public string[] Methods { get; set; }
     public string[] UpstreamPattern { get; set; }
     public string[] DownstreamPattern { get; set; }

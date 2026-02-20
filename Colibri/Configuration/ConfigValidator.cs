@@ -9,15 +9,25 @@ public static class ConfigValidator
     {
         var errors = new List<string>();
         
-        ValidateRouting(settings.Routing, errors);
+        ValidateClusters(settings.Routing.Clusters, errors);
+        ValidateRoutes(settings.Routing.Routes, errors);
         
         return true;
     }
 
-    private static void ValidateRouting(RoutingSettings routingSettings, List<string> errors)
+    private static void ValidateClusters(ClusterCfg[] clusters, List<string> errors)
     {
-        foreach (var route in routingSettings.Routes)
+        if (clusters.Length > ushort.MaxValue)
         {
+            errors.Add($"Too many clusters: {clusters.Length}");
+        }
+    }
+
+    private static void ValidateRoutes(RouteCfg[] routes, List<string> errors)
+    {
+        foreach (var route in routes)
+        {
+            ValidateStaticSegments(route, errors);
             ValidateParams(route, errors);
         }
 
@@ -30,13 +40,40 @@ public static class ConfigValidator
         }
     }
 
+    private static void ValidateStaticSegments(RouteCfg route, List<string> errors)
+    {
+        var upstreamSegments = route.UpstreamPattern
+            .Split('/', StringSplitOptions.RemoveEmptyEntries)
+            .Where(s => !s.StartsWith('{') && !s.EndsWith('}'));
+        
+        var downstreamSegments = route.DownstreamPattern
+            .Split('/', StringSplitOptions.RemoveEmptyEntries)
+            .Where(s => !s.StartsWith('{') && !s.EndsWith('}'));
+
+        foreach (var segment in upstreamSegments)
+        {
+            if (segment.Length > 250)
+            {
+                errors.Add($"Segment '{segment}' in route {route.UpstreamPattern} is longer than 250 characters");
+            }
+        }
+        
+        foreach (var segment in downstreamSegments)
+        {
+            if (segment.Length > 250)
+            {
+                errors.Add($"Segment '{segment}' in route {route.DownstreamPattern} is longer than 250 characters");
+            }
+        }
+    }
+
     private static void ValidateParams(RouteCfg route, List<string> errors)
     {
         var upstreamSegments = route.UpstreamPattern
-            .Split('/');
+            .Split('/', StringSplitOptions.RemoveEmptyEntries);
         
         var downstreamSegments = route.DownstreamPattern
-            .Split('/');
+            .Split('/', StringSplitOptions.RemoveEmptyEntries);
 
         for (int i = 0; i < upstreamSegments.Length; ++i)
         {
@@ -76,12 +113,13 @@ public static class ConfigValidator
             {
                 if (upstreamParams[i] == upstreamParams[j])
                 {
-                    errors.Add($"Duplicate parameters in route {route.UpstreamPattern}");
+                    errors.Add($"Duplicate parameter {upstreamParams[i]} in route {route.UpstreamPattern}");
                 }
 
                 if (downstreamParams[i] == downstreamParams[j])
                 {
-                    errors.Add($"Duplicate parameters in route {route.DownstreamPattern}");
+                    Console.WriteLine($"Duplicate parameter {downstreamParams[i]} in route {route.DownstreamPattern}");
+                    errors.Add($"Duplicate parameter {downstreamParams[i]} in route {route.DownstreamPattern}");
                 }
             }
         }
