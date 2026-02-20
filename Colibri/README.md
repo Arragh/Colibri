@@ -1,5 +1,5 @@
 # 🐥 Colibri 🐥
-AOT-friendly API Gateway based on ASP.NET 10
+AOT-friendly API-Gateway library for ASP.NET
 
 This project is in an early stage, please be understanding.
 
@@ -14,11 +14,16 @@ This project is in an early stage, please be understanding.
 8) Hot reload of configuration.
 9) Circuit Breaker support.
 
+## 🔧 In development:
+1) Authorization per cluster.
+2) Rate Limiter.
+
 ## 📝 Integration into your project:
 ```csharp
 ...
 builder.Services.AddColibriServices();
 ...
+app.UseWebSockets(); // Only if you want websocket proxy
 app.UseColibri();
 ...
 ```
