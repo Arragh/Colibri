@@ -20,11 +20,10 @@ jobs:
         run: dotnet restore
 
       - name: Extract version from tag
-        id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
 
       - name: Pack
-        run: dotnet pack -c Release -o out /p:PackageVersion=${{ env.VERSION }}
+        run: dotnet pack -c Release -o out /p:PackageVersion=${{ env.VERSION }} /p:PackageReleaseNotes="See full changelog: https://github.com/Arragh/Colibri/blob/v${{ env.VERSION }}/CHANGELOG.md"
 
       - name: Push
         run: dotnet nuget push out/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
