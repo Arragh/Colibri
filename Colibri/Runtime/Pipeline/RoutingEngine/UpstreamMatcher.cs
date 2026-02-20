@@ -75,27 +75,34 @@ public sealed class UpstreamMatcher
                 }
                 else
                 {
-                    var paramStart = totalSlice;
-                    byte paramCount = 0;
+                    int paramStart = totalSlice;
+                    ushort paramCount = 0;
 
                     for (int j = paramStart; j < path.Length; j++)
                     {
-                        if (j == paramStart && path[j] == '/')
+                        if (paramCount > 5000)
+                        {
+                            return false;
+                        }
+
+                        char c = path[j];
+                        
+                        if (j == paramStart && c == '/')
                         {
                             paramCount++;
                             continue;
                         }
                         
-                        if (path[j] != '/')
+                        if (c != '/')
                         {
                             paramCount++;
                             continue;
                         }
-                        
+
                         break;
                     }
                     
-                    routeParams[upstreamSegment.ParamIndex] = new ParamValue((ushort)paramStart, paramCount);
+                    routeParams[upstreamSegment.ParamIndex] = new ParamValue(paramStart, paramCount);
                     
                     start = upstreamSegment.FirstChildIndex;
                     limiter = upstreamSegment.FirstChildIndex + upstreamSegment.ChildrenCount;

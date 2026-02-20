@@ -49,7 +49,7 @@ public sealed class RoutingEngineMiddleware : IPipelineMiddleware
         }
     }
     
-    static ReadOnlySpan<char> NormalizePath(ReadOnlySpan<char> path, Span<char> buffer)
+    private static ReadOnlySpan<char> NormalizePath(ReadOnlySpan<char> path, Span<char> buffer)
     {
         int x = 0;
     
