@@ -1,14 +1,12 @@
 using System.Text.RegularExpressions;
 using Colibri.Configuration.Models;
+using Colibri.Helpers;
 using Microsoft.Extensions.Options;
 
 namespace Colibri.Configuration;
 
 public static class ConfigValidator
 {
-    private const int SegmentMaxLength = 250;
-    private static readonly HashSet<string> ValidHttpMethods = [ "GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS", "TRACE" ];
-
     /// <summary>
     /// Validates the Colibri configuration. Throws if invalid.
     /// </summary>
@@ -39,6 +37,8 @@ public static class ConfigValidator
             ValidateClusterIdIsNotEmpty(cluster);
             ValidatePrefixLength(cluster);
             ValidatePrefixName(cluster);
+            ValidateProtocol(cluster);
+            ValidateHosts(cluster);
         }
         
         ValidateClusterIdIsUnique();
@@ -72,12 +72,29 @@ public static class ConfigValidator
                 }
             }
         }
+
+        void ValidateProtocol(ClusterCfg cluster)
+        {
+            if (!GlobalConstants.ValidProtocols.Contains(cluster.Protocol))
+            {
+                var upper = cluster.Protocol.ToUpperInvariant();
+
+                if (GlobalConstants.ValidProtocols.Contains(upper))
+                {
+                    errors.Add($"Protocol '{cluster.Protocol}' in cluster '{cluster.ClusterId}' must be lowercase");
+                }
+                else
+                {
+                    errors.Add($"Protocol '{cluster.Protocol}' in cluster '{cluster.ClusterId}' is not a valid protocol");
+                }
+            }
+        }
         
         void ValidatePrefixLength(ClusterCfg cluster)
         {
-            if (cluster.Prefix.Length > SegmentMaxLength)
+            if (cluster.Prefix.Length > GlobalConstants.SegmentMaxLength)
             {
-                errors.Add($"Cluster prefix '{cluster.Prefix}' is longer than {SegmentMaxLength} characters");
+                errors.Add($"Cluster prefix '{cluster.Prefix}' is longer than {GlobalConstants.SegmentMaxLength} characters");
             }
         }
 
@@ -93,6 +110,60 @@ public static class ConfigValidator
             if (!SegmentOrPrefixNameIsValid(prefix))
             {
                 errors.Add($"Cluster prefix '{prefix}' is invalid");
+            }
+        }
+
+        void ValidateHosts(ClusterCfg cluster)
+        {
+            foreach (var host in cluster.Hosts)
+            {
+                if (string.IsNullOrWhiteSpace(host))
+                {
+                    errors.Add($"Host in cluster {cluster.ClusterId} can't be empty");
+                }
+                
+                var hostParts = host.Split(':');
+                if (hostParts.Length != 2)
+                {
+                    errors.Add($"Invalid host format {host} in cluster {cluster.ClusterId}");
+                }
+                
+                var portPart = hostParts[1];
+                if (!ushort.TryParse(portPart, out ushort port))
+                {
+                    errors.Add($"Invalid port in host {host}");
+                }
+                
+                var hostPart = hostParts[0];
+                if (!IsValidHostNameOrIpAddress(hostPart))
+                {
+                    errors.Add($"Invalid host format {host} in cluster {cluster.ClusterId}");
+                }
+            }
+
+            bool IsValidHostNameOrIpAddress(string host)
+            {
+                if (host.Equals("localhost", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                var ipMatch = Regex.Match(host, @"^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$");
+                if (ipMatch.Success)
+                {
+                    var octets = ipMatch.Groups.Values
+                        .Skip(1);
+
+                    foreach (var octet in octets)
+                    {
+                        if (!byte.TryParse(octet.Value, out byte _))
+                        {
+                            return false;
+                        }
+                    }
+                }
+                
+                return Regex.IsMatch(host, @"^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$");
             }
         }
     }
@@ -199,18 +270,18 @@ public static class ConfigValidator
             var upstreamStaticSegments = ExtractStaticSegments(route.UpstreamPattern);
             foreach (var segment in upstreamStaticSegments)
             {
-                if (segment.Length > SegmentMaxLength)
+                if (segment.Length > GlobalConstants.SegmentMaxLength)
                 {
-                    errors.Add($"Segment '{segment}' in upstream {route.UpstreamPattern} is longer than {SegmentMaxLength} characters");
+                    errors.Add($"Segment '{segment}' in upstream {route.UpstreamPattern} is longer than {GlobalConstants.SegmentMaxLength} characters");
                 }
             }
             
             var downstreamStaticSegments = ExtractStaticSegments(route.DownstreamPattern);
             foreach (var segment in downstreamStaticSegments)
             {
-                if (segment.Length > SegmentMaxLength)
+                if (segment.Length > GlobalConstants.SegmentMaxLength)
                 {
-                    errors.Add($"Segment '{segment}' in downstream {route.DownstreamPattern} is longer than {SegmentMaxLength} characters");
+                    errors.Add($"Segment '{segment}' in downstream {route.DownstreamPattern} is longer than {GlobalConstants.SegmentMaxLength} characters");
                 }
             }
         }
@@ -290,9 +361,9 @@ public static class ConfigValidator
             
             foreach (var param in upstreamParams)
             {
-                if (param.Length > SegmentMaxLength)
+                if (param.Length > GlobalConstants.SegmentMaxLength)
                 {
-                    errors.Add($"Parameter '{param}' in upstream {route.UpstreamPattern} is longer than {SegmentMaxLength} characters");
+                    errors.Add($"Parameter '{param}' in upstream {route.UpstreamPattern} is longer than {GlobalConstants.SegmentMaxLength} characters");
                 }
             }
             
@@ -300,9 +371,9 @@ public static class ConfigValidator
 
             foreach (var param in downstreamParams)
             {
-                if (param.Length > SegmentMaxLength)
+                if (param.Length > GlobalConstants.SegmentMaxLength)
                 {
-                    errors.Add($"Parameter '{param}' in downstream {route.DownstreamPattern} is longer than {SegmentMaxLength} characters");
+                    errors.Add($"Parameter '{param}' in downstream {route.DownstreamPattern} is longer than {GlobalConstants.SegmentMaxLength} characters");
                 }
             }
         }
@@ -384,11 +455,11 @@ public static class ConfigValidator
         {
             foreach (var method in route.Methods)
             {
-                if (!ValidHttpMethods.Contains(method))
+                if (!GlobalConstants.ValidHttpMethods.Contains(method))
                 {
                     var upper = method.ToUpperInvariant();
 
-                    if (ValidHttpMethods.Contains(upper))
+                    if (GlobalConstants.ValidHttpMethods.Contains(upper))
                     {
                         errors.Add($"HTTP method '{method}' in upstream '{route.UpstreamPattern}' must be uppercase");
                     }
