@@ -25,12 +25,63 @@ This project is in an early stage, please be understanding.
 4) Unit tests.
 
 ## ⚙️ Technical Limitations
-1) Maximum cluster prefix length: 250 characters.
-2) Maximum length of a single route segment: 250 characters.
-3) Total maximum number of segments across all routes (including cluster prefixes): 65,535.
+1) Maximum length of a single route segment: 250 characters.
+2) Total maximum number of segments across all routes (including cluster prefixes): 65,535.
     - Assuming an average of 10 segments per route (which is already high for most APIs), this allows for approximately **6,553 routes**.
     - In practice, routes are typically shorter (3–6 segments), so the effective route capacity is significantly higher.
     - It is highly unlikely you will hit this limit in real-world scenarios.
+
+<table>
+   <thead>
+      <tr>
+         <th colspan="4">Clusters</th>
+      </tr>
+      <tr>
+         <th>Parameter</th>
+         <th>Type</th>
+         <th>Required</th>
+         <th>Description</th>
+      </tr>
+   </thead>
+   <tbody>
+      <tr>
+         <td>Enabled</td>
+         <td><code>bool</code></td>
+         <td>+</td>
+         <td>Включить/Выключить кластер. Если кластер выключен, то все его маршруты будут недоступны.</td>
+      </tr>
+      <tr>
+         <td>ClusterId</td>
+         <td><code>string</code></td>
+         <td>+</td>
+         <td>Используется исключительно для внутренней логики.</td>
+      </tr>
+      <tr>
+         <td>Protocol</td>
+         <td><code>string</code></td>
+         <td>+</td>
+         <td>Connection protocol. Разрешены http и ws. Должен быть в нижнем регистре.</td>
+      </tr>
+      <tr>
+         <td>Prefix</td>
+         <td><code>string</code></td>
+         <td>+</td>
+         <td>Префикс в маршруте. Должен иметь вид '/yourprefixname' - один сегмент, начинающийся с символа '/' и иметь длину не более 250 символов. С включенным префиксом все маршруты данного кластера будут начинаться с префикса. Если route имеет паттерн '/users', то итоговый маршрут будет иметь вид '/yourprefixname/users'</td>
+      </tr>
+      <tr>
+         <td>UsePrefix</td>
+         <td><code>bool</code></td>
+         <td>-</td>
+         <td>Можно отключить, тогда все маршруты данного кластера будут без префикса.</td>
+      </tr>
+      <tr>
+         <td>Hosts</td>
+         <td><code>string[]</code></td>
+         <td>+</td>
+         <td>Доступные хосты для данного кластера.</td>
+      </tr>
+   </tbody>
+</table>
 
 ## 📝 Integration into your project:
 ```csharp
