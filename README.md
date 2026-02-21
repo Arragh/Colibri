@@ -31,6 +31,7 @@ This project is in an early stage, please be understanding.
     - In practice, routes are typically shorter (3–6 segments), so the effective route capacity is significantly higher.
     - It is highly unlikely you will hit this limit in real-world scenarios.
 
+
 <table>
    <thead>
       <tr>
@@ -47,38 +48,38 @@ This project is in an early stage, please be understanding.
       <tr>
          <td>Enabled</td>
          <td><code>bool</code></td>
-         <td>+</td>
-         <td>Включить/Выключить кластер. Если кластер выключен, то все его маршруты будут недоступны.</td>
+         <td align="center">+</td>
+         <td>Enable or disable the cluster. If the cluster is disabled, all its routes become unavailable.</td>
       </tr>
       <tr>
          <td>ClusterId</td>
          <td><code>string</code></td>
-         <td>+</td>
-         <td>Используется исключительно для внутренней логики.</td>
+         <td align="center">+</td>
+         <td>Used exclusively for internal logic.</td>
       </tr>
       <tr>
          <td>Protocol</td>
          <td><code>string</code></td>
-         <td>+</td>
-         <td>Connection protocol. Разрешены http и ws. Должен быть в нижнем регистре.</td>
+         <td align="center">+</td>
+         <td>Connection protocol. Allowed values: 'http' and 'ws'. Must be lowercase.</td>
       </tr>
       <tr>
          <td>Prefix</td>
          <td><code>string</code></td>
-         <td>+</td>
-         <td>Префикс в маршруте. Должен иметь вид '/yourprefixname' - один сегмент, начинающийся с символа '/' и иметь длину не более 250 символов. С включенным префиксом все маршруты данного кластера будут начинаться с префикса. Если route имеет паттерн '/users', то итоговый маршрут будет иметь вид '/yourprefixname/users'</td>
+         <td align="center">+</td>
+         <td>Route prefix. Must be in the format '/yourprefixname' — a single segment starting with '/' and no longer than 250 characters. When enabled, all routes in this cluster will be prefixed. For example, if a route pattern is '/users', the final route becomes '/yourprefixname/users'.</td>
       </tr>
       <tr>
          <td>UsePrefix</td>
          <td><code>bool</code></td>
-         <td>-</td>
-         <td>Можно отключить, тогда все маршруты данного кластера будут без префикса.</td>
+         <td align="center">-</td>
+         <td>Can be disabled, in which case all routes in this cluster will not use the prefix.</td>
       </tr>
       <tr>
          <td>Hosts</td>
          <td><code>string[]</code></td>
-         <td>+</td>
-         <td>Доступные хосты для данного кластера.</td>
+         <td align="center">+</td>
+         <td>List of available hosts for this cluster.</td>
       </tr>
    </tbody>
 </table>
