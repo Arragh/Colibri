@@ -25,10 +25,9 @@ This project is in an early stage, please be understanding.
 3) Configuration validation.
 
 ## ⚙️ Technical Limitations
-1) Maximum number of clusters: up to 65,535.
-2) Maximum cluster prefix length: 250 characters.
-3) Maximum length of a single route segment: 250 characters.
-4) Total maximum number of segments across all routes (including cluster prefixes): 65,535.
+1) Maximum cluster prefix length: 250 characters.
+2) Maximum length of a single route segment: 250 characters.
+3) Total maximum number of segments across all routes (including cluster prefixes): 65,535.
     - Assuming an average of 10 segments per route (which is already high for most APIs), this allows for approximately **6,553 routes**.
     - In practice, routes are typically shorter (3–6 segments), so the effective route capacity is significantly higher.
     - It is highly unlikely you will hit this limit in real-world scenarios.
