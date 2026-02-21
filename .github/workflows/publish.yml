@@ -26,7 +26,7 @@ jobs:
         run: |
           dotnet pack -c Release -o out \
           /p:PackageVersion=$VERSION \
-          /p:PackageReleaseNotes="See full changelog: https://github.com/Arragh/Colibri/blob/v$VERSION/CHANGELOG.md"
+          /p:PackageReleaseNotes="See full changelog: https://github.com/Arragh/Colibri/blob/master/CHANGELOG.md"
 
       - name: Push
         run: dotnet nuget push out/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
