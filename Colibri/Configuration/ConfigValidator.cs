@@ -5,17 +5,8 @@ namespace Colibri.Configuration;
 
 public static class ConfigValidator
 {
-    private static readonly HashSet<string> ValidHttpMethods =
-    [
-        "GET",
-        "POST",
-        "PUT",
-        "PATCH",
-        "DELETE",
-        "HEAD",
-        "OPTIONS",
-        "TRACE"
-    ];
+    private const int SegmentLenght = 250;
+    private static readonly HashSet<string> ValidHttpMethods = [ "GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS", "TRACE" ];
 
     public static bool Validate(ColibriSettings settings)
     {
@@ -32,6 +23,14 @@ public static class ConfigValidator
         if (clusters.Length > ushort.MaxValue)
         {
             errors.Add($"Too many clusters: {clusters.Length}");
+        }
+
+        foreach (var cluster in clusters)
+        {
+            if (cluster.Prefix.Length > SegmentLenght)
+            {
+                errors.Add($"Cluster prefix '{cluster.Prefix}' is longer than {SegmentLenght} characters");
+            }
         }
     }
 
@@ -68,17 +67,17 @@ public static class ConfigValidator
 
             foreach (var segment in upstreamSegments)
             {
-                if (segment.Length > 250)
+                if (segment.Length > SegmentLenght)
                 {
-                    errors.Add($"Segment '{segment}' in upstream {route.UpstreamPattern} is longer than 250 characters");
+                    errors.Add($"Segment '{segment}' in upstream {route.UpstreamPattern} is longer than {SegmentLenght} characters");
                 }
             }
             
             foreach (var segment in downstreamSegments)
             {
-                if (segment.Length > 250)
+                if (segment.Length > SegmentLenght)
                 {
-                    errors.Add($"Segment '{segment}' in downstream {route.DownstreamPattern} is longer than 250 characters");
+                    errors.Add($"Segment '{segment}' in downstream {route.DownstreamPattern} is longer than {SegmentLenght} characters");
                 }
             }
         }
@@ -107,6 +106,22 @@ public static class ConfigValidator
             var downstreamParams = downstreamSegments
                 .Where(s => s.StartsWith('{') && s.EndsWith('}'))
                 .ToArray();
+
+            foreach (var param in upstreamParams)
+            {
+                if (param.Length > SegmentLenght)
+                {
+                    errors.Add($"Parameter '{param}' in upstream {route.UpstreamPattern} is longer than {SegmentLenght} characters");
+                }
+            }
+
+            foreach (var param in downstreamParams)
+            {
+                if (param.Length > SegmentLenght)
+                {
+                    errors.Add($"Parameter '{param}' in downstream {route.DownstreamPattern} is longer than {SegmentLenght} characters");
+                }
+            }
             
             if (upstreamParams.Length > 16)
             {
