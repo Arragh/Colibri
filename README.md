@@ -23,6 +23,7 @@ This project is in an early stage, please be understanding.
 1) Authorization per cluster.
 2) Rate Limiter.
 3) Configuration validation.
+4) Unit tests.
 
 ## ⚙️ Technical Limitations
 1) Maximum cluster prefix length: 250 characters.
