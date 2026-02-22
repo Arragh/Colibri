@@ -31,59 +31,6 @@ This project is in an early stage, please be understanding.
     - In practice, routes are typically shorter (3–6 segments), so the effective route capacity is significantly higher.
     - It is highly unlikely you will hit this limit in real-world scenarios.
 
-
-<table>
-   <thead>
-      <tr>
-         <th colspan="4">Clusters</th>
-      </tr>
-      <tr>
-         <th>Parameter</th>
-         <th>Type</th>
-         <th>Required</th>
-         <th>Description</th>
-      </tr>
-   </thead>
-   <tbody>
-      <tr>
-         <td>Enabled</td>
-         <td><code>bool</code></td>
-         <td align="center">+</td>
-         <td>Enable or disable the cluster. If the cluster is disabled, all its routes become unavailable.</td>
-      </tr>
-      <tr>
-         <td>ClusterId</td>
-         <td><code>string</code></td>
-         <td align="center">+</td>
-         <td>Used exclusively for internal logic.</td>
-      </tr>
-      <tr>
-         <td>Protocol</td>
-         <td><code>string</code></td>
-         <td align="center">+</td>
-         <td>Connection protocol. Allowed values: 'http' and 'ws'. Must be lowercase.</td>
-      </tr>
-      <tr>
-         <td>Prefix</td>
-         <td><code>string</code></td>
-         <td align="center">+</td>
-         <td>Route prefix. Must be in the format '/yourprefixname' — a single segment starting with '/' and no longer than 250 characters. When enabled, all routes in this cluster will be prefixed. For example, if a route pattern is '/users', the final route becomes '/yourprefixname/users'.</td>
-      </tr>
-      <tr>
-         <td>UsePrefix</td>
-         <td><code>bool</code></td>
-         <td align="center">-</td>
-         <td>Can be disabled, in which case all routes in this cluster will not use the prefix.</td>
-      </tr>
-      <tr>
-         <td>Hosts</td>
-         <td><code>string[]</code></td>
-         <td align="center">+</td>
-         <td>List of available hosts for this cluster.</td>
-      </tr>
-   </tbody>
-</table>
-
 ## 📝 Integration into your project:
 ```csharp
 ...
@@ -146,3 +93,55 @@ app.UseColibri();
   }
 }
 ```
+
+<table>
+   <thead>
+      <tr>
+         <th colspan="4">Clusters</th>
+      </tr>
+      <tr>
+         <th>Parameter</th>
+         <th>Type</th>
+         <th>Required</th>
+         <th>Description</th>
+      </tr>
+   </thead>
+   <tbody>
+      <tr>
+         <td>Enabled</td>
+         <td><code>bool</code></td>
+         <td align="center">+</td>
+         <td>Enable or disable the cluster. If the cluster is disabled, all its routes become unavailable.</td>
+      </tr>
+      <tr>
+         <td>ClusterId</td>
+         <td><code>string</code></td>
+         <td align="center">+</td>
+         <td>Used exclusively for internal logic.</td>
+      </tr>
+      <tr>
+         <td>Protocol</td>
+         <td><code>string</code></td>
+         <td align="center">+</td>
+         <td>Connection protocol. Allowed values: 'http' and 'ws'. Must be lowercase.</td>
+      </tr>
+      <tr>
+         <td>Prefix</td>
+         <td><code>string</code></td>
+         <td align="center">+</td>
+         <td>Route prefix. Must be in the format '/yourprefixname' — a single segment starting with '/' and no longer than 250 characters. When enabled, all routes in this cluster will be prefixed. For example, if a route pattern is '/users', the final route becomes '/yourprefixname/users'.</td>
+      </tr>
+      <tr>
+         <td>UsePrefix</td>
+         <td><code>bool</code></td>
+         <td align="center">-</td>
+         <td>Can be disabled, in which case all routes in this cluster will not use the prefix.</td>
+      </tr>
+      <tr>
+         <td>Hosts</td>
+         <td><code>string[]</code></td>
+         <td align="center">+</td>
+         <td>List of available hosts for this cluster.</td>
+      </tr>
+   </tbody>
+</table>
