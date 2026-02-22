@@ -3,9 +3,11 @@ using Colibri.Configuration;
 using Colibri.Runtime.Pipeline;
 using Colibri.Runtime.Pipeline.RoutingEngine;
 using Colibri.Runtime.Snapshots;
-using Colibri.Runtime.Workers;
+using Colibri.Services;
+using Colibri.Services.ColibriSettingsServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Colibri;
 
@@ -13,10 +15,10 @@ public static class ColibriExtensions
 {
     public static IServiceCollection AddColibriServices(this IServiceCollection services)
     {
+        services.AddSingleton<IValidateOptions<ColibriSettings>, ColibriSettingsValidator>();
         services
             .AddOptions<ColibriSettings>()
             .BindConfiguration("Colibri")
-            .Validate(settings => ConfigValidator.Validate(settings))
             .ValidateOnStart();
 
         services.AddSingleton<SnapshotProvider>();

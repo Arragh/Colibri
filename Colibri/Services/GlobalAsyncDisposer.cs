@@ -1,9 +1,9 @@
 using System.Threading.Channels;
 using Microsoft.Extensions.Hosting;
 
-namespace Colibri.Runtime.Workers;
+namespace Colibri.Services;
 
-public class GlobalAsyncDisposer(Channel<IAsyncDisposable> channel) : BackgroundService
+public sealed class GlobalAsyncDisposer(Channel<IAsyncDisposable> channel) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
