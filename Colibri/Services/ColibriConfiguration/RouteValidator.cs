@@ -1,13 +1,13 @@
 using Colibri.Configuration.Models;
 using Colibri.Helpers;
 
-namespace Colibri.Services.ColibriSettingsServices;
+namespace Colibri.Services.ColibriConfiguration;
 
 public sealed class RouteValidator(Func<string, bool> segmentNameIsValid)
 {
-    public bool ClusterIdIsValid(RouteCfg route, ClusterCfg[] clusters)
+    public bool ClusterExists(string clusterId, ClusterCfg[] clusters)
     {
-        if (clusters.All(c => c.ClusterId != route.ClusterId))
+        if (clusters.All(c => c.ClusterId != clusterId))
         {
             return false;
         }

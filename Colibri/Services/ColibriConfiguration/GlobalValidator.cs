@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Colibri.Services.ColibriSettingsServices;
+namespace Colibri.Services.ColibriConfiguration;
 
 public sealed class GlobalValidator
 {

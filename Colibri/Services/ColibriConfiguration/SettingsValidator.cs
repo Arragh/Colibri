@@ -2,9 +2,9 @@ using Colibri.Configuration;
 using Colibri.Helpers;
 using Microsoft.Extensions.Options;
 
-namespace Colibri.Services.ColibriSettingsServices;
+namespace Colibri.Services.ColibriConfiguration;
 
-public sealed class ColibriSettingsValidator : IValidateOptions<ColibriSettings>
+public sealed class SettingsValidator : IValidateOptions<ColibriSettings>
 {
     private readonly GlobalValidator _globalValidator = new();
     
@@ -17,7 +17,7 @@ public sealed class ColibriSettingsValidator : IValidateOptions<ColibriSettings>
 
         foreach (var route in routes)
         {
-            if (!_globalValidator.Routes.ClusterIdIsValid(route, options.Routing.Clusters))
+            if (!_globalValidator.Routes.ClusterExists(route.ClusterId, options.Routing.Clusters))
             {
                 return ValidateOptionsResult
                     .Fail($"ClusterId '{route.ClusterId}' in route {route.UpstreamPattern} is invalid");
