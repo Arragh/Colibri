@@ -9,7 +9,7 @@ public sealed class ColibriSettingsValidator : IValidateOptions<ColibriSettings>
     private readonly GlobalValidator _globalValidator = new();
     
     /// <summary>
-    /// Validates the Colibri configuration. Throws if invalid.
+    /// Validates the Colibri configuration. Returns fail if invalid.
     /// </summary>
     public ValidateOptionsResult Validate(string? name, ColibriSettings options)
     {
