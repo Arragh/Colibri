@@ -39,8 +39,6 @@ public class HttpTerminalMiddleware : IPipelineMiddleware, IDisposable
     
     public async ValueTask InvokeAsync(PipelineContext ctx, PipelineDelegate next)
     {
-        ctx.IsHandled = true;
-        
         var requestUri = new Uri(
             _uris[ctx.HostIdx],
             ctx.DownstreamPath + ctx.HttpContext.Request.QueryString);

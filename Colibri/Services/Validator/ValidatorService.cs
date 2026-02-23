@@ -1,4 +1,5 @@
 using Colibri.Configuration;
+using Colibri.Configuration.Models;
 using Colibri.Helpers;
 using Microsoft.Extensions.Options;
 
@@ -13,7 +14,30 @@ public sealed class ValidatorService : IValidateOptions<ColibriSettings>
     /// </summary>
     public ValidateOptionsResult Validate(string? name, ColibriSettings options)
     {
-        var clusters = options.Routing.Clusters;
+        var validateClustersResult = ValidateClusters(options.Routing.Clusters);
+        var validateRoutesResult = ValidateRoutes(options.Routing.Routes);
+        var validateCrossResult = ValidateCrossReferences(options.Routing.Clusters, options.Routing.Routes);
+        
+        if (!validateClustersResult.Succeeded)
+        {
+            return validateClustersResult;
+        }
+
+        if (!validateRoutesResult.Succeeded)
+        {
+            return validateRoutesResult;
+        }
+
+        if (!validateCrossResult.Succeeded)
+        {
+            return validateCrossResult;
+        }
+
+        return ValidateOptionsResult.Success;
+    }
+
+    private ValidateOptionsResult ValidateClusters(ClusterCfg[] clusters)
+    {
         foreach (var cluster in clusters)
         {
             if (!_globalValidator.Clusters.ClusterIdIsNotEmpty(cluster.ClusterId))
@@ -26,6 +50,12 @@ public sealed class ValidatorService : IValidateOptions<ColibriSettings>
             {
                 return ValidateOptionsResult
                     .Fail($"ClusterId '{cluster.ClusterId}' length is invalid");
+            }
+
+            if (!_globalValidator.Clusters.ClusterIdIsUnique(cluster, clusters))
+            {
+                return ValidateOptionsResult
+                    .Fail($"ClusterId '{cluster.ClusterId}' must be unique");
             }
 
             if (!_globalValidator.Clusters.ClusterIdIsValid(cluster.ClusterId))
@@ -77,15 +107,13 @@ public sealed class ValidatorService : IValidateOptions<ColibriSettings>
             }
         }
         
-        var routes = options.Routing.Routes;
+        return ValidateOptionsResult.Success;
+    }
+
+    private ValidateOptionsResult ValidateRoutes(RouteCfg[] routes)
+    {
         foreach (var route in routes)
         {
-            if (!_globalValidator.Routes.ClusterExists(route.ClusterId, options.Routing.Clusters))
-            {
-                return ValidateOptionsResult
-                    .Fail($"ClusterId '{route.ClusterId}' in route {route.UpstreamPattern} is invalid");
-            }
-
             if (!_globalValidator.Routes.PatternFormatIsValid(route.UpstreamPattern))
             {
                 return ValidateOptionsResult
@@ -224,11 +252,51 @@ public sealed class ValidatorService : IValidateOptions<ColibriSettings>
                     .Fail($"Upstream '{route.UpstreamPattern}' has duplicate methods");
             }
 
-            if (!_globalValidator.Routes.HasNoDuplicateMethodsBetweenSamePatterns(route, routes))
+            if (!_globalValidator.Routes.MethodUpstreamCombinationIsUnique(route, routes))
             {
                 return ValidateOptionsResult
                     .Fail($"Same upstreams '{route.UpstreamPattern}' have duplicate methods");
             }
+        }
+        
+        return ValidateOptionsResult.Success;
+    }
+
+    private ValidateOptionsResult ValidateCrossReferences(ClusterCfg[] clusters, RouteCfg[] routes)
+    {
+        foreach (var route in routes)
+        {
+            if (!_globalValidator.Routes.ClusterExists(route.ClusterId, clusters))
+            {
+                return ValidateOptionsResult
+                    .Fail($"ClusterId '{route.ClusterId}' in route {route.UpstreamPattern} is invalid");
+            }
+        }
+        
+        int totalUpstreamPathLength = 0;
+        int totalDownstreamPathLength = 0;
+
+        foreach (var cluster in clusters)
+        {
+            totalUpstreamPathLength += cluster.Prefix.Length;
+        }
+        
+        foreach (var route in routes)
+        {
+            totalUpstreamPathLength += route.UpstreamPattern.Length;
+            totalDownstreamPathLength += route.DownstreamPattern.Length;
+        }
+
+        if (totalUpstreamPathLength > ushort.MaxValue)
+        {
+            return ValidateOptionsResult
+                .Fail($"Total length {totalUpstreamPathLength} of all prefix+upstream patterns exceeds the maximum allowed size {ushort.MaxValue}");
+        }
+
+        if (totalDownstreamPathLength > ushort.MaxValue)
+        {
+            return ValidateOptionsResult
+                .Fail($"Total length {totalDownstreamPathLength} of all downstream patterns exceeds the maximum allowed size {ushort.MaxValue}");
         }
         
         return ValidateOptionsResult.Success;
