@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Colibri.Configuration.Models;
 using Colibri.Helpers;
 
 namespace Colibri.Services.Validator;
@@ -21,6 +22,24 @@ public sealed class ClusterValidator
         return match.Success;
     }
 
+    public bool ClusterIdIsUnique(ClusterCfg current, ClusterCfg[] clusters)
+    {
+        foreach (var cluster in clusters)
+        {
+            if (cluster.Equals(current))
+            {
+                continue;
+            }
+
+            if (current.ClusterId == cluster.ClusterId)
+            {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
     public bool ProtocolIsNotEmpty(string protocol)
     {
         return !string.IsNullOrWhiteSpace(protocol);

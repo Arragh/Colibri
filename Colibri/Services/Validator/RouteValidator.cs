@@ -198,7 +198,7 @@ public sealed class RouteValidator
         return true;
     }
     
-    public bool HasNoDuplicateMethodsBetweenSamePatterns(RouteCfg current, RouteCfg[] routes)
+    public bool MethodUpstreamCombinationIsUnique(RouteCfg current, RouteCfg[] routes)
     {
         var methods = current.Methods;
 

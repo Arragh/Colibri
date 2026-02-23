@@ -28,6 +28,8 @@ public sealed class RoutingEngineMiddleware : IPipelineMiddleware
             return;
         }
         
+        ctx.IsHandled = true;
+        
         var pathUrl = _downstreamPathBuilder.Build(
             ctx.GlobalSnapshot.RoutingSnapshot,
             normalizedPath,
