@@ -3,7 +3,7 @@ using Colibri.Configuration.Models;
 using Colibri.Helpers;
 using Microsoft.Extensions.Options;
 
-namespace Colibri.Services.Validator;
+namespace Colibri.Services.ConfigValidator;
 
 public sealed class ValidatorService : IValidateOptions<ColibriSettings>
 {

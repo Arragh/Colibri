@@ -4,7 +4,7 @@ using Colibri.Runtime.Pipeline;
 using Colibri.Runtime.Pipeline.RoutingEngine;
 using Colibri.Runtime.Snapshots;
 using Colibri.Services;
-using Colibri.Services.Validator;
+using Colibri.Services.ConfigValidator;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;

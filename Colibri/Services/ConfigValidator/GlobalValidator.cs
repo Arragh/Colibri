@@ -1,4 +1,4 @@
-namespace Colibri.Services.Validator;
+namespace Colibri.Services.ConfigValidator;
 
 public sealed class GlobalValidator
 {

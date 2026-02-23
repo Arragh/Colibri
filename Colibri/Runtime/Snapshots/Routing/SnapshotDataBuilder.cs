@@ -48,7 +48,7 @@ public class SnapshotDataBuilder
                         var chunksHolder = method.Value;
                         var tempDownstream = new TempDownstream
                         {
-                            ClusterId = (ushort)chunksHolder.ClusterId,
+                            ClusterId = chunksHolder.ClusterId,
                             MethodMask = HttpMethodMask.GetMask(method.Key),
                             FirstChildIndex = (ushort)downstreamSegments.Count,
                             ChildrenCount = (byte)chunksHolder.Chunks.Count

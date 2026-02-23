@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 using Colibri.Configuration.Models;
 using Colibri.Helpers;
 
-namespace Colibri.Services.Validator;
+namespace Colibri.Services.ConfigValidator;
 
 public sealed class ClusterValidator
 {
