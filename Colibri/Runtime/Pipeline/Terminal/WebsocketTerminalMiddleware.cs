@@ -18,6 +18,8 @@ public class WebsocketTerminalMiddleware : IPipelineMiddleware
     
     public async ValueTask InvokeAsync(PipelineContext ctx, PipelineDelegate next)
     {
+        ctx.IsHandled = true;
+        
         if (!ctx.HttpContext.WebSockets.IsWebSocketRequest)
         {
             ctx.HttpContext.Response.StatusCode = 400;
