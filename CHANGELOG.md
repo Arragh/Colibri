@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.0] - 23.02.2026
+
+### ✅ Added
+- Allows custom routes via app.Map
+- Completed validation clusters.
+
 ## [0.1.12] - 21.02.2026
 
 ### ✅ Added
