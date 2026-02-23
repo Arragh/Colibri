@@ -3,9 +3,8 @@
 [![NuGet](https://img.shields.io/nuget/v/Colibri.svg?logo=nuget&label=NuGet&color=green)](https://www.nuget.org/packages/Colibri/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-AOT-friendly API-Gateway library for ASP.NET
-
-This project is in an early stage, please be understanding.
+Colibri is a fast, lightweight, easy-to-configure, AOT-friendly API gateway that doesn't overload you with heavy or unnecessary features.
+Project is in an early stage, please be understanding.
 
 ## 🚀 Features:
 1) Custom Trie-based routing system using structures and flat arrays.
