@@ -6,16 +6,6 @@ namespace Colibri.Services.ConfigValidator;
 
 public sealed class RouteValidator
 {
-    public bool ClusterExists(string clusterId, ClusterCfg[] clusters)
-    {
-        if (clusters.All(c => c.ClusterId != clusterId))
-        {
-            return false;
-        }
-        
-        return true;
-    }
-    
     public bool PatternFormatIsValid(string pattern)
     {
         if (!pattern.StartsWith('/'))
@@ -225,6 +215,18 @@ public sealed class RouteValidator
         }
 
         return true;
+    }
+
+    public bool TotalDownstreamPathsLengthIsValid(RouteCfg[] routes)
+    {
+        int totalDownstreamPathLength = 0;
+        
+        foreach (var route in routes)
+        {
+            totalDownstreamPathLength += route.DownstreamPattern.Length;
+        }
+        
+        return totalDownstreamPathLength <= ushort.MaxValue;
     }
     
     private string[] ExtractStaticSegments(string pattern)
