@@ -1,9 +1,10 @@
+using System.Text.RegularExpressions;
 using Colibri.Configuration.Models;
 using Colibri.Helpers;
 
-namespace Colibri.Services.ColibriConfiguration;
+namespace Colibri.Services.Validator;
 
-public sealed class RouteValidator(Func<string, bool> segmentNameIsValid)
+public sealed class RouteValidator
 {
     public bool ClusterExists(string clusterId, ClusterCfg[] clusters)
     {
@@ -61,7 +62,7 @@ public sealed class RouteValidator(Func<string, bool> segmentNameIsValid)
         var patternSegments = ExtractStaticSegments(pattern);
         foreach (var segment in patternSegments)
         {
-            if (!segmentNameIsValid(segment))
+            if (!SegmentNameIsValid(segment))
             {
                 return false;
             }
@@ -120,7 +121,7 @@ public sealed class RouteValidator(Func<string, bool> segmentNameIsValid)
         var patternParams = ExtractParamSegments(pattern);
         foreach (var param in patternParams)
         {
-            if (!segmentNameIsValid(param[1..^1]))
+            if (!SegmentNameIsValid(param[1..^1]))
             {
                 return false;
             }
@@ -255,5 +256,11 @@ public sealed class RouteValidator(Func<string, bool> segmentNameIsValid)
             .Split('/')
             .Where(s => string.IsNullOrWhiteSpace(s))
             .ToArray();
+    }
+    
+    private bool SegmentNameIsValid(string name)
+    {
+        var match = Regex.Match(name, "^[a-z0-9_]+$");
+        return match.Success;
     }
 }

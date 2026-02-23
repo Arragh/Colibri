@@ -4,7 +4,7 @@ using Colibri.Runtime.Pipeline;
 using Colibri.Runtime.Pipeline.RoutingEngine;
 using Colibri.Runtime.Snapshots;
 using Colibri.Services;
-using Colibri.Services.ColibriConfiguration;
+using Colibri.Services.Validator;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -15,7 +15,7 @@ public static class ColibriExtensions
 {
     public static IServiceCollection AddColibriServices(this IServiceCollection services)
     {
-        services.AddSingleton<IValidateOptions<ColibriSettings>, SettingsValidator>();
+        services.AddSingleton<IValidateOptions<ColibriSettings>, ValidatorService>();
         services
             .AddOptions<ColibriSettings>()
             .BindConfiguration("Colibri")
