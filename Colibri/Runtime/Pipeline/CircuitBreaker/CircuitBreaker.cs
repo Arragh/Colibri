@@ -21,7 +21,6 @@ public sealed class CircuitBreaker
     public bool CanExecute(int hostIdx)
     {
         var host = _hostsStates[hostIdx];
-
         var state = Volatile.Read(ref host.State);
 
         if (state == 0)

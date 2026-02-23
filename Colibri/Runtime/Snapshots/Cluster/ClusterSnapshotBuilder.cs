@@ -3,7 +3,6 @@ using Colibri.Configuration;
 using Colibri.Runtime.Pipeline;
 using Colibri.Runtime.Pipeline.CircuitBreaker;
 using Colibri.Runtime.Pipeline.LoadBalancer;
-using Colibri.Runtime.Pipeline.RateLimiter;
 using Colibri.Runtime.Pipeline.Retrier;
 using Colibri.Runtime.Pipeline.Terminal;
 

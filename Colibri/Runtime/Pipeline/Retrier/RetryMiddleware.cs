@@ -8,8 +8,6 @@ public sealed class RetryMiddleware(int maxAttempts) : IPipelineMiddleware
     {
         for (int i = 1; i <= maxAttempts; i++)
         {
-            ctx.Attempts = i;
-
             await next(ctx);
 
             if (ctx.StatusCode < 500)
