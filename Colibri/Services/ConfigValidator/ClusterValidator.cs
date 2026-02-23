@@ -18,7 +18,7 @@ public sealed class ClusterValidator
 
     public bool ClusterIdIsValid(string clusterId)
     {
-        var match = Regex.Match(clusterId, "^[a-zA-Z0-9]+$");
+        var match = Regex.Match(clusterId, "^[a-z0-9]+$");
         return match.Success;
     }
 
@@ -55,17 +55,6 @@ public sealed class ClusterValidator
         return !string.IsNullOrWhiteSpace(prefix);
     }
 
-    public bool PrefixIsInLowerCase(string prefix)
-    {
-        var lower = prefix.ToLower();
-        if (prefix != lower)
-        {
-            return false;
-        }
-        
-        return true;
-    }
-
     public bool PrefixIsValid(string prefix)
     {
         if (prefix[0] != '/')
@@ -86,20 +75,6 @@ public sealed class ClusterValidator
         return hosts.Length > 0;
     }
 
-    public bool HostsIsInLowerCase(string[] hosts)
-    {
-        foreach (var host in hosts)
-        {
-            var lower = host.ToLower();
-            if (host != lower)
-            {
-                return false;
-            }
-        }
-        
-        return true;
-    }
-    
     private bool PrefixIsMatch(string name)
     {
         var match = Regex.Match(name, "^[a-z0-9_]+$");

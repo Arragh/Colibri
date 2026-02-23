@@ -82,12 +82,6 @@ public sealed class ValidatorService : IValidateOptions<ColibriSettings>
                     .Fail($"Cluster '{cluster.ClusterId}' has an empty prefix");
             }
 
-            if (!_globalValidator.Clusters.PrefixIsInLowerCase(cluster.Prefix))
-            {
-                return ValidateOptionsResult
-                    .Fail($"Cluster's '{cluster.ClusterId}' prefix '{cluster.Prefix}' must be in lower case");
-            }
-
             if (!_globalValidator.Clusters.PrefixIsValid(cluster.Prefix))
             {
                 return ValidateOptionsResult
@@ -98,12 +92,6 @@ public sealed class ValidatorService : IValidateOptions<ColibriSettings>
             {
                 return ValidateOptionsResult
                     .Fail($"Cluster's '{cluster.ClusterId}' hosts are empty");
-            }
-
-            if (!_globalValidator.Clusters.HostsIsInLowerCase(cluster.Hosts))
-            {
-                return ValidateOptionsResult
-                    .Fail($"Cluster's '{cluster.ClusterId}' hosts must be in lower case");
             }
         }
         
