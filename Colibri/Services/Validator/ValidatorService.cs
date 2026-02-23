@@ -2,9 +2,9 @@ using Colibri.Configuration;
 using Colibri.Helpers;
 using Microsoft.Extensions.Options;
 
-namespace Colibri.Services.ColibriSettingsServices;
+namespace Colibri.Services.Validator;
 
-public sealed class ColibriSettingsValidator : IValidateOptions<ColibriSettings>
+public sealed class ValidatorService : IValidateOptions<ColibriSettings>
 {
     private readonly GlobalValidator _globalValidator = new();
     
@@ -13,11 +13,74 @@ public sealed class ColibriSettingsValidator : IValidateOptions<ColibriSettings>
     /// </summary>
     public ValidateOptionsResult Validate(string? name, ColibriSettings options)
     {
-        var routes = options.Routing.Routes;
+        var clusters = options.Routing.Clusters;
+        foreach (var cluster in clusters)
+        {
+            if (!_globalValidator.Clusters.ClusterIdIsNotEmpty(cluster.ClusterId))
+            {
+                return ValidateOptionsResult
+                    .Fail($"ClusterId '{cluster.ClusterId}' is empty");
+            }
 
+            if (!_globalValidator.Clusters.ClusterIdLengthIsValid(cluster.ClusterId))
+            {
+                return ValidateOptionsResult
+                    .Fail($"ClusterId '{cluster.ClusterId}' length is invalid");
+            }
+
+            if (!_globalValidator.Clusters.ClusterIdIsValid(cluster.ClusterId))
+            {
+                return ValidateOptionsResult
+                    .Fail($"ClusterId '{cluster.ClusterId}' is invalid");
+            }
+
+            if (!_globalValidator.Clusters.ProtocolIsNotEmpty(cluster.Protocol))
+            {
+                return ValidateOptionsResult
+                    .Fail($"Cluster {cluster.ClusterId} has an empty protocol");
+            }
+
+            if (!_globalValidator.Clusters.ProtocolIsValid(cluster.Protocol))
+            {
+                return ValidateOptionsResult
+                    .Fail($"Cluster '{cluster.ClusterId}' has an invalid protocol '{cluster.Protocol}'");
+            }
+
+            if (!_globalValidator.Clusters.PrefixIsNotEmpty(cluster.Prefix))
+            {
+                return ValidateOptionsResult
+                    .Fail($"Cluster '{cluster.ClusterId}' has an empty prefix");
+            }
+
+            if (!_globalValidator.Clusters.PrefixIsInLowerCase(cluster.Prefix))
+            {
+                return ValidateOptionsResult
+                    .Fail($"Cluster's '{cluster.ClusterId}' prefix '{cluster.Prefix}' must be in lower case");
+            }
+
+            if (!_globalValidator.Clusters.PrefixIsValid(cluster.Prefix))
+            {
+                return ValidateOptionsResult
+                    .Fail($"Cluster '{cluster.ClusterId}' has an invalid prefix {cluster.Prefix}");
+            }
+
+            if (!_globalValidator.Clusters.HostsAreNotEmpty(cluster.Hosts))
+            {
+                return ValidateOptionsResult
+                    .Fail($"Cluster's '{cluster.ClusterId}' hosts are empty");
+            }
+
+            if (!_globalValidator.Clusters.HostsIsInLowerCase(cluster.Hosts))
+            {
+                return ValidateOptionsResult
+                    .Fail($"Cluster's '{cluster.ClusterId}' hosts must be in lower case");
+            }
+        }
+        
+        var routes = options.Routing.Routes;
         foreach (var route in routes)
         {
-            if (!_globalValidator.Routes.ClusterIdIsValid(route, options.Routing.Clusters))
+            if (!_globalValidator.Routes.ClusterExists(route.ClusterId, options.Routing.Clusters))
             {
                 return ValidateOptionsResult
                     .Fail($"ClusterId '{route.ClusterId}' in route {route.UpstreamPattern} is invalid");
