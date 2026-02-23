@@ -8,20 +8,26 @@ internal static class GlobalConstants
     public const int ParamsMaxCount = 16;
     
     public static readonly ImmutableHashSet<string> ValidProtocols =
-        [
-            "http",
-            "ws"
-        ];
+    [
+        "http",
+        "ws"
+    ];
     
     public static readonly ImmutableHashSet<string> ValidHttpMethods =
-        [
-            "GET",
-            "POST",
-            "PUT",
-            "PATCH",
-            "DELETE",
-            "HEAD",
-            "OPTIONS",
-            "TRACE"
-        ];
+    [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE",
+        "HEAD",
+        "OPTIONS",
+        "TRACE"
+    ];
+
+    public static readonly ImmutableHashSet<string> LoadBalancerTypes =
+    [
+        "rr",
+        "rnd"
+    ];
 }

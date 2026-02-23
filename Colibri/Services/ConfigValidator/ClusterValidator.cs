@@ -75,6 +75,16 @@ public sealed class ClusterValidator
         return hosts.Length > 0;
     }
 
+    public bool LoadBalancerTypeIsNotEmpty(string loadBalancerType)
+    {
+        return !string.IsNullOrWhiteSpace(loadBalancerType);
+    }
+
+    public bool LoadBalancerTypeIsValid(string loadBalancerType)
+    {
+        return GlobalConstants.LoadBalancerTypes.Contains(loadBalancerType);
+    }
+    
     private bool PrefixIsMatch(string name)
     {
         var match = Regex.Match(name, "^[a-z0-9_]+$");
