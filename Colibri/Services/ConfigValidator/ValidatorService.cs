@@ -82,12 +82,6 @@ public sealed class ValidatorService : IValidateOptions<ColibriSettings>
                     .Fail($"Cluster '{cluster.ClusterId}' has an empty prefix");
             }
 
-            if (!_globalValidator.Clusters.PrefixIsInLowerCase(cluster.Prefix))
-            {
-                return ValidateOptionsResult
-                    .Fail($"Cluster's '{cluster.ClusterId}' prefix '{cluster.Prefix}' must be in lower case");
-            }
-
             if (!_globalValidator.Clusters.PrefixIsValid(cluster.Prefix))
             {
                 return ValidateOptionsResult
@@ -98,12 +92,6 @@ public sealed class ValidatorService : IValidateOptions<ColibriSettings>
             {
                 return ValidateOptionsResult
                     .Fail($"Cluster's '{cluster.ClusterId}' hosts are empty");
-            }
-
-            if (!_globalValidator.Clusters.HostsIsInLowerCase(cluster.Hosts))
-            {
-                return ValidateOptionsResult
-                    .Fail($"Cluster's '{cluster.ClusterId}' hosts must be in lower case");
             }
         }
         
@@ -259,6 +247,12 @@ public sealed class ValidatorService : IValidateOptions<ColibriSettings>
             }
         }
         
+        if (!_globalValidator.Routes.TotalDownstreamPathsLengthIsValid(routes))
+        {
+            return ValidateOptionsResult
+                .Fail($"Total length of all downstream patterns exceeds the maximum allowed size {ushort.MaxValue}");
+        }
+        
         return ValidateOptionsResult.Success;
     }
 
@@ -266,39 +260,19 @@ public sealed class ValidatorService : IValidateOptions<ColibriSettings>
     {
         foreach (var route in routes)
         {
-            if (!_globalValidator.Routes.ClusterExists(route.ClusterId, clusters))
+            if (!_globalValidator.CrossReferences.ClusterExists(route.ClusterId, clusters))
             {
                 return ValidateOptionsResult
                     .Fail($"ClusterId '{route.ClusterId}' in route {route.UpstreamPattern} is invalid");
             }
         }
         
-        int totalUpstreamPathLength = 0;
-        int totalDownstreamPathLength = 0;
-
-        foreach (var cluster in clusters)
-        {
-            totalUpstreamPathLength += cluster.Prefix.Length;
-        }
-        
-        foreach (var route in routes)
-        {
-            totalUpstreamPathLength += route.UpstreamPattern.Length;
-            totalDownstreamPathLength += route.DownstreamPattern.Length;
-        }
-
-        if (totalUpstreamPathLength > ushort.MaxValue)
+        if (!_globalValidator.CrossReferences.TotalUpstreamPathsLengthIsValid(clusters, routes))
         {
             return ValidateOptionsResult
-                .Fail($"Total length {totalUpstreamPathLength} of all prefix+upstream patterns exceeds the maximum allowed size {ushort.MaxValue}");
+                .Fail($"Total length of all prefix+upstream patterns exceeds the maximum allowed size {ushort.MaxValue}");
         }
 
-        if (totalDownstreamPathLength > ushort.MaxValue)
-        {
-            return ValidateOptionsResult
-                .Fail($"Total length {totalDownstreamPathLength} of all downstream patterns exceeds the maximum allowed size {ushort.MaxValue}");
-        }
-        
         return ValidateOptionsResult.Success;
     }
 }
