@@ -38,7 +38,7 @@ public static class ColibriExtensions
         var snapshotProvider = app.ApplicationServices.GetRequiredService<SnapshotProvider>();
         var pipeline = app.ApplicationServices.GetRequiredService<PipelineSrv>();
 
-        app.Run(async ctx =>
+        app.Use(async (ctx, next) =>
         {
             var pipelineCtx = new PipelineContext
             {
@@ -48,6 +48,11 @@ public static class ColibriExtensions
             };
     
             await pipeline.ExecuteAsync(pipelineCtx);
+
+            if (!pipelineCtx.IsHandled)
+            {
+                await next();
+            }
         });
         
         return app;

@@ -10,6 +10,7 @@ public sealed class PipelineContext
     public required CancellationToken CancellationToken { get; init; }
     public int ClusterId { get; set; }
     public string DownstreamPath { get; set; }
+    public bool IsHandled { get; set; }
     
     public int EndpointId { get; set; }
     public int HostIdx { get; set; }
