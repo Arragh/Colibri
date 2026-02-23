@@ -9,7 +9,6 @@ public sealed class CircuitBreakerMiddleware(CircuitBreaker breaker) : IPipeline
         if (!breaker.CanExecute(ctx.HostIdx))
         {
             ctx.StatusCode = 503;
-            ctx.IsCompleted = true;
             return;
         }
 
