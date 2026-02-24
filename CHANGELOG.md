@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.0] - 23.02.2026
+
+### ✅ Added
+- Configuration maked case-insensitive.
+- Completed config validation on start/hot-reload.
+
 ## [0.2.0] - 23.02.2026
 
 ### ✅ Added
