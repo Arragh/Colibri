@@ -4,9 +4,9 @@ namespace Colibri.Services.ConfigValidator;
 
 public sealed class CrossReferenceValidator
 {
-    public bool ClusterExists(string clusterId, ClusterCfg[] clusters)
+    public bool ClusterExists(string name, ClusterCfg[] clusters)
     {
-        if (clusters.All(c => c.ClusterId != clusterId))
+        if (clusters.All(c => c.Name != name))
         {
             return false;
         }

@@ -68,7 +68,7 @@ public sealed class ClusterSnapshotBuilder
             
             var snpCluster = new ClusterSnp
             {
-                ClusterId = cfgCluster.ClusterId,
+                Name = cfgCluster.Name,
                 Protocol = cfgCluster.Protocol,
                 Prefix = cfgCluster.Prefix,
                 HostsCount = cfgCluster.Hosts.Length,

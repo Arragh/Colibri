@@ -11,7 +11,7 @@ public class RoutesBuilder
         for (ushort i = 0; i < cfgClusters.Length; i++)
         {
             var clusterRoutes = cfgRoutes
-                .Where(r => r.ClusterId == cfgClusters[i].ClusterId)
+                .Where(r => r.ClusterName == cfgClusters[i].Name)
                 .ToArray();
 
             foreach (var route in clusterRoutes)
