@@ -460,35 +460,15 @@ public sealed class RouteValidatorTests
         {
             new RouteCfg
             {
-                DownstreamPattern = string.Empty,
+                DownstreamPattern = new string('x', 32768)
             },
             new RouteCfg
             {
-                DownstreamPattern = string.Empty,
+                DownstreamPattern = new string('x', 32768)
             }
         };
         
-        var tempString = string.Empty;
-        for (int i = 0; i < 182; i++)
-        {
-            if (i % 10 == 0)
-            {
-                tempString += '/';
-            }
-            else
-            {
-                tempString += 'x';
-            }
-        }
 
-        foreach (var route in routes)
-        {
-            for (int i = 0; i < 182; i++)
-            {
-                route.DownstreamPattern += tempString;
-            }
-        }
-        
         // Act
         var result = _validator.TotalDownstreamPathsLengthIsValid(routes); // суммарная длина около 66к
         
@@ -504,37 +484,16 @@ public sealed class RouteValidatorTests
         {
             new RouteCfg
             {
-                DownstreamPattern = string.Empty,
+                DownstreamPattern = new string('x', 32767)
             },
             new RouteCfg
             {
-                DownstreamPattern = string.Empty,
+                DownstreamPattern = new string('x', 32767)
             }
         };
         
-        var tempString = string.Empty;
-        for (int i = 0; i < 181; i++)
-        {
-            if (i % 10 == 0)
-            {
-                tempString += '/';
-            }
-            else
-            {
-                tempString += 'x';
-            }
-        }
-
-        foreach (var route in routes)
-        {
-            for (int i = 0; i < 181; i++)
-            {
-                route.DownstreamPattern += tempString;
-            }
-        }
-        
         // Act
-        var result = _validator.TotalDownstreamPathsLengthIsValid(routes); // суммарная длина около 64к
+        var result = _validator.TotalDownstreamPathsLengthIsValid(routes);
         
         // Assert
         Assert.True(result);
