@@ -7,6 +7,30 @@ namespace Unit.Tests.Validators;
 public sealed class RouteValidatorTests
 {
     private readonly RouteValidator _validator = new();
+
+    public static readonly TheoryData<string> ValidPatterns = new()
+    {
+        "/",
+        "/{id}",
+        "/{id}/{next}",
+        "/{id-next}",
+        "/{id_next}",
+        "/users",
+        "/users/{id}",
+        "/users/{id}/{next}",
+        "/users/{id}/info",
+        "/users/{id}/info/{next}",
+        "/users-list",
+        "/users-list/all",
+        "/users_list",
+        "/users_list/all",
+        "/users/{id-next}",
+        "/users/{id_next}",
+        "/users/{id-next}/info",
+        "/users/{id-next}/info/{name}",
+        "/users/{id_next}/info",
+        "/users/{id_next}/info/{name}/{next}"
+    };
     
     [Theory]
     [InlineData("")]
@@ -23,9 +47,7 @@ public sealed class RouteValidatorTests
     }
 
     [Theory]
-    [InlineData("/")]
-    [InlineData("/users")]
-    [InlineData("/users/{id}")]
+    [MemberData(nameof(ValidPatterns))]
     public void PatternFormatIsValid_WhenPatternIsValid_ShouldReturnTrue(string pattern)
     {
         // Act
@@ -49,10 +71,7 @@ public sealed class RouteValidatorTests
     }
     
     [Theory]
-    [InlineData("/")]
-    [InlineData("/users")]
-    [InlineData("/users/{id}")]
-    [InlineData("/users/{id}/info")]
+    [MemberData(nameof(ValidPatterns))]
     public void PatternSegmentsNotEmpty_WhenPatternHasNoEmptySegments_ShouldReturnTrue(string pattern)
     {
         // Act
@@ -110,10 +129,7 @@ public sealed class RouteValidatorTests
     }
     
     [Theory]
-    [InlineData("/")]
-    [InlineData("/users")]
-    [InlineData("/users-pattern")]
-    [InlineData("/users_pattern")]
+    [MemberData(nameof(ValidPatterns))]
     public void PatternStaticSegmentNamesIsValid_WhenPatternStaticSegmentNamesIsValid_ShouldReturnTrue(string pattern)
     {
         // Act
@@ -138,8 +154,7 @@ public sealed class RouteValidatorTests
     }
     
     [Theory]
-    [InlineData("/users/{name}")]
-    [InlineData("/users/{id}/info")]
+    [MemberData(nameof(ValidPatterns))]
     public void PatternParamsCurlyBracesIsValid_WhenPatternParamsCurlyBracesIsValid_ShouldReturnTrue(string pattern)
     {
         // Act
@@ -163,9 +178,7 @@ public sealed class RouteValidatorTests
     }
     
     [Theory]
-    [InlineData("/{test}")]
-    [InlineData("/users/{id}")]
-    [InlineData("/users/{name}/info")]
+    [MemberData(nameof(ValidPatterns))]
     public void PatternParamNamesNotEmpty_WhenPatternParamNamesNotEmpty_ShouldReturnTrue(string pattern)
     {
         // Act
@@ -229,10 +242,7 @@ public sealed class RouteValidatorTests
     }
     
     [Theory]
-    [InlineData("/{name}")]
-    [InlineData("/users/{id}")]
-    [InlineData("/users/{id-pattern}")]
-    [InlineData("/users/{id_pattern}/info")]
+    [MemberData(nameof(ValidPatterns))]
     public void ParamNamesIsValid_WhenParamNamesIsValid_ShouldReturnTrue(string pattern)
     {
         // Act
@@ -310,9 +320,7 @@ public sealed class RouteValidatorTests
     }
     
     [Theory]
-    [InlineData("/users/{id}")]
-    [InlineData("/users/{id}/info")]
-    [InlineData("/users/{id}/info/{name}/test")]
+    [MemberData(nameof(ValidPatterns))]
     public void HasNoDuplicateParameters_WhenHasNoDuplicateParameters_ShouldReturnTrue(string pattern)
     {
         // Act
