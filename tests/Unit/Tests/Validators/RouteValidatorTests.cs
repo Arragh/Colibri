@@ -85,11 +85,7 @@ public sealed class RouteValidatorTests
     public void PatternStaticSegmentsLengthIsValid_WhenPatternStaticSegmentsLengthIsInvalid_ShouldReturnFalse()
     {
         // Arrange
-        var pattern = string.Empty;
-        for (int i = 0; i < GlobalConstants.SegmentMaxLength + 1; i++)
-        {
-            pattern += 'x';
-        }
+        var pattern = new string('x', GlobalConstants.SegmentMaxLength + 1);
         
         // Act
         var result = _validator.PatternStaticSegmentsLengthIsValid(pattern);
@@ -102,12 +98,8 @@ public sealed class RouteValidatorTests
     public void PatternStaticSegmentsLengthIsValid_WhenPatternStaticSegmentsLengthIsValid_ShouldReturnTrue()
     {
         // Arrange
-        var pattern = string.Empty;
-        for (int i = 0; i < GlobalConstants.SegmentMaxLength; i++)
-        {
-            pattern += 'x';
-        }
-        
+        var pattern = new string('x', GlobalConstants.SegmentMaxLength);
+
         // Act
         var result = _validator.PatternStaticSegmentsLengthIsValid(pattern);
         
@@ -192,12 +184,8 @@ public sealed class RouteValidatorTests
     public void PatternParamsLengthIsValid_WhenPatternParamsLengthIsInvalid_ShouldReturnFalse()
     {
         // Arrange
-        var pattern = "{";
-        for (int i = 0; i < GlobalConstants.SegmentMaxLength - 1; i++)
-        {
-            pattern += 'x';
-        }
-        pattern += '}';
+        var paramName = new string('x', GlobalConstants.SegmentMaxLength - 1);
+        var pattern = '{' + paramName + '}';
         
         // Act
         var result = _validator.PatternParamsLengthIsValid(pattern);
@@ -210,12 +198,8 @@ public sealed class RouteValidatorTests
     public void PatternParamsLengthIsValid_WhenPatternParamsLengthIsValid_ShouldReturnTrue()
     {
         // Arrange
-        var pattern = "{";
-        for (int i = 0; i < GlobalConstants.SegmentMaxLength - 2; i++)
-        {
-            pattern += 'x';
-        }
-        pattern += '}';
+        var paramName = new string('x', GlobalConstants.SegmentMaxLength - 2);
+        var pattern = '{' + paramName + '}';
         
         // Act
         var result = _validator.PatternParamsLengthIsValid(pattern);
@@ -456,17 +440,17 @@ public sealed class RouteValidatorTests
     public void TotalDownstreamPathsLengthIsValid_WhenUpstreamPathsLengthIsInvalid_ShouldReturnFalse()
     {
         // Arrange
-        var routes = new[]
-        {
-            new RouteCfg
+        RouteCfg[] routes =
+        [
+            new()
             {
                 DownstreamPattern = new string('x', 32768)
             },
-            new RouteCfg
+            new()
             {
                 DownstreamPattern = new string('x', 32768)
             }
-        };
+        ];
         
 
         // Act
@@ -480,17 +464,17 @@ public sealed class RouteValidatorTests
     public void TotalDownstreamPathsLengthIsValid_WhenUpstreamPathsLengthIsValid_ShouldReturnTrue()
     {
         // Arrange
-        var routes = new[]
-        {
-            new RouteCfg
+        RouteCfg[] routes =
+        [
+            new()
             {
                 DownstreamPattern = new string('x', 32767)
             },
-            new RouteCfg
+            new()
             {
                 DownstreamPattern = new string('x', 32767)
             }
-        };
+        ];
         
         // Act
         var result = _validator.TotalDownstreamPathsLengthIsValid(routes);

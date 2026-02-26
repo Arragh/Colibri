@@ -24,11 +24,7 @@ public sealed class ClusterValidatorTests
     public void NameLengthIsValid_WhenNameLengthIsMoreThenMax_ShouldReturnFalse()
     {
         // Arrange
-        var name = string.Empty;
-        for (int i = 0; i < GlobalConstants.SegmentMaxLength + 1; i++)
-        {
-            name += 'x';
-        }
+        var name = new string('x', GlobalConstants.SegmentMaxLength + 1);
         
         // Act
         var result = _validator.NameLengthIsValid(name);
@@ -41,11 +37,7 @@ public sealed class ClusterValidatorTests
     public void NameLengthIsValid_WhenNameLengthIsLessOrMax_ShouldReturnTrue()
     {
         // Arrange
-        var name = string.Empty;
-        for (int i = 0; i < GlobalConstants.SegmentMaxLength; i++)
-        {
-            name += 'x';
-        }
+        var name = new string('x', GlobalConstants.SegmentMaxLength);
         
         // Act
         var result = _validator.NameLengthIsValid(name);
@@ -89,17 +81,17 @@ public sealed class ClusterValidatorTests
     public void NameIsUnique_WhenNameIsNotUnique_ShouldReturnFalse()
     {
         // Arrange
-        var clusters = new ClusterCfg[]
-        {
-            new ClusterCfg
+        ClusterCfg[] clusters =
+        [
+            new()
             {
                 Name = "cluster1"
             },
-            new ClusterCfg
+            new()
             {
                 Name = "cluster1"
             }
-        };
+        ];
         
         // Act
         var result = _validator.NameIsUnique(clusters[0], clusters);
@@ -112,17 +104,17 @@ public sealed class ClusterValidatorTests
     public void NameIsUnique_WhenNameIsUnique_ShouldReturnTrue()
     {
         // Arrange
-        var clusters = new ClusterCfg[]
-        {
-            new ClusterCfg
+        ClusterCfg[] clusters =
+        [
+            new()
             {
                 Name = "cluster1"
             },
-            new ClusterCfg
+            new()
             {
                 Name = "cluster2"
             }
-        };
+        ];
         
         // Act
         var result = _validator.NameIsUnique(clusters[0], clusters);
