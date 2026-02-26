@@ -87,7 +87,7 @@ public sealed class ClusterValidator
     
     private bool PrefixIsMatch(string name)
     {
-        var match = Regex.Match(name, "^[a-z0-9_]+$");
+        var match = Regex.Match(name, "^[a-z0-9_-]+$");
         return match.Success;
     }
 }
