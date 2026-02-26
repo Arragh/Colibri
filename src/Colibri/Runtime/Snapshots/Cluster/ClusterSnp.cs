@@ -7,7 +7,7 @@ public sealed class ClusterSnp : IAsyncDisposable
 {
     private int _activitiesCount = 0;
     
-    public required string ClusterId { get; init; }
+    public required string Name { get; init; }
     public required string Protocol { get; init; }
     public required string Prefix { get; init; }
     public required int HostsCount { get; init; }

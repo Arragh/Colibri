@@ -10,7 +10,7 @@ public sealed class RouteCfg
             .ToArray();
     } = null!;
 
-    public string ClusterId
+    public string ClusterName
     {
         get;
         set => field = value

@@ -5,7 +5,7 @@ public sealed class ClusterCfg
     public bool Enabled { get; set; }
     public bool UsePrefix { get; set; }
 
-    public string ClusterId
+    public string Name
     {
         get;
         set => field = value

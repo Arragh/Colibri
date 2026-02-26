@@ -6,23 +6,23 @@ namespace Colibri.Services.ConfigValidator;
 
 public sealed class ClusterValidator
 {
-    public bool ClusterIdIsNotEmpty(string clusterId)
+    public bool NameIsNotEmpty(string name)
     {
-        return !string.IsNullOrWhiteSpace(clusterId);
+        return !string.IsNullOrWhiteSpace(name);
     }
 
-    public bool ClusterIdLengthIsValid(string clusterId)
+    public bool NameLengthIsValid(string name)
     {
-        return clusterId.Length <= GlobalConstants.SegmentMaxLength;
+        return name.Length <= GlobalConstants.SegmentMaxLength;
     }
 
-    public bool ClusterIdIsValid(string clusterId)
+    public bool NameIsValid(string name)
     {
-        var match = Regex.Match(clusterId, "^[a-z0-9]+$");
+        var match = Regex.Match(name, "^[a-z0-9]+$");
         return match.Success;
     }
 
-    public bool ClusterIdIsUnique(ClusterCfg current, ClusterCfg[] clusters)
+    public bool NameIsUnique(ClusterCfg current, ClusterCfg[] clusters)
     {
         foreach (var cluster in clusters)
         {
@@ -31,7 +31,7 @@ public sealed class ClusterValidator
                 continue;
             }
 
-            if (current.ClusterId == cluster.ClusterId)
+            if (current.Name == cluster.Name)
             {
                 return false;
             }
@@ -87,7 +87,7 @@ public sealed class ClusterValidator
     
     private bool PrefixIsMatch(string name)
     {
-        var match = Regex.Match(name, "^[a-z0-9_]+$");
+        var match = Regex.Match(name, "^[a-z0-9_-]+$");
         return match.Success;
     }
 }

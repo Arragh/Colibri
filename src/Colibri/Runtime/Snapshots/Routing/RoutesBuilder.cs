@@ -11,7 +11,7 @@ public class RoutesBuilder
         for (ushort i = 0; i < cfgClusters.Length; i++)
         {
             var clusterRoutes = cfgRoutes
-                .Where(r => r.ClusterId == cfgClusters[i].ClusterId)
+                .Where(r => r.ClusterName == cfgClusters[i].Name)
                 .ToArray();
 
             foreach (var route in clusterRoutes)
@@ -20,9 +20,9 @@ public class RoutesBuilder
                 {
                     ClusterId = i,
                     Methods = route.Methods,
-                    UpstreamPattern = route.UpstreamPattern
+                    UpstreamSegments = route.UpstreamPattern
                         .Split('/', StringSplitOptions.RemoveEmptyEntries),
-                    DownstreamPattern = route.DownstreamPattern
+                    DownstreamSegments = route.DownstreamPattern
                         .Split('/', StringSplitOptions.RemoveEmptyEntries),
                 };
 
@@ -35,14 +35,14 @@ public class RoutesBuilder
                         prefix = prefix[1..];
                     }
                     
-                    tempRoute.UpstreamChunks.Add(new UpstreamChunk
+                    tempRoute.TotalUpstreamChunks.Add(new UpstreamChunk
                     {
                         Name = prefix
                     });
                 }
                 
                 var paramIndex = 0;
-                foreach (var segment in tempRoute.UpstreamPattern)
+                foreach (var segment in tempRoute.UpstreamSegments)
                 {
                     var upstreamChunk = new UpstreamChunk
                     {
@@ -55,17 +55,17 @@ public class RoutesBuilder
                         upstreamChunk.ParamIndex = paramIndex++;
                     }
                     
-                    tempRoute.UpstreamChunks.Add(upstreamChunk);
+                    tempRoute.TotalUpstreamChunks.Add(upstreamChunk);
                 }
                 
-                foreach (var segment in tempRoute.DownstreamPattern)
+                foreach (var segment in tempRoute.DownstreamSegments)
                 {
                     var downstreamChunk = new DownstreamChunk
                     {
                         Name = segment
                     };
                     
-                    var upstreamChunk = tempRoute.UpstreamChunks
+                    var upstreamChunk = tempRoute.TotalUpstreamChunks
                         .FirstOrDefault(c => c.Name == segment);
                     
                     if (upstreamChunk != null)
@@ -74,7 +74,7 @@ public class RoutesBuilder
                         downstreamChunk.ParamIndex = upstreamChunk.ParamIndex;
                     }
                     
-                    tempRoute.DownstreamChunks.Add(downstreamChunk);
+                    tempRoute.TotalDownstreamChunks.Add(downstreamChunk);
                 }
                 
                 tempRoutes.Add(tempRoute);
@@ -89,10 +89,10 @@ public sealed record TempRoute
 {
     public ushort ClusterId { get; set; }
     public string[] Methods { get; set; }
-    public string[] UpstreamPattern { get; set; }
-    public string[] DownstreamPattern { get; set; }
-    public List<UpstreamChunk> UpstreamChunks { get; set; } = [];
-    public List<DownstreamChunk> DownstreamChunks { get; set; } = [];
+    public string[] UpstreamSegments { get; set; }
+    public string[] DownstreamSegments { get; set; }
+    public List<UpstreamChunk> TotalUpstreamChunks { get; set; } = [];
+    public List<DownstreamChunk> TotalDownstreamChunks { get; set; } = [];
 }
 
 public sealed class DownstreamChunk

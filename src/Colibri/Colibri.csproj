@@ -35,8 +35,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="../README.md" Pack="true" PackagePath="" />
-        <None Include="../CHANGELOG.md" />
+        <None Include="../../README.md" Pack="true" PackagePath="" />
+        <None Include="../../CHANGELOG.md" />
     </ItemGroup>
     
 </Project>

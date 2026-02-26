@@ -40,70 +40,70 @@ public sealed class ValidatorService : IValidateOptions<ColibriSettings>
     {
         foreach (var cluster in clusters)
         {
-            if (!_globalValidator.Clusters.ClusterIdIsNotEmpty(cluster.ClusterId))
+            if (!_globalValidator.Clusters.NameIsNotEmpty(cluster.Name))
             {
                 return ValidateOptionsResult
-                    .Fail($"ClusterId '{cluster.ClusterId}' is empty");
+                    .Fail($"Cluster's name '{cluster.Name}' is empty");
             }
 
-            if (!_globalValidator.Clusters.ClusterIdLengthIsValid(cluster.ClusterId))
+            if (!_globalValidator.Clusters.NameLengthIsValid(cluster.Name))
             {
                 return ValidateOptionsResult
-                    .Fail($"ClusterId '{cluster.ClusterId}' length is invalid");
+                    .Fail($"Cluster's name '{cluster.Name}' length is invalid");
             }
 
-            if (!_globalValidator.Clusters.ClusterIdIsUnique(cluster, clusters))
+            if (!_globalValidator.Clusters.NameIsUnique(cluster, clusters))
             {
                 return ValidateOptionsResult
-                    .Fail($"ClusterId '{cluster.ClusterId}' must be unique");
+                    .Fail($"Cluster's name '{cluster.Name}' must be unique");
             }
 
-            if (!_globalValidator.Clusters.ClusterIdIsValid(cluster.ClusterId))
+            if (!_globalValidator.Clusters.NameIsValid(cluster.Name))
             {
                 return ValidateOptionsResult
-                    .Fail($"ClusterId '{cluster.ClusterId}' is invalid");
+                    .Fail($"Cluster's name '{cluster.Name}' is invalid");
             }
 
             if (!_globalValidator.Clusters.ProtocolIsNotEmpty(cluster.Protocol))
             {
                 return ValidateOptionsResult
-                    .Fail($"Cluster {cluster.ClusterId} has an empty protocol");
+                    .Fail($"Cluster {cluster.Name} has an empty protocol");
             }
 
             if (!_globalValidator.Clusters.ProtocolIsValid(cluster.Protocol))
             {
                 return ValidateOptionsResult
-                    .Fail($"Cluster '{cluster.ClusterId}' has an invalid protocol '{cluster.Protocol}'");
+                    .Fail($"Cluster '{cluster.Name}' has an invalid protocol '{cluster.Protocol}'");
             }
 
             if (!_globalValidator.Clusters.PrefixIsNotEmpty(cluster.Prefix))
             {
                 return ValidateOptionsResult
-                    .Fail($"Cluster '{cluster.ClusterId}' has an empty prefix");
+                    .Fail($"Cluster '{cluster.Name}' has an empty prefix");
             }
 
             if (!_globalValidator.Clusters.PrefixIsValid(cluster.Prefix))
             {
                 return ValidateOptionsResult
-                    .Fail($"Cluster '{cluster.ClusterId}' has an invalid prefix {cluster.Prefix}");
+                    .Fail($"Cluster '{cluster.Name}' has an invalid prefix {cluster.Prefix}");
             }
 
             if (!_globalValidator.Clusters.HostsAreNotEmpty(cluster.Hosts))
             {
                 return ValidateOptionsResult
-                    .Fail($"Cluster's '{cluster.ClusterId}' hosts are empty");
+                    .Fail($"Cluster's '{cluster.Name}' hosts are empty");
             }
 
             if (!_globalValidator.Clusters.LoadBalancerTypeIsNotEmpty(cluster.LoadBalancing.Type))
             {
                 return ValidateOptionsResult
-                    .Fail($"Cluster '{cluster.ClusterId}' has an empty load balancer type");
+                    .Fail($"Cluster '{cluster.Name}' has an empty load balancer type");
             }
 
             if (!_globalValidator.Clusters.LoadBalancerTypeIsValid(cluster.LoadBalancing.Type))
             {
                 return ValidateOptionsResult
-                    .Fail($"Cluster '{cluster.ClusterId}' has an invalid load balancer type '{cluster.LoadBalancing.Type}'");
+                    .Fail($"Cluster '{cluster.Name}' has an invalid load balancer type '{cluster.LoadBalancing.Type}'");
             }
         }
         
@@ -272,10 +272,10 @@ public sealed class ValidatorService : IValidateOptions<ColibriSettings>
     {
         foreach (var route in routes)
         {
-            if (!_globalValidator.CrossReferences.ClusterExists(route.ClusterId, clusters))
+            if (!_globalValidator.CrossReferences.ClusterExists(route.ClusterName, clusters))
             {
                 return ValidateOptionsResult
-                    .Fail($"ClusterId '{route.ClusterId}' in route {route.UpstreamPattern} is invalid");
+                    .Fail($"ClusterId '{route.ClusterName}' in route {route.UpstreamPattern} is invalid");
             }
         }
         

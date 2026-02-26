@@ -17,7 +17,7 @@ public sealed class TrieBuilder
 
         void CreateTrieRecursively(TrieNode root, TempRoute tempRoute)
         {
-            var chunk = tempRoute.UpstreamChunks[0];
+            var chunk = tempRoute.TotalUpstreamChunks[0];
             
             var child = root.Children
                 .FirstOrDefault(n => n.Name == chunk.Name);
@@ -34,8 +34,8 @@ public sealed class TrieBuilder
                 root.Children.Add(child);
             }
             
-            var nextRoute = tempRoute with { UpstreamChunks = tempRoute.UpstreamChunks[1..] };
-            if (nextRoute.UpstreamChunks.Count > 0)
+            var nextRoute = tempRoute with { TotalUpstreamChunks = tempRoute.TotalUpstreamChunks[1..] };
+            if (nextRoute.TotalUpstreamChunks.Count > 0)
             {
                 CreateTrieRecursively(child, nextRoute);
             }
@@ -46,7 +46,7 @@ public sealed class TrieBuilder
                     var chunksHolder = new ChunksHolder
                     {
                         ClusterId = tempRoute.ClusterId,
-                        Chunks = tempRoute.DownstreamChunks
+                        Chunks = tempRoute.TotalDownstreamChunks
                     };
                     
                     child.Methods.Add(method, chunksHolder);
