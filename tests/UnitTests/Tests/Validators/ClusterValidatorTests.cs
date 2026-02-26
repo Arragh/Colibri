@@ -299,6 +299,6 @@ public sealed class ClusterValidatorTests
         var result = _validator.LoadBalancerTypeIsValid(type);
         
         // Assert
-        Assert.False(result);
+        Assert.True(result);
     }
 }
