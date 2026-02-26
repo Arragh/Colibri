@@ -56,9 +56,13 @@ public sealed class ClusterValidatorTests
 
     [Theory]
     [InlineData("cluster 1")]
+    [InlineData("cluster1 ")]
+    [InlineData(" cluster1")]
     [InlineData("cluster-1")]
     [InlineData("cluster_1")]
     [InlineData("cluster.1")]
+    [InlineData("cluster1*")]
+    [InlineData("cluster*1")]
     public void NameIsValid_WhenNameIsInvalid_ShouldReturnFalse(string name)
     {
         // Act
@@ -206,6 +210,11 @@ public sealed class ClusterValidatorTests
     [InlineData("cluster1")]
     [InlineData("cluster-1")]
     [InlineData("cluster_1")]
+    [InlineData("/cluster.1")]
+    [InlineData("/.cluster1")]
+    [InlineData("/cluster*1")]
+    [InlineData("/cluster1/")]
+    [InlineData("/cluster1/prefix")]
     public void PrefixIsValid_WhenPrefixIsInvalid_ShouldReturnFalse(string prefix)
     {
         // Act
