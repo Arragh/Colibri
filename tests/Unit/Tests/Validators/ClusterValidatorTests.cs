@@ -2,7 +2,7 @@ using Colibri.Configuration.Models;
 using Colibri.Helpers;
 using Colibri.Services.ConfigValidator;
 
-namespace UnitTests.Tests.Validators;
+namespace Unit.Tests.Validators;
 
 public sealed class ClusterValidatorTests
 {

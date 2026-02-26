@@ -12,7 +12,7 @@ public sealed class RouteValidator
         {
             return false;
         }
-        
+
         if (pattern.Length > 1
             && pattern.EndsWith('/'))
         {
@@ -24,6 +24,12 @@ public sealed class RouteValidator
     
     public bool PatternSegmentsNotEmpty(string pattern)
     {
+        if (pattern.Length == 1
+            && pattern[0] == '/')
+        {
+            return true;
+        }
+        
         var patternSegments = ExtractEmptySegments(pattern);
         if (patternSegments.Length > 0)
         {
@@ -262,7 +268,15 @@ public sealed class RouteValidator
     
     private bool SegmentNameIsValid(string name)
     {
-        var match = Regex.Match(name, "^[a-z0-9_]+$");
+        if (name[0] == '-'
+            || name[0] == '+'
+            || name[0] == '.'
+            || name[0] == '*')
+        {
+            return false;
+        }
+        
+        var match = Regex.Match(name, "^[a-z0-9_-]+$");
         return match.Success;
     }
 }
