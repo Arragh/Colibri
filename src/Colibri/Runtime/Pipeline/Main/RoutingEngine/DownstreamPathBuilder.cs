@@ -1,7 +1,7 @@
 using System.Text;
 using Colibri.Runtime.Snapshots.Routing;
 
-namespace Colibri.Runtime.Pipeline.RoutingEngine;
+namespace Colibri.Runtime.Pipeline.Main.RoutingEngine;
 
 public sealed class DownstreamPathBuilder
 {

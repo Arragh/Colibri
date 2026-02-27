@@ -1,7 +1,8 @@
 using System.Threading.Channels;
 using Colibri.Configuration;
 using Colibri.Runtime.Pipeline;
-using Colibri.Runtime.Pipeline.RoutingEngine;
+using Colibri.Runtime.Pipeline.Main.ClusterExecutor;
+using Colibri.Runtime.Pipeline.Main.RoutingEngine;
 using Colibri.Runtime.Snapshots;
 using Colibri.Services;
 using Colibri.Services.ConfigValidator;
@@ -22,10 +23,13 @@ public static class ColibriExtensions
             .ValidateOnStart();
 
         services.AddSingleton<SnapshotProvider>();
-        services.AddSingleton<RoutingEngineMiddleware>();
         services.AddSingleton(Channel.CreateUnbounded<IAsyncDisposable>());
-        services.AddSingleton<PipelineSrv>(sp => new([
-            sp.GetRequiredService<RoutingEngineMiddleware>()
+        
+        services.AddSingleton<RoutingEngineMiddleware>();
+        services.AddSingleton<ClusterExecutorMiddleware>();
+        services.AddSingleton<PipelineSrv>(sp => new PipelineSrv([
+            sp.GetRequiredService<RoutingEngineMiddleware>(),
+            sp.GetRequiredService<ClusterExecutorMiddleware>(),
         ]));
 
         services.AddHostedService<GlobalAsyncDisposer>();
