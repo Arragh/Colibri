@@ -1,4 +1,4 @@
-namespace Colibri.Runtime.Pipeline.Retrier;
+namespace Colibri.Runtime.Pipeline.Cluster.Retrier;
 
 public sealed class RetryMiddleware(int maxAttempts) : IPipelineMiddleware
 {

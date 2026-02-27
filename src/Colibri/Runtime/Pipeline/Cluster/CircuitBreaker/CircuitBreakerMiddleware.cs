@@ -1,4 +1,4 @@
-namespace Colibri.Runtime.Pipeline.CircuitBreaker;
+namespace Colibri.Runtime.Pipeline.Cluster.CircuitBreaker;
 
 public sealed class CircuitBreakerMiddleware(CircuitBreaker breaker) : IPipelineMiddleware
 {

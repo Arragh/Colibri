@@ -1,4 +1,4 @@
-namespace Colibri.Runtime.Pipeline;
+namespace Colibri.Runtime.Pipeline.Cluster.CircuitBreaker;
 
 public sealed class HostState
 {

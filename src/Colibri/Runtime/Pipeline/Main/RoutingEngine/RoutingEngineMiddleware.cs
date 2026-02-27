@@ -1,13 +1,13 @@
 using Colibri.Helpers;
 
-namespace Colibri.Runtime.Pipeline.RoutingEngine;
+namespace Colibri.Runtime.Pipeline.Main.RoutingEngine;
 
 public sealed class RoutingEngineMiddleware : IPipelineMiddleware
 {
     private readonly UpstreamMatcher _upstreamMatcher = new();
     private readonly DownstreamPathBuilder _downstreamPathBuilder = new();
     
-    public async ValueTask InvokeAsync(PipelineContext ctx, PipelineDelegate next)
+    public ValueTask InvokeAsync(PipelineContext ctx, PipelineDelegate next)
     {
         var routingSnapshot = ctx.GlobalSnapshot.RoutingSnapshot;
         var path = ctx.HttpContext.Request.Path.Value.AsSpan();
@@ -25,10 +25,8 @@ public sealed class RoutingEngineMiddleware : IPipelineMiddleware
                 out var downstreamChildrenCount))
         {
             ctx.HttpContext.Response.StatusCode = 404;
-            return;
+            return ValueTask.CompletedTask;
         }
-        
-        ctx.IsHandled = true;
         
         var pathUrl = _downstreamPathBuilder.Build(
             ctx.GlobalSnapshot.RoutingSnapshot,
@@ -37,18 +35,11 @@ public sealed class RoutingEngineMiddleware : IPipelineMiddleware
             downstreamFirstChildIndex,
             downstreamChildrenCount);
         
+        ctx.IsHandled = true;
         ctx.DownstreamPath = pathUrl;
-        
-        var cluster = ctx.GlobalSnapshot.ClusterSnapshot.Clusters[clusterId];
-        cluster.Take();
-        try
-        {
-            await cluster.Pipeline.ExecuteAsync(ctx);
-        }
-        finally
-        {
-            cluster.Release();
-        }
+        ctx.ClusterId = clusterId;
+
+        return next(ctx);
     }
     
     private static ReadOnlySpan<char> NormalizePath(ReadOnlySpan<char> path, Span<char> buffer)

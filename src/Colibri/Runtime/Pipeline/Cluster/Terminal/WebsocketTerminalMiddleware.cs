@@ -1,6 +1,6 @@
 using System.Net.WebSockets;
 
-namespace Colibri.Runtime.Pipeline.Terminal;
+namespace Colibri.Runtime.Pipeline.Cluster.Terminal;
 
 public class WebsocketTerminalMiddleware : IPipelineMiddleware
 {

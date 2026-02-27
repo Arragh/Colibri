@@ -1,7 +1,7 @@
 using System.Net;
 using Colibri.Helpers;
 
-namespace Colibri.Runtime.Pipeline.Terminal;
+namespace Colibri.Runtime.Pipeline.Cluster.Terminal;
 
 public class HttpTerminalMiddleware : IPipelineMiddleware, IDisposable
 {

@@ -1,10 +1,10 @@
 using System.Collections.Immutable;
 using Colibri.Configuration.Models;
 using Colibri.Runtime.Pipeline;
-using Colibri.Runtime.Pipeline.CircuitBreaker;
-using Colibri.Runtime.Pipeline.LoadBalancer;
-using Colibri.Runtime.Pipeline.Retrier;
-using Colibri.Runtime.Pipeline.Terminal;
+using Colibri.Runtime.Pipeline.Cluster.CircuitBreaker;
+using Colibri.Runtime.Pipeline.Cluster.LoadBalancer;
+using Colibri.Runtime.Pipeline.Cluster.Retrier;
+using Colibri.Runtime.Pipeline.Cluster.Terminal;
 
 namespace Colibri.Runtime.Snapshots.Cluster;
 

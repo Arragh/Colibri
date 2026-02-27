@@ -1,4 +1,4 @@
-namespace Colibri.Runtime.Pipeline.LoadBalancer;
+namespace Colibri.Runtime.Pipeline.Cluster.LoadBalancer;
 
 public interface ILoadBalancer
 {
