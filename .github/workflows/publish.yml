@@ -24,7 +24,7 @@ jobs:
 
       - name: Pack
         run: |
-          dotnet pack -c Release -o out \
+          dotnet pack src/Colibri/Colibri.csproj -c Release -o out \
           /p:PackageVersion=$VERSION \
           /p:PackageReleaseNotes="See full changelog: https://github.com/Arragh/Colibri/blob/master/CHANGELOG.md"
 
