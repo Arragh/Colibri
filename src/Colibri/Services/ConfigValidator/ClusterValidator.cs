@@ -80,8 +80,13 @@ public sealed class ClusterValidator
         return !string.IsNullOrWhiteSpace(loadBalancerType);
     }
 
-    public bool LoadBalancerTypeIsValid(string loadBalancerType)
+    public bool LoadBalancerTypeIsValid(string? loadBalancerType)
     {
+        if (string.IsNullOrEmpty(loadBalancerType))
+        {
+            return true;
+        }
+        
         return GlobalConstants.LoadBalancerTypes.Contains(loadBalancerType);
     }
     

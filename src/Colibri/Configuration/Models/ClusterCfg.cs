@@ -34,7 +34,7 @@ public sealed class ClusterCfg
             .ToArray();
     } = null!;
     
-    public LoadBalancingCfg LoadBalancing { get; set; } = null!;
-    public CircuitBreakerCfg CircuitBreaker { get; set; } = null!;
-    public RetryCfg Retry { get; set; } = null!;
+    public LoadBalancingCfg? LoadBalancing { get; set; }
+    public CircuitBreakerCfg? CircuitBreaker { get; set; }
+    public RetryCfg? Retry { get; set; }
 }
