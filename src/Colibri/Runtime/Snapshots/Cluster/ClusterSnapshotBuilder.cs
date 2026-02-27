@@ -1,5 +1,5 @@
 using System.Collections.Immutable;
-using Colibri.Configuration;
+using Colibri.Configuration.Models;
 using Colibri.Runtime.Pipeline;
 using Colibri.Runtime.Pipeline.CircuitBreaker;
 using Colibri.Runtime.Pipeline.LoadBalancer;
@@ -10,11 +10,11 @@ namespace Colibri.Runtime.Snapshots.Cluster;
 
 public sealed class ClusterSnapshotBuilder
 {
-    public ClusterSnapshot Build(ColibriSettings settings)
+    public ClusterSnapshot Build(ClusterCfg[] cfgClusters)
     {
         var snpClusters = new List<ClusterSnp>();
         
-        foreach (var cfgCluster in settings.Routing.Clusters)
+        foreach (var cfgCluster in cfgClusters)
         {
             if (!cfgCluster.Enabled)
             {

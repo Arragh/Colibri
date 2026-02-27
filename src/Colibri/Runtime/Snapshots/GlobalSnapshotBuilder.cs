@@ -13,7 +13,7 @@ public sealed class GlobalSnapshotBuilder
     {
         return new GlobalSnapshot
         {
-            ClusterSnapshot = _clusterSnapshotBuilder.Build(settings),
+            ClusterSnapshot = _clusterSnapshotBuilder.Build(settings.Routing.Clusters),
             RoutingSnapshot = _routingSnapshotBuilder.Build(settings)
         };
     }

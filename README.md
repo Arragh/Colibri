@@ -16,12 +16,12 @@ Project is in an early stage, please be understanding.
 7) Load balancing: Round-Robin, Random.
 8) Hot reload of configuration.
 9) Circuit Breaker support.
+10) Configuration validation on start/hot-reload.
 
 ## 🔧 In development:
 1) Authorization per cluster.
 2) Rate Limiter.
-3) Configuration validation.
-4) Unit tests.
+3) Unit tests.
 
 ## ⚙️ Technical Limitations
 1) Maximum length of a single route segment: 250 characters.
