@@ -9,5 +9,5 @@ public sealed class LoadBalancingCfg
         get;
         set => field = value
             .ToLowerInvariant();
-    } = null!;
+    } = "rr";
 }

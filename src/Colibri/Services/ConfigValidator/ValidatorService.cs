@@ -94,16 +94,10 @@ public sealed class ValidatorService : IValidateOptions<ColibriSettings>
                     .Fail($"Cluster's '{cluster.Name}' hosts are empty");
             }
 
-            if (!_globalValidator.Clusters.LoadBalancerTypeIsNotEmpty(cluster.LoadBalancing.Type))
+            if (!_globalValidator.Clusters.LoadBalancerTypeIsValid(cluster.LoadBalancing?.Type))
             {
                 return ValidateOptionsResult
-                    .Fail($"Cluster '{cluster.Name}' has an empty load balancer type");
-            }
-
-            if (!_globalValidator.Clusters.LoadBalancerTypeIsValid(cluster.LoadBalancing.Type))
-            {
-                return ValidateOptionsResult
-                    .Fail($"Cluster '{cluster.Name}' has an invalid load balancer type '{cluster.LoadBalancing.Type}'");
+                    .Fail($"Cluster '{cluster.Name}' has an invalid load balancer type '{cluster.LoadBalancing?.Type}'");
             }
         }
         

@@ -61,18 +61,27 @@ app.UseColibri();
           "UsePrefix": true, // Whether to apply the prefix for routes
           "Hosts": [ "192.168.1.100:6000", "192.168.1.102:6002" ],
           "Retry": {
-            "Enabled": true,
-            "Attempts": 3 // Number of retry attempts
+            "Enabled": true, // Disabled by default
+            "Attempts": 3 // Number of retry attempts. 3 by deafult
           },
           "LoadBalancing": {
-            "Enabled": true,
-            "Type": "RND" // RND - random, RR - round-robin
+            "Enabled": true, // Disabled by default
+            "Type": "RR" // RND - random, RR - round-robin. RR by default
           },
           "CircuitBreaker": {
-            "Enabled": true,
-            "Failures": 5, // Number of consecutive failures to trigger
-            "Timeout": 30 // Seconds to block the host
+            "Enabled": true, // Disabled by default
+            "Failures": 5, // Number of consecutive failures to trigger, 5 by default
+            "Timeout": 30 // Seconds to block the host. 30 by defaul
           }
+        },
+        {
+           // Simplified cluster setting without load-balancer, retrier and circuit breaker
+           "Enabled": true,
+           "ClusterId": "Cluster2",
+           "Protocol": "http",
+           "Prefix": "/cluster2",
+           "UsePrefix": false,
+           "Hosts": [ "192.168.1.100:6000", "192.168.1.102:6002" ]
         }
       ],
       "Routes": [
@@ -83,9 +92,9 @@ app.UseColibri();
           "DownstreamPattern": "/method1" // Internal route
         },
         {
-          "ClusterId": "Cluster1",
+          "ClusterId": "Cluster2",
           "Methods": [ "POST", "DELETE" ], // Multiple methods allowed
-          "UpstreamPattern": "/service1/method2/{id}", // Up to 16 parameters supported
+          "UpstreamPattern": "/service2/method2/{id}", // Up to 16 parameters supported
           "DownstreamPattern": "/method2/{id}" // Parameters passed to internal service
         }
       ]

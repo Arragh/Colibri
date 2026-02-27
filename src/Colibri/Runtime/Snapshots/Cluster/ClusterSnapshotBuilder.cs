@@ -25,12 +25,12 @@ public sealed class ClusterSnapshotBuilder
             
             var hostsCount = cfgCluster.Hosts.Length;
            
-            if (cfgCluster.Retry.Enabled)
+            if (cfgCluster.Retry?.Enabled == true)
             {
                 clusterMiddlewares.Add(new RetryMiddleware(cfgCluster.Retry.Attempts));
             }
             
-            if (cfgCluster.LoadBalancing.Enabled)
+            if (cfgCluster.LoadBalancing?.Enabled == true)
             {
                 ILoadBalancer loadBalancer = cfgCluster.LoadBalancing.Type switch
                 {
@@ -42,7 +42,7 @@ public sealed class ClusterSnapshotBuilder
                 clusterMiddlewares.Add(new LoadBalancerMiddleware(loadBalancer));
             }
             
-            if (cfgCluster.CircuitBreaker.Enabled)
+            if (cfgCluster.CircuitBreaker?.Enabled == true)
             {
                 var breaker = new CircuitBreaker(
                     hostsCount,
