@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.1] - 27.02.2026
+
+- Cluster executing bringed to personal middleware
+- Added tests for Cluster snapshot builder and routes builder
+- Some little fixes
+
 ## [0.3.0] - 23.02.2026
 
 - Configuration maked case-insensitive.
