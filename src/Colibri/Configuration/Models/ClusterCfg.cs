@@ -37,4 +37,5 @@ public sealed class ClusterCfg
     public LoadBalancingCfg? LoadBalancing { get; set; }
     public CircuitBreakerCfg? CircuitBreaker { get; set; }
     public RetryCfg? Retry { get; set; }
+    public AuthCfg? Authorization { get; set; }
 }

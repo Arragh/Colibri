@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using Colibri.Configuration.Models;
 using Colibri.Runtime.Pipeline;
+using Colibri.Runtime.Pipeline.Cluster.Authorization;
 using Colibri.Runtime.Pipeline.Cluster.CircuitBreaker;
 using Colibri.Runtime.Pipeline.Cluster.LoadBalancer;
 using Colibri.Runtime.Pipeline.Cluster.Retrier;
@@ -24,6 +25,12 @@ public sealed class ClusterSnapshotBuilder
             List<IPipelineMiddleware> clusterMiddlewares = new();
             
             var hostsCount = cfgCluster.Hosts.Length;
+
+            if (cfgCluster.Authorization?.Enabled == true)
+            {
+                clusterMiddlewares.Add(new AuthorizationMiddleware(cfgCluster.Authorization.PublicKey));
+            }
+            
            
             if (cfgCluster.Retry?.Enabled == true)
             {
