@@ -18,7 +18,7 @@ Project is in an early stage, please be understanding.
 8) Hot reload of configuration.
 9) Circuit Breaker support.
 10) Configuration validation on start/hot-reload.
-11) Authorization per cluster (early stage implementation).
+11) Authorization per cluster (early stage implementation, token only - not depends any roles or claims).
 
 ## 🔧 In development:
 1) Rate Limiter.
