@@ -94,10 +94,32 @@ public sealed class ValidatorService : IValidateOptions<ColibriSettings>
                     .Fail($"Cluster's '{cluster.Name}' hosts are empty");
             }
 
-            if (!_globalValidator.Clusters.LoadBalancerTypeIsValid(cluster.LoadBalancing?.Type))
+            if (cluster.LoadBalancer?.Enabled == true
+                && !_globalValidator.Clusters.LoadBalancerTypeIsNotEmpty(cluster.LoadBalancer?.Type))
             {
                 return ValidateOptionsResult
-                    .Fail($"Cluster '{cluster.Name}' has an invalid load balancer type '{cluster.LoadBalancing?.Type}'");
+                    .Fail($"Cluster '{cluster.Name}' has an empty load balancer type");
+            }
+
+            if (cluster.LoadBalancer?.Enabled == true
+                && !_globalValidator.Clusters.LoadBalancerTypeIsValid(cluster.LoadBalancer.Type))
+            {
+                return ValidateOptionsResult
+                    .Fail($"Cluster '{cluster.Name}' has an invalid load balancer type '{cluster.LoadBalancer?.Type}'");
+            }
+
+            if (cluster.Authorization?.Enabled == true
+                && !_globalValidator.Clusters.AuthAlgorithmIsNotEmpty(cluster.Authorization?.Algorithm))
+            {
+                return ValidateOptionsResult
+                    .Fail($"Cluster '{cluster.Name}' has an empty auth algorithm");
+            }
+
+            if (cluster.Authorization?.Enabled == true
+                && !_globalValidator.Clusters.AuthAlgorithmIsValid(cluster.Authorization.Algorithm))
+            {
+                return ValidateOptionsResult
+                    .Fail($"Cluster '{cluster.Name}' has an invalid auth algorithm");
             }
         }
         

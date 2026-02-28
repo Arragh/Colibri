@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.4.0] - 28.02.2026
+
+- Added authorization per cluster (early stage implementation). Supports algorithms: RS256, HS256, ES256
+- (!) LoadBalancing renamed to LoadBalancer in configuration
+
 ## [0.3.1] - 27.02.2026
 
 - Cluster executing bringed to personal middleware

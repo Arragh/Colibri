@@ -18,11 +18,12 @@ Project is in an early stage, please be understanding.
 8) Hot reload of configuration.
 9) Circuit Breaker support.
 10) Configuration validation on start/hot-reload.
+11) Authorization per cluster (early stage implementation).
 
 ## 🔧 In development:
-1) Authorization per cluster.
-2) Rate Limiter.
-3) Unit tests.
+1) Rate Limiter.
+2) Unit tests.
+3) Authorization improvements.
 
 ## ⚙️ Technical Limitations
 1) Maximum length of a single route segment: 250 characters.
@@ -60,11 +61,16 @@ app.UseColibri();
           "Prefix": "/cluster1", // Route prefix (http://cluster1/service1/method1)
           "UsePrefix": true, // Whether to apply the prefix for routes
           "Hosts": [ "192.168.1.100:6000", "192.168.1.102:6002" ],
+          "Authorization": {
+            "Enabled": true, // Disabled by default
+            "Algorithm": "rs256", // Algorithm used for key. Supports rs256, hs256, es256
+            "Key": "" // token key (public/simmetrical/etc)
+          },
           "Retry": {
             "Enabled": true, // Disabled by default
             "Attempts": 3 // Number of retry attempts. 3 by deafult
           },
-          "LoadBalancing": {
+          "LoadBalancer": {
             "Enabled": true, // Disabled by default
             "Type": "RR" // RND - random, RR - round-robin. RR by default
           },

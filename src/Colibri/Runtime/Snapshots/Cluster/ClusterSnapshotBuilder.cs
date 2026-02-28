@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using Colibri.Configuration.Models;
 using Colibri.Runtime.Pipeline;
+using Colibri.Runtime.Pipeline.Cluster.Authorization;
 using Colibri.Runtime.Pipeline.Cluster.CircuitBreaker;
 using Colibri.Runtime.Pipeline.Cluster.LoadBalancer;
 using Colibri.Runtime.Pipeline.Cluster.Retrier;
@@ -24,19 +25,26 @@ public sealed class ClusterSnapshotBuilder
             List<IPipelineMiddleware> clusterMiddlewares = new();
             
             var hostsCount = cfgCluster.Hosts.Length;
+
+            if (cfgCluster.Authorization?.Enabled == true)
+            {
+                clusterMiddlewares.Add(new AuthorizationMiddleware(
+                    cfgCluster.Authorization.Algorithm,
+                    cfgCluster.Authorization.Key));
+            }
+            
            
             if (cfgCluster.Retry?.Enabled == true)
             {
                 clusterMiddlewares.Add(new RetryMiddleware(cfgCluster.Retry.Attempts));
             }
             
-            if (cfgCluster.LoadBalancing?.Enabled == true)
+            if (cfgCluster.LoadBalancer?.Enabled == true)
             {
-                ILoadBalancer loadBalancer = cfgCluster.LoadBalancing.Type switch
+                ILoadBalancer loadBalancer = cfgCluster.LoadBalancer.Type switch
                 {
                     "rr" => new RoundRobinBalancer(hostsCount),
-                    "rnd" => new RandomBalancer(hostsCount),
-                    _ => throw new ArgumentException($"Invalid load balancing type {cfgCluster.LoadBalancing.Type}")
+                    "rnd" => new RandomBalancer(hostsCount)
                 };
                 
                 clusterMiddlewares.Add(new LoadBalancerMiddleware(loadBalancer));
