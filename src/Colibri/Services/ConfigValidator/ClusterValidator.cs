@@ -47,7 +47,7 @@ public sealed class ClusterValidator
 
     public bool ProtocolIsValid(string protocol)
     {
-        return GlobalConstants.ValidProtocols.Contains(protocol);
+        return GlobalConstants.Protocols.Contains(protocol);
     }
     
     public bool PrefixIsNotEmpty(string prefix)
@@ -75,19 +75,24 @@ public sealed class ClusterValidator
         return hosts.Length > 0;
     }
 
-    public bool LoadBalancerTypeIsNotEmpty(string loadBalancerType)
+    public bool LoadBalancerTypeIsNotEmpty(string? loadBalancerType)
     {
         return !string.IsNullOrWhiteSpace(loadBalancerType);
     }
 
-    public bool LoadBalancerTypeIsValid(string? loadBalancerType)
+    public bool LoadBalancerTypeIsValid(string loadBalancerType)
     {
-        if (string.IsNullOrEmpty(loadBalancerType))
-        {
-            return true;
-        }
-        
         return GlobalConstants.LoadBalancerTypes.Contains(loadBalancerType);
+    }
+
+    public bool AuthAlgorithmIsNotEmpty(string? authorizationType)
+    {
+        return !string.IsNullOrWhiteSpace(authorizationType);
+    }
+
+    public bool AuthAlgorithmIsValid(string authorizationType)
+    {
+        return GlobalConstants.AuthAlgorithms.Contains(authorizationType);
     }
     
     private bool PrefixIsMatch(string name)

@@ -28,7 +28,9 @@ public sealed class ClusterSnapshotBuilder
 
             if (cfgCluster.Authorization?.Enabled == true)
             {
-                clusterMiddlewares.Add(new AuthorizationMiddleware(cfgCluster.Authorization.PublicKey));
+                clusterMiddlewares.Add(new AuthorizationMiddleware(
+                    cfgCluster.Authorization.Algorithm,
+                    cfgCluster.Authorization.Key));
             }
             
            
@@ -37,13 +39,12 @@ public sealed class ClusterSnapshotBuilder
                 clusterMiddlewares.Add(new RetryMiddleware(cfgCluster.Retry.Attempts));
             }
             
-            if (cfgCluster.LoadBalancing?.Enabled == true)
+            if (cfgCluster.LoadBalancer?.Enabled == true)
             {
-                ILoadBalancer loadBalancer = cfgCluster.LoadBalancing.Type switch
+                ILoadBalancer loadBalancer = cfgCluster.LoadBalancer.Type switch
                 {
                     "rr" => new RoundRobinBalancer(hostsCount),
-                    "rnd" => new RandomBalancer(hostsCount),
-                    _ => throw new ArgumentException($"Invalid load balancing type {cfgCluster.LoadBalancing.Type}")
+                    "rnd" => new RandomBalancer(hostsCount)
                 };
                 
                 clusterMiddlewares.Add(new LoadBalancerMiddleware(loadBalancer));

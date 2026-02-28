@@ -17,7 +17,7 @@ public sealed class RoutesBuilderTests
             Protocol = protocol,
             Prefix = prefix,
             Hosts = hosts,
-            LoadBalancing = new LoadBalancingCfg
+            LoadBalancer = new LoadBalancingCfg
             {
                 Enabled = false,
                 Type = lbType

@@ -4,30 +4,19 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Colibri.Runtime.Pipeline.Cluster.Authorization;
 
-public sealed class AuthorizationMiddleware : IPipelineMiddleware
+public sealed class AuthorizationMiddleware(string algorithm, string key) : IPipelineMiddleware
 {
-    private readonly JsonWebTokenHandler _handler;
+    private readonly JsonWebTokenHandler _handler = new();
 
-    private readonly TokenValidationParameters _validationParameters;
-
-    public AuthorizationMiddleware(string publicKey)
+    private readonly TokenValidationParameters _validationParameters = new()
     {
-        _handler = new JsonWebTokenHandler();
-        
-        var keyBytes = Convert.FromBase64String(publicKey);
-        var rsa = RSA.Create();
-        rsa.ImportRSAPublicKey(keyBytes, out _);
-        
-        _validationParameters = new TokenValidationParameters
-        {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new RsaSecurityKey(rsa),
-            ValidateIssuer = false,
-            ValidateAudience = false,
-            ValidateLifetime = true,
-            ClockSkew = TimeSpan.Zero
-        };
-    }
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = GetSigningKey(algorithm, key),
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
+    };
     
     public async ValueTask InvokeAsync(PipelineContext ctx, PipelineDelegate next)
     {
@@ -56,5 +45,26 @@ public sealed class AuthorizationMiddleware : IPipelineMiddleware
         }
         
         await next(ctx);
+    }
+
+    private static SecurityKey GetSigningKey(string algorithm, string key)
+    {
+        var keyBytes = Convert.FromBase64String(key);
+        
+        if (algorithm == "rs256")
+        {
+            var rsa = RSA.Create();
+            rsa.ImportRSAPublicKey(keyBytes, out _);
+            return new RsaSecurityKey(rsa);
+        }
+        
+        if (algorithm == "hs256")
+        {
+            return new SymmetricSecurityKey(keyBytes);
+        }
+
+        var ecdsa = ECDsa.Create();
+        ecdsa.ImportSubjectPublicKeyInfo(keyBytes, out _);
+        return new ECDsaSecurityKey(ecdsa);
     }
 }

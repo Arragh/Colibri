@@ -171,7 +171,7 @@ public sealed class RouteValidator
     {
         foreach (var method in methods)
         {
-            if (!GlobalConstants.ValidHttpMethods.Contains(method))
+            if (!GlobalConstants.HttpMethods.Contains(method))
             {
                 return false;
             }

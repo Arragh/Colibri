@@ -7,13 +7,20 @@ public static class GlobalConstants
     public const int SegmentMaxLength = 250;
     public const int ParamsMaxCount = 16;
     
-    public static readonly ImmutableHashSet<string> ValidProtocols =
+    public static readonly ImmutableHashSet<string> Protocols =
     [
         "http",
         "ws"
     ];
+
+    public static readonly ImmutableHashSet<string> AuthAlgorithms =
+    [
+        "rs256",
+        "hs256",
+        "es256"
+    ];
     
-    public static readonly ImmutableHashSet<string> ValidHttpMethods =
+    public static readonly ImmutableHashSet<string> HttpMethods =
     [
         "GET",
         "POST",
