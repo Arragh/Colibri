@@ -28,9 +28,8 @@ Project is in an early stage, please be understanding.
 ## ⚙️ Technical Limitations
 1) Maximum length of a single route segment: 250 characters.
 2) Total maximum number of segments across all routes (including cluster prefixes): 65,535.
-    - Assuming an average of 10 segments per route (which is already high for most APIs), this allows for approximately **6,553 routes**.
-    - In practice, routes are typically shorter (3–6 segments), so the effective route capacity is significantly higher.
-    - It is highly unlikely you will hit this limit in real-world scenarios.
+3) Total clusters count limit: 2000
+4) Total routes count limit: 2000
 
 ## 📝 Integration into your project:
 ```csharp

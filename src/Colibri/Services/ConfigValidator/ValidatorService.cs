@@ -38,6 +38,12 @@ public sealed class ValidatorService : IValidateOptions<ColibriSettings>
 
     private ValidateOptionsResult ValidateClusters(ClusterCfg[] clusters)
     {
+        if (!_globalValidator.Clusters.TotalClustersCountIsValid(clusters))
+        {
+            return ValidateOptionsResult
+                .Fail($"Total clusters count is more than {GlobalConstants.ClustersMaxCount}");
+        }
+        
         foreach (var cluster in clusters)
         {
             if (!_globalValidator.Clusters.NameIsNotEmpty(cluster.Name))
@@ -128,6 +134,18 @@ public sealed class ValidatorService : IValidateOptions<ColibriSettings>
 
     private ValidateOptionsResult ValidateRoutes(RouteCfg[] routes)
     {
+        if (!_globalValidator.Routes.TotalRoutesCountIsValid(routes))
+        {
+            return ValidateOptionsResult
+                .Fail($"Total routes count is more than {GlobalConstants.RoutesMaxCount}");
+        }
+        
+        if (!_globalValidator.Routes.TotalDownstreamPathsLengthIsValid(routes))
+        {
+            return ValidateOptionsResult
+                .Fail($"Total length of all downstream patterns exceeds the maximum allowed size {ushort.MaxValue}");
+        }
+        
         foreach (var route in routes)
         {
             if (!_globalValidator.Routes.PatternFormatIsValid(route.UpstreamPattern))
@@ -273,12 +291,6 @@ public sealed class ValidatorService : IValidateOptions<ColibriSettings>
                 return ValidateOptionsResult
                     .Fail($"Same upstreams '{route.UpstreamPattern}' have duplicate methods");
             }
-        }
-        
-        if (!_globalValidator.Routes.TotalDownstreamPathsLengthIsValid(routes))
-        {
-            return ValidateOptionsResult
-                .Fail($"Total length of all downstream patterns exceeds the maximum allowed size {ushort.MaxValue}");
         }
         
         return ValidateOptionsResult.Success;

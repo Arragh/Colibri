@@ -31,6 +31,32 @@ public sealed class RouteValidatorTests
         "/users/{id_next}/info",
         "/users/{id_next}/info/{name}/{next}"
     };
+
+    [Fact]
+    public void TotalRoutesCountIsValid_WhenTotalRoutesCountIsInvalid_ShouldReturnFalse()
+    {
+        // Arrange
+        var routes = new RouteCfg[GlobalConstants.RoutesMaxCount + 1];
+
+        // Act
+        var result = _validator.TotalRoutesCountIsValid(routes);
+        
+        // Assert
+        Assert.False(result);
+    }
+    
+    [Fact]
+    public void TotalRoutesCountIsValid_WhenTotalRoutesCountIsValid_ShouldReturnTrue()
+    {
+        // Arrange
+        var routes = new RouteCfg[GlobalConstants.RoutesMaxCount];
+
+        // Act
+        var result = _validator.TotalRoutesCountIsValid(routes);
+        
+        // Assert
+        Assert.True(result);
+    }
     
     [Theory]
     [InlineData("")]

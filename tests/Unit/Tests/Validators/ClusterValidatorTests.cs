@@ -7,6 +7,32 @@ namespace Unit.Tests.Validators;
 public sealed class ClusterValidatorTests
 {
     private readonly ClusterValidator _validator = new();
+
+    [Fact]
+    public void TotalClustersCountIsValid_WhenTotalClustersCountIsInvalid_ShouldReturnFalse()
+    {
+        // Arrange
+        var clusters = new ClusterCfg[GlobalConstants.ClustersMaxCount + 1];
+        
+        // Act
+        var result = _validator.TotalClustersCountIsValid(clusters);
+        
+        // Assert
+        Assert.False(result);
+    }
+    
+    [Fact]
+    public void TotalClustersCountIsValid_WhenTotalClustersCountIsValid_ShouldReturnTrue()
+    {
+        // Arrange
+        var clusters = new ClusterCfg[GlobalConstants.ClustersMaxCount];
+        
+        // Act
+        var result = _validator.TotalClustersCountIsValid(clusters);
+        
+        // Assert
+        Assert.True(result);
+    }
     
     [Theory]
     [InlineData("")]
