@@ -6,6 +6,11 @@ namespace Colibri.Services.ConfigValidator;
 
 public sealed class ClusterValidator
 {
+    public bool TotalClustersCountIsValid(ClusterCfg[] clusters)
+    {
+        return clusters.Length <= GlobalConstants.ClustersMaxCount;
+    }
+    
     public bool NameIsNotEmpty(string name)
     {
         return !string.IsNullOrWhiteSpace(name);

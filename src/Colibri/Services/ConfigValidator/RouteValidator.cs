@@ -6,6 +6,11 @@ namespace Colibri.Services.ConfigValidator;
 
 public sealed class RouteValidator
 {
+    public bool TotalRoutesCountIsValid(RouteCfg[] routes)
+    {
+        return routes.Length <= GlobalConstants.RoutesMaxCount;
+    }
+    
     public bool PatternFormatIsValid(string pattern)
     {
         if (!pattern.StartsWith('/'))

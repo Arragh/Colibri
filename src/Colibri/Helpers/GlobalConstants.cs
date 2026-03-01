@@ -4,6 +4,8 @@ namespace Colibri.Helpers;
 
 public static class GlobalConstants
 {
+    public const ushort ClustersMaxCount = 2000;
+    public const ushort RoutesMaxCount = 2000;
     public const int SegmentMaxLength = 250;
     public const int ParamsMaxCount = 16;
     
