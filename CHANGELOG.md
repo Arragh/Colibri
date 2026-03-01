@@ -1,6 +1,10 @@
 # Changelog
 
-## [0.4.1] - 28.02.2026
+## [0.4.2] - 02.03.2026
+
+- Added authorization by claims
+
+## [0.4.1] - 01.03.2026
 
 - (!!!) Updated appsettings.json in README — previous version contained inaccuracies.
 - Renamed `Cluster` to `Rule`, as it more accurately reflects its functionality.

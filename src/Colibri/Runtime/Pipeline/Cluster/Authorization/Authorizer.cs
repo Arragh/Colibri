@@ -27,6 +27,11 @@ public sealed class Authorizer(ClaimCfg[] claims, string algorithm, string key)
 
     public bool TryAuthorize(SecurityToken securityToken)
     {
+        if (claims.Length == 0)
+        {
+            return true;
+        }
+        
         var jwt = (JsonWebToken)securityToken;
 
         foreach (var claim in claims)
