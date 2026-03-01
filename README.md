@@ -27,7 +27,7 @@ Project is in an early stage, please be understanding.
 
 ## ⚙️ Technical Limitations
 1) Maximum length of a single route segment: 250 characters.
-2) Total maximum number of segments across all routes (including cluster prefixes): 65,535.
+2) Total maximum number of segments length across all routes (including cluster prefixes): 65,535.
 3) Total clusters count limit: 2000
 4) Total routes count limit: 2000
 
