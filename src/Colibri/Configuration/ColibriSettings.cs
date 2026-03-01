@@ -1,7 +1,9 @@
+using Colibri.Configuration.Models;
+
 namespace Colibri.Configuration;
 
 public sealed class ColibriSettings
 {
-    public AuthorizationSettings Authorization { get; set; } = null!;
-    public RoutingSettings Routing { get; set; } = null!;
+    public ClusterCfg[] Clusters { get; set; } = null!;
+    public RouteCfg[] Routes { get; set; } = null!;
 }
