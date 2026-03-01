@@ -28,9 +28,12 @@ public sealed class ClusterSnapshotBuilder
 
             if (cfgCluster.Authorization?.Enabled == true)
             {
-                clusterMiddlewares.Add(new AuthorizationMiddleware(
+                var authorizer = new Authorizer(
+                    cfgCluster.Authorization.Claims,
                     cfgCluster.Authorization.Algorithm,
-                    cfgCluster.Authorization.Key));
+                    cfgCluster.Authorization.Key);
+                
+                clusterMiddlewares.Add(new AuthorizationMiddleware(authorizer));
             }
             
            
