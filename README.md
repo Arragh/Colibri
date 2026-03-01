@@ -76,8 +76,8 @@ app.UseColibri();
                // Set claims only if you need to validate it
                "Claims": [
                   {
-                     "Type": "role",
-                     "Value": [ "admin", "user" ]
+                     "Type": "role", // claim type
+                     "Value": [ "admin", "user" ] // claim values
                   }
                ]
             },
