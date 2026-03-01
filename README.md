@@ -18,7 +18,7 @@ Project is in an early stage, please be understanding.
 8) Hot reload of configuration.
 9) Circuit Breaker support.
 10) Configuration validation on start/hot-reload.
-11) Authorization per cluster (early stage implementation, token only - not depends any roles or claims).
+11) Authorization per cluster.
 
 ## 🔧 In development:
 1) Rate Limiter.
@@ -53,7 +53,17 @@ app.UseColibri();
    "Colibri": {
       "Clusters": [
          {
+            // Simple cluster settings without authorization, load-balancer, retrier and circuit breaker
             "Enabled": true,
+            "Name": "Cluster2",
+            "Protocol": "http",
+            "Prefix": "/cluster2",
+            "UsePrefix": false,
+            "Hosts": [ "192.168.1.100:6000", "192.168.1.102:6002" ]
+         },
+         {
+            // Full cluster settings
+            "Enabled": true, // Enable/disable cluster with all included routes
             "Name": "Cluster1", // Unique cluster identifier
             "Protocol": "http", // or "ws"
             "Prefix": "/cluster1", // Route prefix (http://cluster1/service1/method1)
@@ -62,7 +72,14 @@ app.UseColibri();
             "Authorization": {
                "Enabled": true, // Disabled by default
                "Algorithm": "rs256", // Algorithm used for key. Supports rs256, hs256, es256
-               "Key": "" // token key (public/simmetrical/etc)
+               "Key": "your_token_key", // token key (public/simmetrical/etc)
+               // Set claims only if you need to validate roles in token
+               "Claims": [
+                  {
+                     "Type": "role",
+                     "Value": [ "admin", "user" ]
+                  }
+               ]
             },
             "Retry": {
                "Enabled": true, // Disabled by default
@@ -77,15 +94,6 @@ app.UseColibri();
                "Failures": 5, // Number of consecutive failures to trigger, 5 by default
                "Timeout": 30 // Seconds to block the host. 30 by defaul
             }
-         },
-         {
-            // Simplified cluster setting without load-balancer, retrier and circuit breaker
-            "Enabled": true,
-            "Name": "Cluster2",
-            "Protocol": "http",
-            "Prefix": "/cluster2",
-            "UsePrefix": false,
-            "Hosts": [ "192.168.1.100:6000", "192.168.1.102:6002" ]
          }
       ],
       "Routes": [

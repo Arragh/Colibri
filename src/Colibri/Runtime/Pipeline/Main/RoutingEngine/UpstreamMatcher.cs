@@ -1,11 +1,10 @@
+using Colibri.Helpers;
 using Colibri.Runtime.Snapshots.Routing;
 
 namespace Colibri.Runtime.Pipeline.Main.RoutingEngine;
 
 public sealed class UpstreamMatcher
 {
-    private const int MaxParamLength = 1000;
-    
     public bool TryMatch(
         RoutingSnapshot routingSnapshot,
         ReadOnlySpan<char> normalizedPath,
@@ -82,7 +81,7 @@ public sealed class UpstreamMatcher
 
                     for (int j = paramStart; j < normalizedPath.Length; j++)
                     {
-                        if (paramCount > MaxParamLength)
+                        if (paramCount > GlobalConstants.RequestParamMaxLength)
                         {
                             return false;
                         }
