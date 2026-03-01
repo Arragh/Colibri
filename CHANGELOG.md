@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.4.2] - 02.03.2026
+## [0.4.3] - 02.03.2026
 
 - Added authorization by claims
 
