@@ -73,11 +73,11 @@ app.UseColibri();
                "Enabled": true, // Disabled by default
                "Algorithm": "rs256", // Algorithm used for key. Supports rs256, hs256, es256
                "Key": "your_token_key", // token key (public/simmetrical/etc)
-               // Set claims only if you need to validate roles in token
+               // Set claims only if you need to validate it
                "Claims": [
                   {
-                     "Type": "role",
-                     "Value": [ "admin", "user" ]
+                     "Type": "role", // claim type
+                     "Value": [ "admin", "user" ] // claim values
                   }
                ]
             },
