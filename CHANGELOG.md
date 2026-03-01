@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.4.1] - 28.02.2026
+
+- (!!!) Updated appsettings.json in README — previous version contained inaccuracies.
+- Renamed `Cluster` to `Rule`, as it more accurately reflects its functionality.
+
 ## [0.4.0] - 28.02.2026
 
 - Added authorization per cluster (early stage implementation). Supports algorithms: RS256, HS256, ES256

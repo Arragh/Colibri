@@ -10,7 +10,7 @@ public sealed class RoutingSnapshotBuilder
     
     public RoutingSnapshot Build(ColibriSettings settings)
     {
-        var tempRoutes = _routesBuilder.Build(settings.Routing.Clusters, settings.Routing.Routes);
+        var tempRoutes = _routesBuilder.Build(settings.Clusters, settings.Routes);
         var trie = _trieBuilder.Build(tempRoutes);
         var rootSegmentsCount = trie.Children.Count;
         var snapshotData = _snapshotDataBuilder.Build(trie);

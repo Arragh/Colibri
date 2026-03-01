@@ -14,9 +14,9 @@ public sealed class ValidatorService : IValidateOptions<ColibriSettings>
     /// </summary>
     public ValidateOptionsResult Validate(string? name, ColibriSettings options)
     {
-        var validateClustersResult = ValidateClusters(options.Routing.Clusters);
-        var validateRoutesResult = ValidateRoutes(options.Routing.Routes);
-        var validateCrossResult = ValidateCrossReferences(options.Routing.Clusters, options.Routing.Routes);
+        var validateClustersResult = ValidateClusters(options.Clusters);
+        var validateRoutesResult = ValidateRoutes(options.Routes);
+        var validateCrossResult = ValidateCrossReferences(options.Clusters, options.Routes);
         
         if (!validateClustersResult.Succeeded)
         {

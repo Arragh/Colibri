@@ -45,66 +45,64 @@ app.UseColibri();
 ## 📝 Example configuration:
 ```json
 {
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
-    }
-  },
-  "Colibri": {
-    "Routing": {
+   "Logging": {
+      "LogLevel": {
+         "Default": "Information",
+         "Microsoft.AspNetCore": "Warning"
+      }
+   },
+   "Colibri": {
       "Clusters": [
-        {
-          "Enabled": true,
-          "ClusterId": "Cluster1", // Unique cluster identifier
-          "Protocol": "http", // or "ws"
-          "Prefix": "/cluster1", // Route prefix (http://cluster1/service1/method1)
-          "UsePrefix": true, // Whether to apply the prefix for routes
-          "Hosts": [ "192.168.1.100:6000", "192.168.1.102:6002" ],
-          "Authorization": {
-            "Enabled": true, // Disabled by default
-            "Algorithm": "rs256", // Algorithm used for key. Supports rs256, hs256, es256
-            "Key": "" // token key (public/simmetrical/etc)
-          },
-          "Retry": {
-            "Enabled": true, // Disabled by default
-            "Attempts": 3 // Number of retry attempts. 3 by deafult
-          },
-          "LoadBalancer": {
-            "Enabled": true, // Disabled by default
-            "Type": "RR" // RND - random, RR - round-robin. RR by default
-          },
-          "CircuitBreaker": {
-            "Enabled": true, // Disabled by default
-            "Failures": 5, // Number of consecutive failures to trigger, 5 by default
-            "Timeout": 30 // Seconds to block the host. 30 by defaul
-          }
-        },
-        {
-           // Simplified cluster setting without load-balancer, retrier and circuit breaker
-           "Enabled": true,
-           "ClusterId": "Cluster2",
-           "Protocol": "http",
-           "Prefix": "/cluster2",
-           "UsePrefix": false,
-           "Hosts": [ "192.168.1.100:6000", "192.168.1.102:6002" ]
-        }
+         {
+            "Enabled": true,
+            "Name": "Cluster1", // Unique cluster identifier
+            "Protocol": "http", // or "ws"
+            "Prefix": "/cluster1", // Route prefix (http://cluster1/service1/method1)
+            "UsePrefix": true, // Whether to apply the prefix for routes
+            "Hosts": [ "192.168.1.100:6000", "192.168.1.102:6002" ],
+            "Authorization": {
+               "Enabled": true, // Disabled by default
+               "Algorithm": "rs256", // Algorithm used for key. Supports rs256, hs256, es256
+               "Key": "" // token key (public/simmetrical/etc)
+            },
+            "Retry": {
+               "Enabled": true, // Disabled by default
+               "Attempts": 3 // Number of retry attempts. 3 by deafult
+            },
+            "LoadBalancer": {
+               "Enabled": true, // Disabled by default
+               "Type": "RR" // RND - random, RR - round-robin. RR by default
+            },
+            "CircuitBreaker": {
+               "Enabled": true, // Disabled by default
+               "Failures": 5, // Number of consecutive failures to trigger, 5 by default
+               "Timeout": 30 // Seconds to block the host. 30 by defaul
+            }
+         },
+         {
+            // Simplified cluster setting without load-balancer, retrier and circuit breaker
+            "Enabled": true,
+            "Name": "Cluster2",
+            "Protocol": "http",
+            "Prefix": "/cluster2",
+            "UsePrefix": false,
+            "Hosts": [ "192.168.1.100:6000", "192.168.1.102:6002" ]
+         }
       ],
       "Routes": [
-        {
-          "ClusterId": "Cluster1", // Which cluster’s rules to use
-          "Methods": [ "GET" ],
-          "UpstreamPattern": "/service1/method1", // External route
-          "DownstreamPattern": "/method1" // Internal route
-        },
-        {
-          "ClusterId": "Cluster2",
-          "Methods": [ "POST", "DELETE" ], // Multiple methods allowed
-          "UpstreamPattern": "/service2/method2/{id}", // Up to 16 parameters supported
-          "DownstreamPattern": "/method2/{id}" // Parameters passed to internal service
-        }
+         {
+            "ClusterName": "Cluster1", // Which cluster rule to use
+            "Methods": [ "GET" ],
+            "UpstreamPattern": "/service1/method1", // External route
+            "DownstreamPattern": "/method1" // Internal route
+         },
+         {
+            "ClusterName": "Cluster2",
+            "Methods": [ "POST", "DELETE" ], // Multiple methods allowed
+            "UpstreamPattern": "/service2/method2/{id}", // Up to 16 parameters supported
+            "DownstreamPattern": "/method2/{id}" // Parameters passed to internal service
+         }
       ]
-    }
-  }
+   }
 }
 ```
