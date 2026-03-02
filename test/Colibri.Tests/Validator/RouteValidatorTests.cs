@@ -2,7 +2,7 @@ using Colibri.Configuration.Models;
 using Colibri.Helpers;
 using Colibri.Services.ConfigValidator;
 
-namespace Unit.Tests.Validators;
+namespace Unit.Validator;
 
 public sealed class RouteValidatorTests
 {

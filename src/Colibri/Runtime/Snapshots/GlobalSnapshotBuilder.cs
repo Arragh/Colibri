@@ -11,6 +11,10 @@ public sealed class GlobalSnapshotBuilder
     
     public GlobalSnapshot Build(ColibriSettings settings)
     {
+        settings.Clusters = settings.Clusters
+            .Where(c => c.Enabled)
+            .ToArray();
+        
         return new GlobalSnapshot
         {
             ClusterSnapshot = _clusterSnapshotBuilder.Build(settings.Clusters),
