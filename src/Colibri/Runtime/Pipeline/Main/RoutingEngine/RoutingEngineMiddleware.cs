@@ -18,7 +18,6 @@ public sealed class RoutingEngineMiddleware : IPipelineMiddleware
                 routingSnapshot,
                 normalizedPath,
                 HttpMethodMask.GetMask(ctx.HttpContext.Request.Method),
-                routingSnapshot.RootSegmentsCount,
                 out var clusterId,
                 out var routeParams,
                 out var downstreamFirstChildIndex,

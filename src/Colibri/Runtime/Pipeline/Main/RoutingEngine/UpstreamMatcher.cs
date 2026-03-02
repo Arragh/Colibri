@@ -9,7 +9,6 @@ public sealed class UpstreamMatcher
         RoutingSnapshot routingSnapshot,
         ReadOnlySpan<char> normalizedPath,
         byte methodMask,
-        int rootSegmentsCount,
         out ushort clusterId,
         out ParamValue[] routeParams,
         out ushort downstreamFirstChildIndex,
@@ -19,7 +18,7 @@ public sealed class UpstreamMatcher
         var upstreamPaths = routingSnapshot.UpstreamSegmentPaths;
 
         var start = 0;
-        var limiter = rootSegmentsCount;
+        var limiter = routingSnapshot.RootSegmentsCount;
         
         var localPath = normalizedPath;
         var totalSlice = 0;

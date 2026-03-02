@@ -1,7 +1,7 @@
 using Colibri.Configuration.Models;
 using Colibri.Services.ConfigValidator;
 
-namespace Unit.Tests.Validators;
+namespace Unit.Validator;
 
 public class CrossReferenceValidatorTests
 {
