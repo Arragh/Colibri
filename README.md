@@ -12,7 +12,7 @@ Colibri is a fast, lightweight, easy-to-configure, AOT-friendly API gateway that
 Project is in an early stage, please be understanding.
 
 ## 🚀 Features:
-1) Custom Trie-based routing system using structures and flat arrays.
+1) Custom Trie-based routing system.
 2) Supports up to 16 route parameters.
 3) Protocol support: HTTP, WebSocket.
 4) Proxy requests to internal services.
