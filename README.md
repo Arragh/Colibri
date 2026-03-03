@@ -1,4 +1,8 @@
-# 🐥 Colibri 🐥
+# Colibri
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Arragh/Colibri/refs/heads/master/assets/colibri_logo.png" width="300">
+</p>
 
 [![NuGet](https://img.shields.io/nuget/v/Colibri.svg?logo=nuget&label=NuGet&color=green)](https://www.nuget.org/packages/Colibri/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
