@@ -64,8 +64,11 @@ public sealed class RoutingTests
         Assert.False(matchResult);
     }
     
-    [Fact]
-    public void TryMatch_WhenRequestUriIsValid_ShouldReturnTrue()
+    [Theory]
+    [InlineData("/cluster1/route1/action1")]
+    [InlineData("/cluster1/route2/action2")]
+    [InlineData("/cluster2/route3/action3")]
+    public void TryMatch_WhenRequestUriIsValidPrefixesIsDisabled_ShouldReturnFalse(string requestUri)
     {
         // Arrange
         var clusters = new ClusterCfg[]
@@ -75,52 +78,15 @@ public sealed class RoutingTests
                 Enabled = true,
                 Name = "cluster1",
                 Prefix = "/cluster1",
-                UsePrefix = true,
+                UsePrefix = false,
                 Protocol = "http",
                 Hosts = [ "127.0.0.1" ]
-            }
-        };
-
-        var routes = new RouteCfg[]
-        {
-            new()
-            {
-                ClusterName = "cluster1",
-                Methods = [ "GET" ],
-                UpstreamPattern = "/route1/action1",
-                DownstreamPattern = "/service1/action1",
-            }
-        };
-        
-        var snapshot = GetRoutingSnapshot(clusters, routes);
-        const string requestUri = "/cluster1/route1/action1";
-        
-        // Act
-        var result = _matcher.TryMatch(
-            snapshot,
-            requestUri.AsSpan(),
-            HttpMethodMask.GetMask("GET"),
-            out _,
-            out _,
-            out _,
-            out var downstreamChildrenCount);
-        
-        // Assert
-        Assert.True(result);
-        Assert.Equal(2, downstreamChildrenCount);
-    }
-
-    [Fact]
-    public void TryMatch_WhenPrefixIsDisabled_ShouldReturnFalse()
-    {
-        // Arrange
-        var clusters = new ClusterCfg[]
-        {
+            },
             new()
             {
                 Enabled = true,
-                Name = "cluster1",
-                Prefix = "/cluster1",
+                Name = "cluster2",
+                Prefix = "/cluster2",
                 UsePrefix = false,
                 Protocol = "http",
                 Hosts = [ "127.0.0.1" ]
@@ -135,11 +101,24 @@ public sealed class RoutingTests
                 Methods = [ "GET" ],
                 UpstreamPattern = "/route1/action1",
                 DownstreamPattern = "/service1/action1",
+            },
+            new()
+            {
+                ClusterName = "cluster2",
+                Methods = [ "GET" ],
+                UpstreamPattern = "/route3/action3",
+                DownstreamPattern = "/service3/action3",
+            },
+            new()
+            {
+                ClusterName = "cluster1",
+                Methods = [ "GET" ],
+                UpstreamPattern = "/route2/action2",
+                DownstreamPattern = "/service2/action2",
             }
         };
         
         var snapshot = GetRoutingSnapshot(clusters, routes);
-        const string requestUri = "/cluster1/route1/action1";
         
         // Act
         var result = _matcher.TryMatch(
@@ -155,8 +134,11 @@ public sealed class RoutingTests
         Assert.False(result);
     }
     
-    [Fact]
-    public void TryMatch_WhenPrefixIsEnabled_ShouldReturnTrue()
+    [Theory]
+    [InlineData("/route1/action1")]
+    [InlineData("/route2/action2")]
+    [InlineData("/route3/action3")]
+    public void TryMatch_WhenRequestUriIsValidPrefixesIsDisabled_ShouldReturnTrue(string requestUri)
     {
         // Arrange
         var clusters = new ClusterCfg[]
@@ -166,7 +148,16 @@ public sealed class RoutingTests
                 Enabled = true,
                 Name = "cluster1",
                 Prefix = "/cluster1",
-                UsePrefix = true,
+                UsePrefix = false,
+                Protocol = "http",
+                Hosts = [ "127.0.0.1" ]
+            },
+            new()
+            {
+                Enabled = true,
+                Name = "cluster2",
+                Prefix = "/cluster2",
+                UsePrefix = false,
                 Protocol = "http",
                 Hosts = [ "127.0.0.1" ]
             }
@@ -180,11 +171,24 @@ public sealed class RoutingTests
                 Methods = [ "GET" ],
                 UpstreamPattern = "/route1/action1",
                 DownstreamPattern = "/service1/action1",
+            },
+            new()
+            {
+                ClusterName = "cluster2",
+                Methods = [ "GET" ],
+                UpstreamPattern = "/route3/action3",
+                DownstreamPattern = "/service3/action3",
+            },
+            new()
+            {
+                ClusterName = "cluster1",
+                Methods = [ "GET" ],
+                UpstreamPattern = "/route2/action2",
+                DownstreamPattern = "/service2/action2",
             }
         };
         
         var snapshot = GetRoutingSnapshot(clusters, routes);
-        const string requestUri = "/cluster1/route1/action1";
         
         // Act
         var result = _matcher.TryMatch(
@@ -202,18 +206,27 @@ public sealed class RoutingTests
     
     [Theory]
     [InlineData("/cluster1/route1/action1")]
-    [InlineData("/route1/action1")]
-    [InlineData("/service1/action1")]
-    public void TryMatch_WhenClusterIsDisabled_ShouldReturnFalse(string requestUri)
+    [InlineData("/cluster1/route2/action2")]
+    [InlineData("/cluster2/route3/action3")]
+    public void TryMatch_WhenRequestUriIsValidPrefixesIsEnabled_ShouldReturnTrue(string requestUri)
     {
         // Arrange
         var clusters = new ClusterCfg[]
         {
             new()
             {
-                Enabled = false,
+                Enabled = true,
                 Name = "cluster1",
                 Prefix = "/cluster1",
+                UsePrefix = true,
+                Protocol = "http",
+                Hosts = [ "127.0.0.1" ]
+            },
+            new()
+            {
+                Enabled = true,
+                Name = "cluster2",
+                Prefix = "/cluster2",
                 UsePrefix = true,
                 Protocol = "http",
                 Hosts = [ "127.0.0.1" ]
@@ -228,6 +241,163 @@ public sealed class RoutingTests
                 Methods = [ "GET" ],
                 UpstreamPattern = "/route1/action1",
                 DownstreamPattern = "/service1/action1",
+            },
+            new()
+            {
+                ClusterName = "cluster2",
+                Methods = [ "GET" ],
+                UpstreamPattern = "/route3/action3",
+                DownstreamPattern = "/service3/action3",
+            },
+            new()
+            {
+                ClusterName = "cluster1",
+                Methods = [ "GET" ],
+                UpstreamPattern = "/route2/action2",
+                DownstreamPattern = "/service2/action2",
+            }
+        };
+        
+        var snapshot = GetRoutingSnapshot(clusters, routes);
+        
+        // Act
+        var result = _matcher.TryMatch(
+            snapshot,
+            requestUri.AsSpan(),
+            HttpMethodMask.GetMask("GET"),
+            out _,
+            out _,
+            out _,
+            out _);
+        
+        // Assert
+        Assert.True(result);
+    }
+
+    [Theory]
+    [InlineData("/route1/action1")]
+    [InlineData("/route2/action2")]
+    [InlineData("/cluster2/route3/action3")]
+    public void TryMatch_WhenRequestUriIsValidSinglePrefixIsDisabled_ShouldReturnTrue(string requestUri)
+    {
+        // Arrange
+        var clusters = new ClusterCfg[]
+        {
+            new()
+            {
+                Enabled = true,
+                Name = "cluster1",
+                Prefix = "/cluster1",
+                UsePrefix = false,
+                Protocol = "http",
+                Hosts = [ "127.0.0.1" ]
+            },
+            new()
+            {
+                Enabled = true,
+                Name = "cluster2",
+                Prefix = "/cluster2",
+                UsePrefix = true,
+                Protocol = "http",
+                Hosts = [ "127.0.0.1" ]
+            }
+        };
+
+        var routes = new RouteCfg[]
+        {
+            new()
+            {
+                ClusterName = "cluster1",
+                Methods = [ "GET" ],
+                UpstreamPattern = "/route1/action1",
+                DownstreamPattern = "/service1/action1",
+            },
+            new()
+            {
+                ClusterName = "cluster2",
+                Methods = [ "GET" ],
+                UpstreamPattern = "/route3/action3",
+                DownstreamPattern = "/service3/action3",
+            },
+            new()
+            {
+                ClusterName = "cluster1",
+                Methods = [ "GET" ],
+                UpstreamPattern = "/route2/action2",
+                DownstreamPattern = "/service2/action2",
+            }
+        };
+        
+        var snapshot = GetRoutingSnapshot(clusters, routes);
+        
+        // Act
+        var result = _matcher.TryMatch(
+            snapshot,
+            requestUri.AsSpan(),
+            HttpMethodMask.GetMask("GET"),
+            out _,
+            out _,
+            out _,
+            out _);
+        
+        // Assert
+        Assert.True(result);
+    }
+    
+    [Theory]
+    [InlineData("/cluster1/route1/action1")]
+    [InlineData("/cluster1/route2/action2")]
+    [InlineData("/cluster2/route3/action3")]
+    [InlineData("/route1/action1")]
+    [InlineData("/route2/action2")]
+    [InlineData("/route3/action3")]
+    public void TryMatch_WhenClustersAreDisabled_ShouldReturnFalse(string requestUri)
+    {
+        // Arrange
+        var clusters = new ClusterCfg[]
+        {
+            new()
+            {
+                Enabled = false,
+                Name = "cluster1",
+                Prefix = "/cluster1",
+                UsePrefix = true,
+                Protocol = "http",
+                Hosts = [ "127.0.0.1" ]
+            },
+            new()
+            {
+                Enabled = false,
+                Name = "cluster2",
+                Prefix = "/cluster2",
+                UsePrefix = true,
+                Protocol = "http",
+                Hosts = [ "127.0.0.1" ]
+            }
+        };
+
+        var routes = new RouteCfg[]
+        {
+            new()
+            {
+                ClusterName = "cluster1",
+                Methods = [ "GET" ],
+                UpstreamPattern = "/route1/action1",
+                DownstreamPattern = "/service1/action1",
+            },
+            new()
+            {
+                ClusterName = "cluster2",
+                Methods = [ "GET" ],
+                UpstreamPattern = "/route3/action3",
+                DownstreamPattern = "/service3/action3",
+            },
+            new()
+            {
+                ClusterName = "cluster1",
+                Methods = [ "GET" ],
+                UpstreamPattern = "/route2/action2",
+                DownstreamPattern = "/service2/action2",
             }
         };
         
@@ -247,51 +417,6 @@ public sealed class RoutingTests
         Assert.False(result);
     }
     
-    [Fact]
-    public void TryMatch_WhenClusterIsEnabled_ShouldReturnTrue()
-    {
-        // Arrange
-        var clusters = new ClusterCfg[]
-        {
-            new()
-            {
-                Enabled = true,
-                Name = "cluster1",
-                Prefix = "/cluster1",
-                UsePrefix = true,
-                Protocol = "http",
-                Hosts = [ "127.0.0.1" ]
-            }
-        };
-
-        var routes = new RouteCfg[]
-        {
-            new()
-            {
-                ClusterName = "cluster1",
-                Methods = [ "GET" ],
-                UpstreamPattern = "/route1/action1",
-                DownstreamPattern = "/service1/action1",
-            }
-        };
-        
-        var snapshot = GetRoutingSnapshot(clusters, routes);
-        const string requestUri = "/cluster1/route1/action1";
-        
-        // Act
-        var result = _matcher.TryMatch(
-            snapshot,
-            requestUri.AsSpan(),
-            HttpMethodMask.GetMask("GET"),
-            out _,
-            out _,
-            out _,
-            out _);
-        
-        // Assert
-        Assert.True(result);
-    }
-
     [Fact]
     public void TryMatch_WhenRequestUriIsStatic_ShouldReturnCorrectDownstream()
     {
@@ -354,57 +479,6 @@ public sealed class RoutingTests
         Assert.Equal(expectedUri, pathResult);
     }
     
-    [Theory]
-    [InlineData("POST")]
-    [InlineData("PUT")]
-    [InlineData("PATCH")]
-    [InlineData("DELETE")]
-    [InlineData("OPTIONS")]
-    [InlineData("HEAD")]
-    public void TryMatch_WhenMethodIsInvalid_ShouldReturnFalse(string method)
-    {
-        // Arrange
-        var clusters = new ClusterCfg[]
-        {
-            new()
-            {
-                Enabled = true,
-                Name = "cluster1",
-                Prefix = "/cluster1",
-                UsePrefix = true,
-                Protocol = "http",
-                Hosts = [ "127.0.0.1" ]
-            }
-        };
-
-        var routes = new RouteCfg[]
-        {
-            new()
-            {
-                ClusterName = "cluster1",
-                Methods = [ "GET" ],
-                UpstreamPattern = "/route1/action1",
-                DownstreamPattern = "/service1/action1",
-            }
-        };
-        
-        var snapshot = GetRoutingSnapshot(clusters, routes);
-        const string requestUri = "/cluster1/route1/action1";
-        
-        // Act
-        var result = _matcher.TryMatch(
-            snapshot,
-            requestUri.AsSpan(),
-            HttpMethodMask.GetMask(method),
-            out _,
-            out _,
-            out _,
-            out _);
-        
-        // Assert
-        Assert.False(result);
-    }
-
     [Theory]
     [InlineData(
         "/cluster1/a/param-1/b/param-2/c/param-3/d/param-4/e/param-5",
@@ -509,6 +583,56 @@ public sealed class RoutingTests
         Assert.Equal(expectedUri, pathResult);
     }
 
+    [Theory]
+    [InlineData("POST")]
+    [InlineData("PUT")]
+    [InlineData("PATCH")]
+    [InlineData("DELETE")]
+    [InlineData("OPTIONS")]
+    [InlineData("HEAD")]
+    public void TryMatch_WhenMethodIsInvalid_ShouldReturnFalse(string method)
+    {
+        // Arrange
+        var clusters = new ClusterCfg[]
+        {
+            new()
+            {
+                Enabled = true,
+                Name = "cluster1",
+                Prefix = "/cluster1",
+                UsePrefix = true,
+                Protocol = "http",
+                Hosts = [ "127.0.0.1" ]
+            }
+        };
+
+        var routes = new RouteCfg[]
+        {
+            new()
+            {
+                ClusterName = "cluster1",
+                Methods = [ "GET" ],
+                UpstreamPattern = "/route1/action1",
+                DownstreamPattern = "/service1/action1",
+            }
+        };
+        
+        var snapshot = GetRoutingSnapshot(clusters, routes);
+        const string requestUri = "/cluster1/route1/action1";
+        
+        // Act
+        var result = _matcher.TryMatch(
+            snapshot,
+            requestUri.AsSpan(),
+            HttpMethodMask.GetMask(method),
+            out _,
+            out _,
+            out _,
+            out _);
+        
+        // Assert
+        Assert.False(result);
+    }
 
     private RoutingSnapshot GetRoutingSnapshot(ClusterCfg[] clusters, RouteCfg[] routes)
     {
