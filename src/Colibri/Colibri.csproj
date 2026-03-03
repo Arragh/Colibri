@@ -13,6 +13,7 @@
         <PackageTags>API;Gateway;API-Gateway;AOT</PackageTags>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageIcon>icon.png</PackageIcon>
     </PropertyGroup>
 
     <ItemGroup>
@@ -45,6 +46,7 @@
 
     <ItemGroup>
         <None Include="README.md" Pack="true" PackagePath="" />
+        <None Include="../../assets/icon.png" Pack="true" PackagePath=""/>
     </ItemGroup>
     
 </Project>
