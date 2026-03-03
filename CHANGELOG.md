@@ -1,9 +1,10 @@
 # Changelog
 
-## [0.4.6] - 03.03.2026
+## [0.4.7] - 03.03.2026
 
 - Fixed a bug where a disabled cluster continued to operate.
 - Added tests for routing.
+- Added icon.
 
 ## [0.4.3] - 02.03.2026
 
