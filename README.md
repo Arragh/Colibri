@@ -1,4 +1,6 @@
-# Colibri
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Arragh/Colibri/refs/heads/master/assets/colibri_name.png" width="200">
+</p>
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/Arragh/Colibri/refs/heads/master/assets/colibri_logo.png" width="400">
