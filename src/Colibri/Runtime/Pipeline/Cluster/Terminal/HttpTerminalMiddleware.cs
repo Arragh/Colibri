@@ -1,6 +1,5 @@
 using System.Net;
 using Colibri.Helpers;
-using Microsoft.Extensions.Primitives;
 
 namespace Colibri.Runtime.Pipeline.Cluster.Terminal;
 
@@ -26,7 +25,7 @@ public class HttpTerminalMiddleware : IPipelineMiddleware, IDisposable
                 KeepAlivePingPolicy = HttpKeepAlivePingPolicy.Always,
                 KeepAlivePingDelay = TimeSpan.FromSeconds(30),
                 KeepAlivePingTimeout = TimeSpan.FromSeconds(5),
-                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                AutomaticDecompression = DecompressionMethods.None,
                 EnableMultipleHttp2Connections = true
             };
             
@@ -52,23 +51,18 @@ public class HttpTerminalMiddleware : IPipelineMiddleware, IDisposable
             HttpMethodCache.Get(ctx.HttpContext.Request.Method),
             requestUri);
         
-        _headersProcessor.ProcessHeaders(ctx.HttpContext.Request, request);
+        _headersProcessor.CopyRequestHeaders(ctx.HttpContext.Request, request);
 
         using var response = await _invokers[hostIdx]
             .SendAsync(request, ctx.HttpContext.RequestAborted);
 
         var responseStatusCode = (int)response.StatusCode;
+        ctx.HttpContext.Response.StatusCode = responseStatusCode;
+        ctx.StatusCode = responseStatusCode;
         
-        if (responseStatusCode < 500)
-        {
-            ctx.HttpContext.Response.StatusCode = responseStatusCode;
-            ctx.StatusCode = responseStatusCode;
-            await response.Content.CopyToAsync(ctx.HttpContext.Response.Body, ctx.HttpContext.RequestAborted);
-        }
-        else
-        {
-            ctx.StatusCode = (int)response.StatusCode;
-        }
+        _headersProcessor.CopyResponseHeaders(response, ctx.HttpContext.Response);
+        
+        await response.Content.CopyToAsync(ctx.HttpContext.Response.Body, ctx.HttpContext.RequestAborted);
     }
 
     public void Dispose()

@@ -17,8 +17,10 @@ public sealed class HeadersProcessor
         "Upgrade"
     ];
 
-    public void ProcessHeaders(HttpRequest source, HttpRequestMessage target)
+    public void CopyRequestHeaders(HttpRequest source, HttpRequestMessage target)
     {
+        target.Headers.Clear();
+        
         var sourceHeaders = source.Headers;
         
         if (source.ContentLength > 0
@@ -39,8 +41,31 @@ public sealed class HeadersProcessor
                 target.Content?.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
             }
         }
+    }
+
+    public void CopyResponseHeaders(HttpResponseMessage source, HttpResponse target)
+    {
+        target.Headers.Clear();
         
-        target.Headers.ExpectContinue = false;
+        foreach (var header in source.Headers)
+        {
+            if (IsHopByHopHeader(header.Key.AsSpan()))
+            {
+                continue;
+            }
+            
+            target.Headers[header.Key] = header.Value.ToArray();
+        }
+        
+        foreach (var header in source.Content.Headers)
+        {
+            if (IsHopByHopHeader(header.Key.AsSpan()))
+            {
+                continue;
+            }
+            
+            target.Headers[header.Key] = header.Value.ToArray();
+        }
     }
     
     private static bool IsHopByHopHeader(ReadOnlySpan<char> header)
