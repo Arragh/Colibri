@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
 
 namespace Colibri.Runtime.Pipeline.Cluster.Terminal;
 
@@ -16,9 +17,17 @@ public sealed class HeadersProcessor
         "Upgrade"
     ];
 
-    public void CopyHeaders(IHeaderDictionary source, HttpRequestMessage target)
+    public void ProcessHeaders(HttpRequest source, HttpRequestMessage target)
     {
-        foreach (var header in source)
+        var sourceHeaders = source.Headers;
+        
+        if (source.ContentLength > 0
+            || !StringValues.IsNullOrEmpty(sourceHeaders["Transfer-Encoding"]))
+        {
+            target.Content = new StreamContent(source.Body);
+        }
+        
+        foreach (var header in sourceHeaders)
         {
             if (IsHopByHopHeader(header.Key.AsSpan()))
             {
@@ -30,6 +39,8 @@ public sealed class HeadersProcessor
                 target.Content?.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
             }
         }
+        
+        target.Headers.ExpectContinue = false;
     }
     
     private static bool IsHopByHopHeader(ReadOnlySpan<char> header)

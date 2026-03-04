@@ -52,21 +52,8 @@ public class HttpTerminalMiddleware : IPipelineMiddleware, IDisposable
             HttpMethodCache.Get(ctx.HttpContext.Request.Method),
             requestUri);
         
-        _headersProcessor.CopyHeaders(ctx.HttpContext.Request.Headers, request);
-        
-        if (ctx.HttpContext.Request.ContentLength > 0
-            || !StringValues.IsNullOrEmpty(ctx.HttpContext.Request.Headers["Transfer-Encoding"]))
-        {
-            request.Content = new StreamContent(ctx.HttpContext.Request.Body);
-                            
-            if (!string.IsNullOrEmpty(ctx.HttpContext.Request.ContentType))
-            {
-                request.Content.Headers
-                    .TryAddWithoutValidation("Content-Type", ctx.HttpContext.Request.ContentType);
-            }
-        }
-        request.Headers.ExpectContinue = false;
-        
+        _headersProcessor.ProcessHeaders(ctx.HttpContext.Request, request);
+
         using var response = await _invokers[hostIdx]
             .SendAsync(request, ctx.HttpContext.RequestAborted);
 
