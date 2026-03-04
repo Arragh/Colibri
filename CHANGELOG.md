@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.8] - 04.03.2026
+
+- Request/response headers processing (except Connetion)
+
 ## [0.4.7] - 03.03.2026
 
 - Fixed a bug where a disabled cluster continued to operate.
