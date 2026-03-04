@@ -6,12 +6,14 @@ namespace Colibri.Runtime.Pipeline.Cluster.Terminal;
 public class HttpTerminalMiddleware : IPipelineMiddleware, IDisposable
 {
     private const string Protocol = "http";
+    private readonly HeadersProcessor _headersProcessor = new();
     private readonly HttpMessageInvoker[] _invokers;
     private readonly Uri[] _uris;
     
     public HttpTerminalMiddleware(string[] hosts)
     {
         _invokers = new HttpMessageInvoker[hosts.Length];
+        
         for (int i = 0; i < hosts.Length; i++)
         {
             var handler = new SocketsHttpHandler
@@ -23,7 +25,7 @@ public class HttpTerminalMiddleware : IPipelineMiddleware, IDisposable
                 KeepAlivePingPolicy = HttpKeepAlivePingPolicy.Always,
                 KeepAlivePingDelay = TimeSpan.FromSeconds(30),
                 KeepAlivePingTimeout = TimeSpan.FromSeconds(5),
-                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                AutomaticDecompression = DecompressionMethods.None,
                 EnableMultipleHttp2Connections = true
             };
             
@@ -39,37 +41,28 @@ public class HttpTerminalMiddleware : IPipelineMiddleware, IDisposable
     
     public async ValueTask InvokeAsync(PipelineContext ctx, PipelineDelegate next)
     {
+        var hostIdx = ctx.HostIdx;
+        
         var requestUri = new Uri(
-            _uris[ctx.HostIdx],
+            _uris[hostIdx],
             ctx.DownstreamPath + ctx.HttpContext.Request.QueryString);
         
-        using var request = new HttpRequestMessage(HttpMethodCache.Get(ctx.HttpContext.Request.Method), requestUri);
-        if (ctx.HttpContext.Request.ContentLength > 0 || ctx.HttpContext.Request.Headers.ContainsKey("Transfer-Encoding"))
-        {
-            request.Content = new StreamContent(ctx.HttpContext.Request.Body);
-                            
-            if (!string.IsNullOrEmpty(ctx.HttpContext.Request.ContentType))
-            {
-                request.Content.Headers.TryAddWithoutValidation("Content-Type", ctx.HttpContext.Request.ContentType);
-            }
-        }
-        request.Headers.ExpectContinue = false;
+        using var request = new HttpRequestMessage(
+            HttpMethodCache.Get(ctx.HttpContext.Request.Method),
+            requestUri);
         
-        using var response = await _invokers[0]
+        _headersProcessor.CopyRequestHeaders(ctx.HttpContext.Request, request);
+
+        using var response = await _invokers[hostIdx]
             .SendAsync(request, ctx.HttpContext.RequestAborted);
 
         var responseStatusCode = (int)response.StatusCode;
+        ctx.HttpContext.Response.StatusCode = responseStatusCode;
+        ctx.StatusCode = responseStatusCode;
         
-        if (responseStatusCode < 500)
-        {
-            ctx.HttpContext.Response.StatusCode = responseStatusCode;
-            ctx.StatusCode = responseStatusCode;
-            await response.Content.CopyToAsync(ctx.HttpContext.Response.Body, ctx.HttpContext.RequestAborted);
-        }
-        else
-        {
-            ctx.StatusCode = (int)response.StatusCode;
-        }
+        _headersProcessor.CopyResponseHeaders(response, ctx.HttpContext.Response);
+        
+        await response.Content.CopyToAsync(ctx.HttpContext.Response.Body, ctx.HttpContext.RequestAborted);
     }
 
     public void Dispose()
