@@ -19,8 +19,6 @@ public sealed class HeadersProcessor
 
     public void CopyRequestHeaders(HttpRequest source, HttpRequestMessage target)
     {
-        target.Headers.Clear();
-        
         var sourceHeaders = source.Headers;
         
         if (source.ContentLength > 0
@@ -35,18 +33,27 @@ public sealed class HeadersProcessor
             {
                 continue;
             }
-
-            if (!target.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()))
+            
+            if (header.Value.Count == 1)
             {
-                target.Content?.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
+                if (!target.Headers.TryAddWithoutValidation(header.Key, header.Value[0]))
+                {
+                    target.Content?.Headers.TryAddWithoutValidation(header.Key, header.Value[0]);
+                }
+            }
+            else
+            {
+                var headerAsEnum = header.Value.AsEnumerable();
+                if (!target.Headers.TryAddWithoutValidation(header.Key, headerAsEnum))
+                {
+                    target.Content?.Headers.TryAddWithoutValidation(header.Key, headerAsEnum);
+                }
             }
         }
     }
 
     public void CopyResponseHeaders(HttpResponseMessage source, HttpResponse target)
     {
-        target.Headers.Clear();
-        
         foreach (var header in source.Headers)
         {
             if (IsHopByHopHeader(header.Key.AsSpan()))
