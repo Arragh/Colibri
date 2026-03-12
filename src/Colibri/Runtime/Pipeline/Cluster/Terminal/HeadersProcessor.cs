@@ -77,15 +77,17 @@ public sealed class HeadersProcessor
     
     private static bool IsHopByHopHeader(ReadOnlySpan<char> header)
     {
-        foreach (var hipHop in HopByHopHeaders)
+        return header.Length switch
         {
-            if (header.Length == hipHop.Length
-                && header.StartsWith(hipHop, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-        }
-        
-        return false;
+            2  => header.Equals("TE", StringComparison.OrdinalIgnoreCase),
+            7  => header.Equals("Upgrade", StringComparison.OrdinalIgnoreCase)
+                  || header.Equals("Trailer", StringComparison.OrdinalIgnoreCase),
+            10 => header.Equals("Connection", StringComparison.OrdinalIgnoreCase)
+                  || header.Equals("Keep-Alive", StringComparison.OrdinalIgnoreCase),
+            17 => header.Equals("Transfer-Encoding", StringComparison.OrdinalIgnoreCase),
+            18 => header.Equals("Proxy-Authenticate", StringComparison.OrdinalIgnoreCase),
+            19 => header.Equals("Proxy-Authorization", StringComparison.OrdinalIgnoreCase),
+            _  => false
+        };
     }
 }
