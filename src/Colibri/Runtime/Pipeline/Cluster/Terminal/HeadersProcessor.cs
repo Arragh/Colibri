@@ -5,18 +5,6 @@ namespace Colibri.Runtime.Pipeline.Cluster.Terminal;
 
 public sealed class HeadersProcessor
 {
-    private static readonly string[] HopByHopHeaders =
-    [
-        "Connection",
-        "Keep-Alive",
-        "Proxy-Authenticate",
-        "Proxy-Authorization",
-        "TE",
-        "Trailer",
-        "Transfer-Encoding",
-        "Upgrade"
-    ];
-
     public void CopyRequestHeaders(HttpRequest source, HttpRequestMessage target)
     {
         var sourceHeaders = source.Headers;
@@ -26,10 +14,17 @@ public sealed class HeadersProcessor
         {
             target.Content = new StreamContent(source.Body);
         }
+
+        source.Headers.TryGetValue("Connection", out var connectionHeaders);
         
         foreach (var header in sourceHeaders)
         {
             if (IsHopByHopHeader(header.Key.AsSpan()))
+            {
+                continue;
+            }
+
+            if (IsConnectionHeader(header.Key.AsSpan(), connectionHeaders))
             {
                 continue;
             }
@@ -80,14 +75,54 @@ public sealed class HeadersProcessor
         return header.Length switch
         {
             2  => header.Equals("TE", StringComparison.OrdinalIgnoreCase),
+            
             7  => header.Equals("Upgrade", StringComparison.OrdinalIgnoreCase)
                   || header.Equals("Trailer", StringComparison.OrdinalIgnoreCase),
+            
             10 => header.Equals("Connection", StringComparison.OrdinalIgnoreCase)
                   || header.Equals("Keep-Alive", StringComparison.OrdinalIgnoreCase),
+            
             17 => header.Equals("Transfer-Encoding", StringComparison.OrdinalIgnoreCase),
+            
             18 => header.Equals("Proxy-Authenticate", StringComparison.OrdinalIgnoreCase),
+            
             19 => header.Equals("Proxy-Authorization", StringComparison.OrdinalIgnoreCase),
+            
             _  => false
         };
+    }
+
+    private bool IsConnectionHeader(
+        ReadOnlySpan<char> header,
+        StringValues connectionHeaders)
+    {
+        var headersCount = connectionHeaders.Count;
+        
+        for (int i = 0; i < headersCount; ++i)
+        {
+            var connectionHeadersSpan = connectionHeaders[i].AsSpan();
+            var start = 0;
+            
+            for (int j = 0; j < connectionHeadersSpan.Length; j++)
+            {
+                if (j + 1 == connectionHeadersSpan.Length
+                    || connectionHeadersSpan[j + 1] == ','
+                    || connectionHeadersSpan[j + 1] == ' ')
+                {
+                    if (header.Equals(connectionHeadersSpan.Slice(start, j + 1 - start), StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+
+                if (connectionHeadersSpan[j] == ','
+                    || connectionHeadersSpan[j] == ' ')
+                {
+                    start = j + 1;
+                }
+            }
+        }
+
+        return false;
     }
 }
