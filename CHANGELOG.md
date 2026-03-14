@@ -1,5 +1,10 @@
 # Changelog
 
+
+## [0.4.9] - 14.03.2026
+
+- Added filtering of Connection headers
+
 ## [0.4.8] - 04.03.2026
 
 - Request/response headers processing (except Connetion)
