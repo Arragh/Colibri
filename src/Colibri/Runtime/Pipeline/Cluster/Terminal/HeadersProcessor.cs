@@ -5,22 +5,8 @@ namespace Colibri.Runtime.Pipeline.Cluster.Terminal;
 
 public sealed class HeadersProcessor
 {
-    private static readonly string[] HopByHopHeaders =
-    [
-        "Connection",
-        "Keep-Alive",
-        "Proxy-Authenticate",
-        "Proxy-Authorization",
-        "TE",
-        "Trailer",
-        "Transfer-Encoding",
-        "Upgrade"
-    ];
-
     public void CopyRequestHeaders(HttpRequest source, HttpRequestMessage target)
     {
-        target.Headers.Clear();
-        
         var sourceHeaders = source.Headers;
         
         if (source.ContentLength > 0
@@ -28,6 +14,8 @@ public sealed class HeadersProcessor
         {
             target.Content = new StreamContent(source.Body);
         }
+
+        source.Headers.TryGetValue("Connection", out var connectionHeaders);
         
         foreach (var header in sourceHeaders)
         {
@@ -36,17 +24,31 @@ public sealed class HeadersProcessor
                 continue;
             }
 
-            if (!target.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()))
+            if (IsConnectionHeader(header.Key.AsSpan(), connectionHeaders))
             {
-                target.Content?.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
+                continue;
+            }
+            
+            if (header.Value.Count == 1)
+            {
+                if (!target.Headers.TryAddWithoutValidation(header.Key, header.Value[0]))
+                {
+                    target.Content?.Headers.TryAddWithoutValidation(header.Key, header.Value[0]);
+                }
+            }
+            else
+            {
+                var headerAsEnum = header.Value.AsEnumerable();
+                if (!target.Headers.TryAddWithoutValidation(header.Key, headerAsEnum))
+                {
+                    target.Content?.Headers.TryAddWithoutValidation(header.Key, headerAsEnum);
+                }
             }
         }
     }
 
     public void CopyResponseHeaders(HttpResponseMessage source, HttpResponse target)
     {
-        target.Headers.Clear();
-        
         foreach (var header in source.Headers)
         {
             if (IsHopByHopHeader(header.Key.AsSpan()))
@@ -70,15 +72,57 @@ public sealed class HeadersProcessor
     
     private static bool IsHopByHopHeader(ReadOnlySpan<char> header)
     {
-        foreach (var hipHop in HopByHopHeaders)
+        return header.Length switch
         {
-            if (header.Length == hipHop.Length
-                && header.StartsWith(hipHop, StringComparison.OrdinalIgnoreCase))
+            2  => header.Equals("TE", StringComparison.OrdinalIgnoreCase),
+            
+            7  => header.Equals("Upgrade", StringComparison.OrdinalIgnoreCase)
+                  || header.Equals("Trailer", StringComparison.OrdinalIgnoreCase),
+            
+            10 => header.Equals("Connection", StringComparison.OrdinalIgnoreCase)
+                  || header.Equals("Keep-Alive", StringComparison.OrdinalIgnoreCase),
+            
+            17 => header.Equals("Transfer-Encoding", StringComparison.OrdinalIgnoreCase),
+            
+            18 => header.Equals("Proxy-Authenticate", StringComparison.OrdinalIgnoreCase),
+            
+            19 => header.Equals("Proxy-Authorization", StringComparison.OrdinalIgnoreCase),
+            
+            _  => false
+        };
+    }
+
+    private bool IsConnectionHeader(
+        ReadOnlySpan<char> header,
+        StringValues connectionHeaders)
+    {
+        var headersCount = connectionHeaders.Count;
+        
+        for (int i = 0; i < headersCount; ++i)
+        {
+            var connectionHeadersSpan = connectionHeaders[i].AsSpan();
+            var start = 0;
+            
+            for (int j = 0; j < connectionHeadersSpan.Length; j++)
             {
-                return true;
+                if (j + 1 == connectionHeadersSpan.Length
+                    || connectionHeadersSpan[j + 1] == ','
+                    || connectionHeadersSpan[j + 1] == ' ')
+                {
+                    if (header.Equals(connectionHeadersSpan.Slice(start, j + 1 - start), StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+
+                if (connectionHeadersSpan[j] == ','
+                    || connectionHeadersSpan[j] == ' ')
+                {
+                    start = j + 1;
+                }
             }
         }
-        
+
         return false;
     }
 }
