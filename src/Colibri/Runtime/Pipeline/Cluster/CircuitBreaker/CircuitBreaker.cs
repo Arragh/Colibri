@@ -2,6 +2,13 @@ namespace Colibri.Runtime.Pipeline.Cluster.CircuitBreaker;
 
 public sealed class CircuitBreaker
 {
+    private sealed class HostState
+    {
+        public int State;
+        public int Failures;
+        public long OpenedAtTicks;
+    }
+    
     private readonly int _failures;
     private readonly int _timeout;
     private readonly HostState[] _hostsStates;
@@ -57,6 +64,7 @@ public sealed class CircuitBreaker
         {
             Volatile.Write(ref host.Failures, 0);
             Volatile.Write(ref host.State, 0);
+            return;
         }
         
         var fails = Interlocked.Increment(ref host.Failures);
