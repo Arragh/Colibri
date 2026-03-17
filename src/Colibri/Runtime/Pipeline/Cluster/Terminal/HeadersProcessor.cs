@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
@@ -70,6 +71,7 @@ public sealed class HeadersProcessor
         }
     }
     
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool IsHopByHopHeader(ReadOnlySpan<char> header)
     {
         return header.Length switch

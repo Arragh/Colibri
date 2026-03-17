@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Colibri.Helpers;
 
 namespace Colibri.Runtime.Pipeline.Main.RoutingEngine;
@@ -34,13 +35,14 @@ public sealed class RoutingEngineMiddleware : IPipelineMiddleware
             downstreamFirstChildIndex,
             downstreamChildrenCount);
         
-        ctx.IsHandled = true;
-        ctx.DownstreamPath = pathUrl;
-        ctx.ClusterId = clusterId;
+        ctx.MarkAsHandled();
+        ctx.SetDownstreamPath(pathUrl);
+        ctx.SetClusterId(clusterId);
 
         return next(ctx);
     }
     
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static ReadOnlySpan<char> NormalizePath(ReadOnlySpan<char> path, Span<char> buffer)
     {
         int x = 0;

@@ -42,14 +42,11 @@ public static class ColibriExtensions
         var snapshotProvider = app.ApplicationServices.GetRequiredService<SnapshotProvider>();
         var pipeline = app.ApplicationServices.GetRequiredService<PipelineSrv>();
 
-        app.Use(async (ctx, next) =>
+        app.Use(async (httpContext, next) =>
         {
-            var pipelineCtx = new PipelineContext
-            {
-                GlobalSnapshot = snapshotProvider.GlobalSnapshot,
-                HttpContext = ctx,
-                CancellationToken = ctx.RequestAborted
-            };
+            var pipelineCtx = new PipelineContext(
+                snapshotProvider.GlobalSnapshot,
+                httpContext);
     
             await pipeline.ExecuteAsync(pipelineCtx);
 

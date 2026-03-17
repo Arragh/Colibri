@@ -1,3 +1,5 @@
+using System.Net;
+
 namespace Colibri.Runtime.Pipeline.Cluster.CircuitBreaker;
 
 public sealed class CircuitBreakerMiddleware(CircuitBreaker breaker) : IPipelineMiddleware
@@ -8,7 +10,7 @@ public sealed class CircuitBreakerMiddleware(CircuitBreaker breaker) : IPipeline
     {
         if (!breaker.CanExecute(ctx.HostIdx))
         {
-            ctx.StatusCode = 503;
+            ctx.SetStatusCode(HttpStatusCode.ServiceUnavailable);
             return;
         }
 
