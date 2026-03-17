@@ -7,6 +7,8 @@ namespace Colibri.Runtime.Pipeline;
 
 public sealed class PipelineContext(GlobalSnapshot snapshot, HttpContext httpContext)
 {
+    private bool _isCommited = false;
+    
     public readonly GlobalSnapshot GlobalSnapshot = snapshot;
     public readonly HttpContext HttpContext = httpContext;
     public readonly CancellationToken CancellationToken = httpContext.RequestAborted;
@@ -50,7 +52,13 @@ public sealed class PipelineContext(GlobalSnapshot snapshot, HttpContext httpCon
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void CommitStatusCode()
     {
+        if (_isCommited)
+        {
+            throw new InvalidOperationException("StatusCode is already committed");
+        }
+        
         HttpContext.Response.StatusCode = StatusCode;
+        _isCommited = true;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
