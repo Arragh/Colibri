@@ -10,7 +10,8 @@ public sealed class RetryMiddleware(int maxAttempts) : IPipelineMiddleware
         {
             await next(ctx);
 
-            if (ctx.StatusCode < 500)
+            if (ctx.StatusCode < 500
+                || !ctx.IsIdempotent())
             {
                 return;
             }

@@ -55,13 +55,11 @@ public class HttpTerminalMiddleware : IPipelineMiddleware, IDisposable
 
         using var response = await _invokers[hostIdx]
             .SendAsync(request, ctx.HttpContext.RequestAborted);
-
-        var responseStatusCode = (int)response.StatusCode;
-        ctx.HttpContext.Response.StatusCode = responseStatusCode;
-        ctx.StatusCode = responseStatusCode;
+        
+        ctx.SetStatusCode(response.StatusCode);
+        ctx.CommitStatusCode();
         
         _headersProcessor.CopyResponseHeaders(response, ctx.HttpContext.Response);
-        
         await response.Content.CopyToAsync(ctx.HttpContext.Response.Body, ctx.HttpContext.RequestAborted);
     }
 
