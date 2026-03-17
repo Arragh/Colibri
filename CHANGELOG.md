@@ -1,6 +1,10 @@
 # Changelog
 
 
+## [0.4.10] - 17.03.2026
+
+- Fixed circuit breaker incorrectly increments failure count on successful calls
+
 ## [0.4.9] - 14.03.2026
 
 - Added filtering of Connection headers
