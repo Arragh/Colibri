@@ -144,9 +144,9 @@ public class UpstreamMatcherRealCase
 /*
    | Method        | RequestUri           | Mean     | Error    | StdDev   | Allocated |
    |-------------- |--------------------- |---------:|---------:|---------:|----------:|
-   | RealCaseTests | /clus(...)ofile [27] | 21.68 ns | 0.045 ns | 0.039 ns |         - |                                                                                                                            
-   | RealCaseTests | /clus(...)04-05 [39] | 22.44 ns | 0.138 ns | 0.122 ns |         - |
-   | RealCaseTests | /clus(...)D-007 [23] | 27.46 ns | 0.181 ns | 0.161 ns |         - |
-   | RealCaseTests | /cluster5/orders     | 18.69 ns | 0.013 ns | 0.012 ns |         - |
-   | RealCaseTests | /clus(...)89900 [27] | 32.89 ns | 0.009 ns | 0.008 ns |         - |
+   | RealCaseTests | /clus(...)ofile [27] | 21.11 ns | 0.193 ns | 0.180 ns |         - |                                                                                                                            
+   | RealCaseTests | /clus(...)04-05 [39] | 21.17 ns | 0.054 ns | 0.045 ns |         - |
+   | RealCaseTests | /clus(...)D-007 [23] | 27.20 ns | 0.058 ns | 0.055 ns |         - |
+   | RealCaseTests | /cluster5/orders     | 18.63 ns | 0.007 ns | 0.007 ns |         - |
+   | RealCaseTests | /clus(...)89900 [27] | 32.56 ns | 0.014 ns | 0.012 ns |         - |
  */
