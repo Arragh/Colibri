@@ -1,3 +1,4 @@
+using System.Net;
 using System.Runtime.CompilerServices;
 using Colibri.Helpers;
 
@@ -14,17 +15,19 @@ public sealed class RoutingEngineMiddleware : IPipelineMiddleware
         var path = ctx.HttpContext.Request.Path.Value.AsSpan();
         Span<char> buffer = stackalloc char[path.Length];
         var normalizedPath = NormalizePath(path, buffer);
+        Span<ParamValue> routeParams = stackalloc ParamValue[16];
         
         if (!_upstreamMatcher.TryMatch(
                 routingSnapshot,
                 normalizedPath,
                 HttpMethodMask.GetMask(ctx.HttpContext.Request.Method),
+                routeParams,
                 out var clusterId,
-                out var routeParams,
                 out var downstreamFirstChildIndex,
                 out var downstreamChildrenCount))
         {
-            ctx.HttpContext.Response.StatusCode = 404;
+            ctx.SetStatusCode(HttpStatusCode.NotFound);
+            ctx.CommitStatusCode();
             return ValueTask.CompletedTask;
         }
         

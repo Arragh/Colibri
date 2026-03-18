@@ -1,4 +1,5 @@
 ﻿using BenchmarkDotNet.Running;
-using Colibri.Benchmarks.Routing;
+using Colibri.Benchmarks.UpstreamMatcher;
 
-BenchmarkRunner.Run<RoutingTests>();
+BenchmarkRunner.Run<UpstreamMatcherRealCase>();
+BenchmarkRunner.Run<UpstreamMatcherBestCase>();
