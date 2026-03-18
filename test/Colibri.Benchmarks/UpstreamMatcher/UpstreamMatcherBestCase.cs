@@ -38,7 +38,7 @@ public class UpstreamMatcherBestCase
                     {
                         ClusterName = "cluster1",
                         Methods = [ "GET" ],
-                        UpstreamPattern = "/cluster1/orders",
+                        UpstreamPattern = "/orders",
                         DownstreamPattern = "/api/v1/orders"
                     }
                 ]
@@ -87,7 +87,7 @@ public class UpstreamMatcherBestCase
 }
 
 /*
-   | Method       | Mean     | Error     | StdDev    | Allocated |
-   |------------- |---------:|----------:|----------:|----------:|
-   | BestCaseTest | 6.996 ns | 0.0812 ns | 0.0678 ns |         - | 
+   | Method       | Mean     | Error    | StdDev   | Allocated |
+   |------------- |---------:|---------:|---------:|----------:|
+   | BestCaseTest | 10.12 ns | 0.050 ns | 0.046 ns |         - | 
  */

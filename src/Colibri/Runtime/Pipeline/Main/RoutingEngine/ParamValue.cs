@@ -1,13 +1,7 @@
 namespace Colibri.Runtime.Pipeline.Main.RoutingEngine;
 
-public readonly struct ParamValue
+public readonly struct ParamValue(int start, ushort length)
 {
-    public readonly int Start;
-    public readonly ushort Length;
-
-    public ParamValue(int start, ushort length)
-    {
-        Start = start;
-        Length = length;
-    }
+    public readonly int Start = start;
+    public readonly ushort Length = length;
 }
