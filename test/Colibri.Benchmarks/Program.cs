@@ -1,6 +1,10 @@
 ﻿using BenchmarkDotNet.Running;
 using Colibri.Benchmarks.UpstreamMatcher;
 
+/*
+ * Use cmd: dotnet run -c Release
+ */
+
 Console.WriteLine("\nList of benchmarks:\n");
 
 Console.WriteLine("1. UpstreamMatcher - RealCase");
@@ -12,8 +16,7 @@ string? chose = Console.ReadLine();
 
 if (!int.TryParse(chose, out int parsed))
 {
-    Console.WriteLine("Invalid choice");
-    return;
+    throw new InvalidOperationException("Invalid choice");
 }
 
 switch (parsed)
@@ -27,6 +30,5 @@ switch (parsed)
         break;
     
     default:
-        Console.WriteLine("Invalid choice");
-        return;
+        throw new InvalidOperationException("Invalid choice");
 }
