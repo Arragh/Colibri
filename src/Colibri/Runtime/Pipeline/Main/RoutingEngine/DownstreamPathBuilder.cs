@@ -8,7 +8,7 @@ public sealed class DownstreamPathBuilder
     public string Build(
         RoutingSnapshot routingSnapshot,
         ReadOnlySpan<char> normalizedPath,
-        ParamValue[] routeParams,
+        Span<ParamValue> routeParams,
         ushort downstreamFirstChildIndex,
         byte downstreamChildrenCount)
     {

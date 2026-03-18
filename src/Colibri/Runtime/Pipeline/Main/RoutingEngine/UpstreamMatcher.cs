@@ -9,8 +9,8 @@ public sealed class UpstreamMatcher
         RoutingSnapshot routingSnapshot,
         ReadOnlySpan<char> normalizedPath,
         byte methodMask,
+        Span<ParamValue> routeParams,
         out ushort clusterId,
-        out ParamValue[] routeParams,
         out ushort downstreamFirstChildIndex,
         out byte downstreamChildrenCount)
     {
@@ -23,7 +23,6 @@ public sealed class UpstreamMatcher
         var localPath = normalizedPath;
         var totalSlice = 0;
         
-        routeParams = new ParamValue[16];
         clusterId = 0;
         downstreamFirstChildIndex = 0;
         downstreamChildrenCount = 0;

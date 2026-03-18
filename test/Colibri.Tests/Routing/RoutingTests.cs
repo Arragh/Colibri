@@ -51,13 +51,14 @@ public sealed class RoutingTests
         };
 
         var snapshot = GetRoutingSnapshot(clusters, routes);
+        Span<ParamValue> routeParams = stackalloc ParamValue[16];
 
         // Act
         var matchResult = _matcher.TryMatch(
             snapshot,
             requestUri.AsSpan(),
             HttpMethodMask.GetMask("GET"),
-            out _,
+            routeParams,
             out _,
             out _,
             out _);
@@ -114,13 +115,14 @@ public sealed class RoutingTests
         };
 
         var snapshot = GetRoutingSnapshot(clusters, routes);
+        Span<ParamValue> routeParams = stackalloc ParamValue[16];
 
         // Act
         var matchResult = _matcher.TryMatch(
             snapshot,
             requestUri.AsSpan(),
             HttpMethodMask.GetMask(method),
-            out _,
+            routeParams,
             out _,
             out _,
             out _);
@@ -177,13 +179,14 @@ public sealed class RoutingTests
         };
 
         var snapshot = GetRoutingSnapshot(clusters, routes);
+        Span<ParamValue> routeParams = stackalloc ParamValue[16];
 
         // Act
         var matchResult = _matcher.TryMatch(
             snapshot,
             requestUri.AsSpan(),
             HttpMethodMask.GetMask(method),
-            out _,
+            routeParams,
             out _,
             out _,
             out _);
@@ -247,13 +250,14 @@ public sealed class RoutingTests
         };
         
         var snapshot = GetRoutingSnapshot(clusters, routes);
+        Span<ParamValue> routeParams = stackalloc ParamValue[16];
         
         // Act
         var result = _matcher.TryMatch(
             snapshot,
             requestUri.AsSpan(),
             HttpMethodMask.GetMask("GET"),
-            out _,
+            routeParams,
             out _,
             out _,
             out _);
@@ -317,13 +321,14 @@ public sealed class RoutingTests
         };
         
         var snapshot = GetRoutingSnapshot(clusters, routes);
+        Span<ParamValue> routeParams = stackalloc ParamValue[16];
         
         // Act
         var result = _matcher.TryMatch(
             snapshot,
             requestUri.AsSpan(),
             HttpMethodMask.GetMask("GET"),
-            out _,
+            routeParams,
             out _,
             out _,
             out _);
@@ -387,13 +392,14 @@ public sealed class RoutingTests
         };
         
         var snapshot = GetRoutingSnapshot(clusters, routes);
+        Span<ParamValue> routeParams = stackalloc ParamValue[16];
         
         // Act
         var result = _matcher.TryMatch(
             snapshot,
             requestUri.AsSpan(),
             HttpMethodMask.GetMask("GET"),
-            out _,
+            routeParams,
             out _,
             out _,
             out _);
@@ -457,13 +463,14 @@ public sealed class RoutingTests
         };
         
         var snapshot = GetRoutingSnapshot(clusters, routes);
+        Span<ParamValue> routeParams = stackalloc ParamValue[16];
         
         // Act
         var result = _matcher.TryMatch(
             snapshot,
             requestUri.AsSpan(),
             HttpMethodMask.GetMask("GET"),
-            out _,
+            routeParams,
             out _,
             out _,
             out _);
@@ -530,13 +537,14 @@ public sealed class RoutingTests
         };
         
         var snapshot = GetRoutingSnapshot(clusters, routes);
+        Span<ParamValue> routeParams = stackalloc ParamValue[16];
         
         // Act
         var result = _matcher.TryMatch(
             snapshot,
             requestUri.AsSpan(),
             HttpMethodMask.GetMask("GET"),
-            out _,
+            routeParams,
             out _,
             out _,
             out _);
@@ -581,6 +589,7 @@ public sealed class RoutingTests
         };
         
         var snapshot = GetRoutingSnapshot(clusters, routes);
+        Span<ParamValue> routeParams = stackalloc ParamValue[16];
         const string requestUri = "/cluster1/route1/id/action1";
         const string expectedUri = "/service1/id/action1";
         
@@ -589,8 +598,8 @@ public sealed class RoutingTests
             snapshot,
             requestUri.AsSpan(),
             HttpMethodMask.GetMask("GET"),
+            routeParams,
             out _,
-            out var routeParams,
             out var downstreamFirstChildIndex,
             out var downstreamChildrenCount);
         
@@ -603,11 +612,14 @@ public sealed class RoutingTests
         
         // Assert
         Assert.True(matchResult);
-        Assert.DoesNotContain(routeParams, p => p.Length > 0);
+        Assert.DoesNotContain(routeParams.ToArray(), p => p.Length > 0);
         Assert.Equal(expectedUri, pathResult);
     }
     
     [Theory]
+    [InlineData(
+        "/cluster1/users/vasya/log/18.03.2026",
+        "/service1/users/vasya/log/18.03.2026")]
     [InlineData(
         "/cluster1/a/param-1/b/param-2/c/param-3/d/param-4/e/param-5",
         "/s/param-2/p/param-1/o/param-4/n/param-3/m/param-5/l")]
@@ -684,18 +696,26 @@ public sealed class RoutingTests
                 Methods = ["GET"],
                 UpstreamPattern = "/route1/action2",
                 DownstreamPattern = "/service1/action2"
+            },
+            new()
+            {
+                ClusterName = "cluster1",
+                Methods = [ "GET" ],
+                UpstreamPattern = "/users/{userId}/log/{currentDate}",
+                DownstreamPattern = "/service1/users/{userId}/log/{currentDate}",
             }
         };
         
         var snapshot = GetRoutingSnapshot(clusters, routes);
+        Span<ParamValue> routeParams = stackalloc ParamValue[16];
 
         // Act
         var matchResult = _matcher.TryMatch(
             snapshot,
             requestUri.AsSpan(),
             HttpMethodMask.GetMask("GET"),
+            routeParams,
             out _,
-            out var routeParams,
             out var downstreamFirstChildIndex,
             out var downstreamChildrenCount);
         
