@@ -1,7 +1,7 @@
 using Colibri.Configuration.Models;
 using Colibri.Runtime.Snapshots.Routing;
 
-namespace Unit.Snapshot;
+namespace Unit.Snapshot.Routing;
 
 public sealed class RoutesBuilderTests
 {

@@ -1,7 +1,7 @@
 using Colibri.Configuration.Models;
 using Colibri.Runtime.Snapshots.Cluster;
 
-namespace Unit.Snapshot;
+namespace Unit.Snapshot.Cluster;
 
 public sealed class ClusterSnapshotBuilderTests
 {

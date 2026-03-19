@@ -1,7 +1,7 @@
 using Colibri.Configuration.Models;
 using Colibri.Runtime.Pipeline.Cluster.Authorization;
 
-namespace Unit.Authorization;
+namespace Unit.Pipeline.Cluster.Authorization;
 
 public class AuthorizerTests
 {

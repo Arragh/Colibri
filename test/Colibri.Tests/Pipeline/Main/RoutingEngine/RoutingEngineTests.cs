@@ -5,12 +5,25 @@ using Colibri.Runtime.Pipeline.Main.RoutingEngine;
 using Colibri.Runtime.Snapshots;
 using Colibri.Runtime.Snapshots.Routing;
 
-namespace Unit.RoutingEngine;
+namespace Unit.Pipeline.Main.RoutingEngine;
 
 public sealed class RoutingEngineTests
 {
     private readonly UpstreamMatcher _matcher = new();
     private readonly DownstreamPathBuilder _pathBuilder = new();
+    
+    private RoutingSnapshot GetRoutingSnapshot(ClusterCfg[] clusters, RouteCfg[] routes)
+    {
+        var settings = new ColibriSettings
+        {
+            Clusters = clusters,
+            Routes = routes
+        };
+
+        return new GlobalSnapshotBuilder()
+            .Build(settings)
+            .RoutingSnapshot;
+    }
     
     [Theory]
     [InlineData("/")]
@@ -753,18 +766,5 @@ public sealed class RoutingEngineTests
         // Assert
         Assert.True(matchResult);
         Assert.Equal(expectedUri, pathResult);
-    }
-    
-    private RoutingSnapshot GetRoutingSnapshot(ClusterCfg[] clusters, RouteCfg[] routes)
-    {
-        var settings = new ColibriSettings
-        {
-            Clusters = clusters,
-            Routes = routes
-        };
-
-        return new GlobalSnapshotBuilder()
-            .Build(settings)
-            .RoutingSnapshot;
     }
 }
