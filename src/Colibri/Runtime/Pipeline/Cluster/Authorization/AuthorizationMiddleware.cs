@@ -6,7 +6,8 @@ public sealed class AuthorizationMiddleware(Authorizer authorizer) : IPipelineMi
 {
     public async ValueTask InvokeAsync(PipelineContext ctx, PipelineDelegate next)
     {
-        if (!ctx.HttpContext.Request.Headers.TryGetValue("Authorization", out var authHeader))
+        if (!ctx.HttpContext.Request.Headers
+                .TryGetValue("Authorization", out var authHeader))
         {
             ctx.SetStatusCode(HttpStatusCode.Unauthorized);
             ctx.CommitStatusCode();
@@ -14,7 +15,8 @@ public sealed class AuthorizationMiddleware(Authorizer authorizer) : IPipelineMi
         }
         
         var authValue = authHeader.Count > 0 ? authHeader[0] : null;
-        if (authValue == null || !authValue.StartsWith("Bearer ", StringComparison.Ordinal))
+        if (authValue == null
+            || !authValue.StartsWith("Bearer ", StringComparison.Ordinal))
         {
             ctx.SetStatusCode(HttpStatusCode.Unauthorized);
             ctx.CommitStatusCode();
