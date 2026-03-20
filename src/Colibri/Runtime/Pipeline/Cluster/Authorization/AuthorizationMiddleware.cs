@@ -34,6 +34,7 @@ public sealed class AuthorizationMiddleware(Authorizer[] authorizers) : IPipelin
                 && authorizer.TryAuthorize(validationResult.SecurityToken))
             {
                 authResult = true;
+                break;
             }
         }
 

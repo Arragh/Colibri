@@ -12,11 +12,11 @@ public sealed class Authorizer(ClaimCfg[] claims, string algorithm, string key)
 
     private readonly TokenValidationParameters _validationParameters = new()
     {
-        ValidateIssuerSigningKey = false,
+        ValidateIssuerSigningKey = true,
         IssuerSigningKey = GetSigningKey(algorithm, key),
         ValidateIssuer = false,
         ValidateAudience = false,
-        ValidateLifetime = false,
+        ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero
     };
     
