@@ -17,7 +17,7 @@ public sealed class GlobalSnapshotBuilder
         
         return new GlobalSnapshot
         {
-            ClusterSnapshot = _clusterSnapshotBuilder.Build(settings.Clusters),
+            ClusterSnapshot = _clusterSnapshotBuilder.Build(settings.JwtSchemes, settings.Clusters),
             RoutingSnapshot = _routingSnapshotBuilder.Build(settings)
         };
     }

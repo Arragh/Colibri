@@ -2,7 +2,7 @@ using System.Net;
 
 namespace Colibri.Runtime.Pipeline.Cluster.Authorization;
 
-public sealed class AuthorizationMiddleware(Authorizer authorizer) : IPipelineMiddleware
+public sealed class AuthorizationMiddleware(Authorizer[] authorizers) : IPipelineMiddleware
 {
     public async ValueTask InvokeAsync(PipelineContext ctx, PipelineDelegate next)
     {
@@ -23,11 +23,21 @@ public sealed class AuthorizationMiddleware(Authorizer authorizer) : IPipelineMi
             return;
         }
 
-        var token = authValue.AsSpan(7);
-        var validationResult = await authorizer.ValidateToken(token.ToString());
+        var token = authValue.AsSpan(7).ToString();
+        bool authResult = false;
 
-        if (!validationResult.IsValid
-            || !authorizer.TryAuthorize(validationResult.SecurityToken))
+        foreach (var authorizer in authorizers)
+        {
+            var validationResult = await authorizer.ValidateToken(token);
+
+            if (validationResult.IsValid
+                && authorizer.TryAuthorize(validationResult.SecurityToken))
+            {
+                authResult = true;
+            }
+        }
+
+        if (!authResult)
         {
             ctx.SetStatusCode(HttpStatusCode.Unauthorized);
             ctx.CommitStatusCode();

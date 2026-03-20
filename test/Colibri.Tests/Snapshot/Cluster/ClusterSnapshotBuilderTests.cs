@@ -50,7 +50,7 @@ public sealed class ClusterSnapshotBuilderTests
         var clusters = new [] { cluster };
         
         // Act
-        var result = _clusterSnapshotBuilder.Build(clusters);
+        var result = _clusterSnapshotBuilder.Build([], clusters);
         
         // Assert
         Assert.NotNull(result);
@@ -63,7 +63,7 @@ public sealed class ClusterSnapshotBuilderTests
         var clusters = new ClusterCfg[] { };
 
         // Act
-        var result = _clusterSnapshotBuilder.Build(clusters);
+        var result = _clusterSnapshotBuilder.Build([], clusters);
         
         // Assert
         Assert.Empty(result.Clusters);
@@ -84,7 +84,7 @@ public sealed class ClusterSnapshotBuilderTests
         var clusters = new [] { cluster };
         
         // Act
-        var result = _clusterSnapshotBuilder.Build(clusters);
+        var result = _clusterSnapshotBuilder.Build([], clusters);
         
         // Assert
         Assert.Empty(result.Clusters);
@@ -114,7 +114,7 @@ public sealed class ClusterSnapshotBuilderTests
         var clusters = new [] { cluster1, cluster2 };
         
         // Act
-        var result = _clusterSnapshotBuilder.Build(clusters);
+        var result = _clusterSnapshotBuilder.Build([], clusters);
         
         // Assert
         Assert.Single(result.Clusters);
@@ -144,7 +144,7 @@ public sealed class ClusterSnapshotBuilderTests
         var clusters = new [] { cluster1, cluster2 };
         
         // Act
-        var result = _clusterSnapshotBuilder.Build(clusters);
+        var result = _clusterSnapshotBuilder.Build([], clusters);
         
         // Assert
         Assert.Equal(2, result.Clusters.Length);

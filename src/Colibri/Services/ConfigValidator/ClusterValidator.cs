@@ -90,16 +90,6 @@ public sealed class ClusterValidator
         return GlobalConstants.LoadBalancerTypes.Contains(loadBalancerType);
     }
 
-    public bool AuthAlgorithmIsNotEmpty(string? authorizationType)
-    {
-        return !string.IsNullOrWhiteSpace(authorizationType);
-    }
-
-    public bool AuthAlgorithmIsValid(string authorizationType)
-    {
-        return GlobalConstants.AuthAlgorithms.Contains(authorizationType);
-    }
-    
     private bool PrefixIsMatch(string name)
     {
         var match = Regex.Match(name, "^[a-z0-9_-]+$");

@@ -11,7 +11,7 @@ namespace Colibri.Runtime.Snapshots.Cluster;
 
 public sealed class ClusterSnapshotBuilder
 {
-    public ClusterSnapshot Build(ClusterCfg[] cfgClusters)
+    public ClusterSnapshot Build(JwtSchemeCfg[] cfgJwtSchemes, ClusterCfg[] cfgClusters)
     {
         var snpClusters = new List<ClusterSnp>();
         
@@ -26,16 +26,27 @@ public sealed class ClusterSnapshotBuilder
             
             var hostsCount = cfgCluster.Hosts.Length;
 
-            if (cfgCluster.Authorization?.Enabled == true)
+            List<Authorizer> authorizers = new();
+            foreach (var auth in cfgCluster.Authorization)
             {
-                var authorizer = new Authorizer(
-                    cfgCluster.Authorization.Claims,
-                    cfgCluster.Authorization.Algorithm,
-                    cfgCluster.Authorization.Key);
+                if (auth.Enabled)
+                {
+                    var jwtScheme = cfgJwtSchemes
+                        .First(s => s.Name == auth.JwtScheme);
                 
-                clusterMiddlewares.Add(new AuthorizationMiddleware(authorizer));
+                    var authorizer = new Authorizer(
+                        auth.Claims,
+                        jwtScheme.Algorithm,
+                        jwtScheme.Key);
+                
+                    authorizers.Add(authorizer);
+                }
             }
-            
+
+            if (authorizers.Count > 0)
+            {
+                clusterMiddlewares.Add(new AuthorizationMiddleware(authorizers.ToArray()));
+            }
            
             if (cfgCluster.Retry?.Enabled == true)
             {
