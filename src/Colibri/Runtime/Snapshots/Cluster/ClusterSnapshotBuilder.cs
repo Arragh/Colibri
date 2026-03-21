@@ -58,7 +58,8 @@ public sealed class ClusterSnapshotBuilder
                 ILoadBalancer loadBalancer = cfgCluster.LoadBalancer.Type switch
                 {
                     "rr" => new RoundRobinBalancer(hostsCount),
-                    "rnd" => new RandomBalancer(hostsCount)
+                    "rnd" => new RandomBalancer(hostsCount),
+                    _ => new RoundRobinBalancer(hostsCount)
                 };
                 
                 clusterMiddlewares.Add(new LoadBalancerMiddleware(loadBalancer));

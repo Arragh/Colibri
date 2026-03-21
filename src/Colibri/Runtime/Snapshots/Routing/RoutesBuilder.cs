@@ -88,23 +88,23 @@ public class RoutesBuilder
 public sealed record TempRoute
 {
     public ushort ClusterId { get; set; }
-    public string[] Methods { get; set; }
-    public string[] UpstreamSegments { get; set; }
-    public string[] DownstreamSegments { get; set; }
+    public string[] Methods { get; set; } = null!;
+    public string[] UpstreamSegments { get; set; } = null!;
+    public string[] DownstreamSegments { get; set; } = null!;
     public List<UpstreamChunk> TotalUpstreamChunks { get; set; } = [];
     public List<DownstreamChunk> TotalDownstreamChunks { get; set; } = [];
 }
 
 public sealed class DownstreamChunk
 {
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
     public bool IsParameter { get; set; }
     public int ParamIndex { get; set; }
 }
 
 public sealed class UpstreamChunk
 {
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
     public bool IsParameter { get; set; }
     public int ParamIndex { get; set; }
 }

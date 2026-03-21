@@ -10,21 +10,21 @@ public sealed class ClusterCfg
         get;
         set => field = value
             .ToLowerInvariant();
-    } = null!;
+    } = string.Empty;
 
     public string Protocol
     {
         get;
         set => field = value
             .ToLowerInvariant();
-    } = null!;
+    } = string.Empty;
 
     public string Prefix
     {
         get;
         set => field = value
             .ToLowerInvariant();
-    } = null!;
+    } = string.Empty;
 
     public string[] Hosts
     {
@@ -32,9 +32,9 @@ public sealed class ClusterCfg
         set => field = value
             .Select(v => v.ToLowerInvariant())
             .ToArray();
-    } = null!;
-    
-    public AuthCfg[] Authorization { get; set; }
+    } = [];
+
+    public AuthCfg[] Authorization { get; set; } = [];
     public RetryCfg? Retry { get; set; }
     public LoadBalancingCfg? LoadBalancer { get; set; }
     public CircuitBreakerCfg? CircuitBreaker { get; set; }
