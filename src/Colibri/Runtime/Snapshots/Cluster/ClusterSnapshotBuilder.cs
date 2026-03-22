@@ -6,12 +6,15 @@ using Colibri.Runtime.Pipeline.Cluster.CircuitBreaker;
 using Colibri.Runtime.Pipeline.Cluster.LoadBalancer;
 using Colibri.Runtime.Pipeline.Cluster.Retrier;
 using Colibri.Runtime.Pipeline.Cluster.Terminal;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Colibri.Runtime.Snapshots.Cluster;
 
-public sealed class ClusterSnapshotBuilder
+public sealed class ClusterSnapshotBuilder(IMemoryCache cache)
 {
-    public ClusterSnapshot Build(JwtSchemeCfg[] cfgJwtSchemes, ClusterCfg[] cfgClusters)
+    public ClusterSnapshot Build(
+        JwtSchemeCfg[] cfgJwtSchemes,
+        ClusterCfg[] cfgClusters)
     {
         var snpClusters = new List<ClusterSnp>();
         
@@ -45,7 +48,7 @@ public sealed class ClusterSnapshotBuilder
 
             if (authorizers.Count > 0)
             {
-                clusterMiddlewares.Add(new AuthorizationMiddleware(authorizers.ToArray()));
+                clusterMiddlewares.Add(new AuthorizationMiddleware(authorizers.ToArray(), cache));
             }
            
             if (cfgCluster.Retry?.Enabled == true)

@@ -5,6 +5,7 @@ using Colibri.Helpers;
 using Colibri.Runtime.Pipeline.Main.RoutingEngine;
 using Colibri.Runtime.Snapshots;
 using Colibri.Runtime.Snapshots.Routing;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Colibri.Benchmarks.UpstreamMatcher;
 
@@ -92,7 +93,7 @@ public class UpstreamMatcherRealCase
             Routes = routes.ToArray()
         };
 
-        _routingSnapshot = new GlobalSnapshotBuilder()
+        _routingSnapshot = new GlobalSnapshotBuilder(new MemoryCache(new MemoryCacheOptions()))
             .Build(settings).RoutingSnapshot;
 
         ValidateTestUris();

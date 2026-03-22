@@ -1,8 +1,12 @@
 using System.Net;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Colibri.Runtime.Pipeline.Cluster.Authorization;
 
-public sealed class AuthorizationMiddleware(Authorizer[] authorizers) : IPipelineMiddleware
+public sealed class AuthorizationMiddleware(
+    Authorizer[] authorizers,
+    IMemoryCache cache) : IPipelineMiddleware
 {
     public async ValueTask InvokeAsync(PipelineContext ctx, PipelineDelegate next)
     {
@@ -26,15 +30,32 @@ public sealed class AuthorizationMiddleware(Authorizer[] authorizers) : IPipelin
         var token = authValue.AsSpan(7).ToString();
         bool authResult = false;
 
-        foreach (var authorizer in authorizers)
+        if (cache.TryGetValue(token, out JsonWebToken? cachedSecurityToken))
         {
-            var validationResult = await authorizer.ValidateToken(token);
-
-            if (validationResult.IsValid
-                && authorizer.TryAuthorize(validationResult.SecurityToken))
+            foreach (var authorizer in authorizers)
             {
-                authResult = true;
-                break;
+                if (authorizer.TryAuthorize(cachedSecurityToken!))
+                {
+                    authResult = true;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            foreach (var authorizer in authorizers)
+            {
+                var validationResult = await authorizer.ValidateToken(token);
+
+                if (validationResult.IsValid
+                    && authorizer.TryAuthorize(validationResult.SecurityToken))
+                {
+                    authResult = true;
+                    cachedSecurityToken = (JsonWebToken)validationResult.SecurityToken;
+                    var ttl = validationResult.SecurityToken.ValidTo - DateTime.UtcNow;
+                    cache.Set(token, cachedSecurityToken, ttl);
+                    break;
+                }
             }
         }
 

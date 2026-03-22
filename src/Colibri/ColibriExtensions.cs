@@ -16,6 +16,7 @@ public static class ColibriExtensions
 {
     public static IServiceCollection AddColibriServices(this IServiceCollection services)
     {
+        services.AddMemoryCache();
         services.AddSingleton<IValidateOptions<ColibriSettings>, ValidatorService>();
         services
             .AddOptions<ColibriSettings>()

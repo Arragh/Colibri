@@ -24,22 +24,27 @@
         
         <PackageReference
                 Include="Microsoft.Extensions.DependencyInjection.Abstractions"
-                Version="10.0.3"
+                Version="10.0.5"
                 PrivateAssets="all" />
         
         <PackageReference
                 Include="Microsoft.Extensions.Hosting.Abstractions"
-                Version="10.0.3"
+                Version="10.0.5"
                 PrivateAssets="all" />
         
         <PackageReference
                 Include="Microsoft.Extensions.Options.ConfigurationExtensions"
-                Version="10.0.3"
+                Version="10.0.5"
                 PrivateAssets="all" />
         
         <PackageReference
                 Include="Microsoft.AspNetCore.Http.Abstractions"
                 Version="2.3.9"
+                PrivateAssets="all" />
+
+        <PackageReference
+                Include="Microsoft.Extensions.Caching.Memory"
+                Version="10.0.5"
                 PrivateAssets="all" />
         
     </ItemGroup>

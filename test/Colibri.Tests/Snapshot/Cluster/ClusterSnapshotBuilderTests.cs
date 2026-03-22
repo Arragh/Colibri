@@ -1,11 +1,12 @@
 using Colibri.Configuration.Models;
 using Colibri.Runtime.Snapshots.Cluster;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Unit.Snapshot.Cluster;
 
 public sealed class ClusterSnapshotBuilderTests
 {
-    private readonly ClusterSnapshotBuilder _clusterSnapshotBuilder = new();
+    private readonly ClusterSnapshotBuilder _clusterSnapshotBuilder = new(new MemoryCache(new MemoryCacheOptions()));
 
     private ClusterCfg CreateDummyCluster(string name, string prefix, string protocol, string[] hosts, string lbType)
     {
