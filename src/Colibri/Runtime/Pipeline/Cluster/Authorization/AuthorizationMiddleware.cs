@@ -46,14 +46,25 @@ public sealed class AuthorizationMiddleware(
             foreach (var authorizer in authorizers)
             {
                 var validationResult = await authorizer.ValidateToken(token);
+                cachedSecurityToken = (JsonWebToken)validationResult.SecurityToken;
 
                 if (validationResult.IsValid
-                    && authorizer.TryAuthorize(validationResult.SecurityToken))
+                    && authorizer.TryAuthorize(cachedSecurityToken))
                 {
                     authResult = true;
-                    cachedSecurityToken = (JsonWebToken)validationResult.SecurityToken;
                     var ttl = validationResult.SecurityToken.ValidTo - DateTime.UtcNow;
-                    cache.Set(token, cachedSecurityToken, ttl);
+
+                    if (ttl > TimeSpan.FromMinutes(2))
+                    {
+                        ttl = TimeSpan.FromMinutes(2);
+                    }
+                    
+                    cache.Set(token, cachedSecurityToken, new MemoryCacheEntryOptions
+                    {
+                        Size = 1,
+                        AbsoluteExpirationRelativeToNow = ttl
+                    });
+                    
                     break;
                 }
             }

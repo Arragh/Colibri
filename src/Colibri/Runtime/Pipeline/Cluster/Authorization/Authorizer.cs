@@ -25,15 +25,13 @@ public sealed class Authorizer(ClaimCfg[] claims, string algorithm, string key)
         return _handler.ValidateTokenAsync(token, _validationParameters);
     }
 
-    public bool TryAuthorize(SecurityToken securityToken)
+    public bool TryAuthorize(JsonWebToken jwt)
     {
         if (claims.Length == 0)
         {
             return true;
         }
         
-        var jwt = (JsonWebToken)securityToken;
-
         foreach (var claim in claims)
         {
             if (!jwt.TryGetPayloadValue(claim.Type, out object? element))
