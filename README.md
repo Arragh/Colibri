@@ -52,17 +52,17 @@ app.UseColibri();
    },
    "Colibri": {
       "JwtSchemes": [
-      {
-        "Name": "Default", // Scheme name, must be unique
-        "Algorithm": "rs256", // Token algorithm
-        "Key": "public_key" // key for token validation
-      },
-      {
-        "Name": "Additional",
-        "Algorithm": "hs256",
-        "Key": "secret"
-      }
-    ]
+         {
+           "Name": "Default", // Scheme name, must be unique
+           "Algorithm": "rs256", // Token algorithm
+           "Key": "public_key" // key for token validation
+         },
+         {
+           "Name": "Additional",
+           "Algorithm": "hs256",
+           "Key": "secret"
+         }
+      ]
       "Clusters": [
          {
             // Simple cluster settings without authorization, load-balancer, retrier and circuit breaker
