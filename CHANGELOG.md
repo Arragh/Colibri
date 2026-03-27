@@ -1,6 +1,10 @@
 # Changelog
 
 
+## [0.5.0] - 27.03.2026
+
+- Completed authorization feautures: multiple jwt-schemes/claim-types/claim-values per cluster
+
 ## [0.4.10] - 17.03.2026
 
 - Fixed circuit breaker incorrectly increments failure count on successful calls
