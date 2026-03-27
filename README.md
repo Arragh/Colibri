@@ -62,7 +62,7 @@ app.UseColibri();
            "Algorithm": "hs256",
            "Key": "secret"
          }
-      ]
+      ],
       "Clusters": [
          {
             // Simple cluster settings without authorization, load-balancer, retrier and circuit breaker
