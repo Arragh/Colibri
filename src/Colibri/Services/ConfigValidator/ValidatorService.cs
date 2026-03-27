@@ -14,9 +14,15 @@ public sealed class ValidatorService : IValidateOptions<ColibriSettings>
     /// </summary>
     public ValidateOptionsResult Validate(string? name, ColibriSettings options)
     {
+        var validateJwtSchemesResult = ValidateJwtSchemes(options.JwtSchemes);
         var validateClustersResult = ValidateClusters(options.Clusters);
         var validateRoutesResult = ValidateRoutes(options.Routes);
         var validateCrossResult = ValidateCrossReferences(options.Clusters, options.Routes);
+
+        if (!validateJwtSchemesResult.Succeeded)
+        {
+            return validateJwtSchemesResult;
+        }
         
         if (!validateClustersResult.Succeeded)
         {
@@ -33,6 +39,26 @@ public sealed class ValidatorService : IValidateOptions<ColibriSettings>
             return validateCrossResult;
         }
 
+        return ValidateOptionsResult.Success;
+    }
+
+    private ValidateOptionsResult ValidateJwtSchemes(JwtSchemeCfg[] schemes)
+    {
+        foreach (var scheme in schemes)
+        {
+            if (!_globalValidator.JwtSchemes.AuthAlgorithmIsNotEmpty(scheme.Algorithm))
+            {
+                return ValidateOptionsResult
+                    .Fail($"JwtScheme '{scheme.Name}' has an empty algorithm");
+            }
+            
+            if (!_globalValidator.JwtSchemes.AuthAlgorithmIsValid(scheme.Algorithm))
+            {
+                return ValidateOptionsResult
+                    .Fail($"JwtScheme '{scheme.Name}' has an invalid algorithm");
+            }
+        }
+        
         return ValidateOptionsResult.Success;
     }
 
@@ -112,20 +138,6 @@ public sealed class ValidatorService : IValidateOptions<ColibriSettings>
             {
                 return ValidateOptionsResult
                     .Fail($"Cluster '{cluster.Name}' has an invalid load balancer type '{cluster.LoadBalancer?.Type}'");
-            }
-
-            if (cluster.Authorization?.Enabled == true
-                && !_globalValidator.Clusters.AuthAlgorithmIsNotEmpty(cluster.Authorization?.Algorithm))
-            {
-                return ValidateOptionsResult
-                    .Fail($"Cluster '{cluster.Name}' has an empty auth algorithm");
-            }
-
-            if (cluster.Authorization?.Enabled == true
-                && !_globalValidator.Clusters.AuthAlgorithmIsValid(cluster.Authorization.Algorithm))
-            {
-                return ValidateOptionsResult
-                    .Fail($"Cluster '{cluster.Name}' has an invalid auth algorithm");
             }
         }
         

@@ -1,8 +1,12 @@
 using System.Net;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Colibri.Runtime.Pipeline.Cluster.Authorization;
 
-public sealed class AuthorizationMiddleware(Authorizer authorizer) : IPipelineMiddleware
+public sealed class AuthorizationMiddleware(
+    Authorizer[] authorizers,
+    IMemoryCache cache) : IPipelineMiddleware
 {
     public async ValueTask InvokeAsync(PipelineContext ctx, PipelineDelegate next)
     {
@@ -23,11 +27,50 @@ public sealed class AuthorizationMiddleware(Authorizer authorizer) : IPipelineMi
             return;
         }
 
-        var token = authValue.AsSpan(7);
-        var validationResult = await authorizer.ValidateToken(token.ToString());
+        var token = authValue.AsSpan(7).ToString();
+        bool authResult = false;
 
-        if (!validationResult.IsValid
-            || !authorizer.TryAuthorize(validationResult.SecurityToken))
+        if (cache.TryGetValue(token, out JsonWebToken? cachedSecurityToken))
+        {
+            foreach (var authorizer in authorizers)
+            {
+                if (authorizer.TryAuthorize(cachedSecurityToken!))
+                {
+                    authResult = true;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            foreach (var authorizer in authorizers)
+            {
+                var validationResult = await authorizer.ValidateToken(token);
+                cachedSecurityToken = (JsonWebToken)validationResult.SecurityToken;
+
+                if (validationResult.IsValid
+                    && authorizer.TryAuthorize(cachedSecurityToken))
+                {
+                    authResult = true;
+                    var ttl = validationResult.SecurityToken.ValidTo - DateTime.UtcNow;
+
+                    if (ttl > TimeSpan.FromMinutes(2))
+                    {
+                        ttl = TimeSpan.FromMinutes(2);
+                    }
+                    
+                    cache.Set(token, cachedSecurityToken, new MemoryCacheEntryOptions
+                    {
+                        Size = 1,
+                        AbsoluteExpirationRelativeToNow = ttl
+                    });
+                    
+                    break;
+                }
+            }
+        }
+
+        if (!authResult)
         {
             ctx.SetStatusCode(HttpStatusCode.Unauthorized);
             ctx.CommitStatusCode();

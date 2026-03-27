@@ -8,26 +8,26 @@ public sealed class RouteCfg
         set => field = value
             .Select(v => v.ToUpperInvariant())
             .ToArray();
-    } = null!;
+    } = [];
 
     public string ClusterName
     {
         get;
         set => field = value
             .ToLowerInvariant();
-    } = null!;
+    } = string.Empty;
 
     public string UpstreamPattern
     {
         get;
         set => field = value
             .ToLowerInvariant();
-    } = null!;
+    } = string.Empty;
 
     public string DownstreamPattern
     {
         get;
         set => field = value
             .ToLowerInvariant();
-    } = null!;
+    } = string.Empty;
 }

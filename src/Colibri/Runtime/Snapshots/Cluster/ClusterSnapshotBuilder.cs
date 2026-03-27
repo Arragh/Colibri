@@ -6,12 +6,15 @@ using Colibri.Runtime.Pipeline.Cluster.CircuitBreaker;
 using Colibri.Runtime.Pipeline.Cluster.LoadBalancer;
 using Colibri.Runtime.Pipeline.Cluster.Retrier;
 using Colibri.Runtime.Pipeline.Cluster.Terminal;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Colibri.Runtime.Snapshots.Cluster;
 
-public sealed class ClusterSnapshotBuilder
+public sealed class ClusterSnapshotBuilder(IMemoryCache cache)
 {
-    public ClusterSnapshot Build(ClusterCfg[] cfgClusters)
+    public ClusterSnapshot Build(
+        JwtSchemeCfg[] cfgJwtSchemes,
+        ClusterCfg[] cfgClusters)
     {
         var snpClusters = new List<ClusterSnp>();
         
@@ -26,16 +29,27 @@ public sealed class ClusterSnapshotBuilder
             
             var hostsCount = cfgCluster.Hosts.Length;
 
-            if (cfgCluster.Authorization?.Enabled == true)
+            List<Authorizer> authorizers = new();
+            foreach (var auth in cfgCluster.Authorization)
             {
-                var authorizer = new Authorizer(
-                    cfgCluster.Authorization.Claims,
-                    cfgCluster.Authorization.Algorithm,
-                    cfgCluster.Authorization.Key);
+                if (auth.Enabled)
+                {
+                    var jwtScheme = cfgJwtSchemes
+                        .First(s => s.Name == auth.JwtScheme);
                 
-                clusterMiddlewares.Add(new AuthorizationMiddleware(authorizer));
+                    var authorizer = new Authorizer(
+                        auth.Claims,
+                        jwtScheme.Algorithm,
+                        jwtScheme.Key);
+                
+                    authorizers.Add(authorizer);
+                }
             }
-            
+
+            if (authorizers.Count > 0)
+            {
+                clusterMiddlewares.Add(new AuthorizationMiddleware(authorizers.ToArray(), cache));
+            }
            
             if (cfgCluster.Retry?.Enabled == true)
             {
@@ -47,7 +61,8 @@ public sealed class ClusterSnapshotBuilder
                 ILoadBalancer loadBalancer = cfgCluster.LoadBalancer.Type switch
                 {
                     "rr" => new RoundRobinBalancer(hostsCount),
-                    "rnd" => new RandomBalancer(hostsCount)
+                    "rnd" => new RandomBalancer(hostsCount),
+                    _ => new RoundRobinBalancer(hostsCount)
                 };
                 
                 clusterMiddlewares.Add(new LoadBalancerMiddleware(loadBalancer));

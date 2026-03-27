@@ -1,5 +1,6 @@
 using Colibri.Configuration.Models;
 using Colibri.Runtime.Pipeline.Cluster.Authorization;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Unit.Pipeline.Cluster.Authorization;
 
@@ -57,7 +58,8 @@ public class AuthorizerTests
         
         // Act
         var validateResult = await authorizer.ValidateToken(token);
-        var authorizeResult = authorizer.TryAuthorize(validateResult.SecurityToken);
+        var jwtToken = (JsonWebToken)validateResult.SecurityToken;
+        var authorizeResult = authorizer.TryAuthorize(jwtToken);
         
         // Assert
         Assert.False(authorizeResult);
@@ -81,7 +83,8 @@ public class AuthorizerTests
         
         // Act
         var validateResult = await authorizer.ValidateToken(token);
-        var authorizeResult = authorizer.TryAuthorize(validateResult.SecurityToken);
+        var jwtToken = (JsonWebToken)validateResult.SecurityToken;
+        var authorizeResult = authorizer.TryAuthorize(jwtToken);
         
         // Assert
         Assert.True(authorizeResult);
@@ -105,7 +108,8 @@ public class AuthorizerTests
         
         // Act
         var validateResult = await authorizer.ValidateToken(token);
-        var authorizeResult = authorizer.TryAuthorize(validateResult.SecurityToken);
+        var jwtToken = (JsonWebToken)validateResult.SecurityToken;
+        var authorizeResult = authorizer.TryAuthorize(jwtToken);
         
         // Assert
         Assert.False(authorizeResult);
@@ -129,7 +133,8 @@ public class AuthorizerTests
         
         // Act
         var validateResult = await authorizer.ValidateToken(token);
-        var authorizeResult = authorizer.TryAuthorize(validateResult.SecurityToken);
+        var jwtToken = (JsonWebToken)validateResult.SecurityToken;
+        var authorizeResult = authorizer.TryAuthorize(jwtToken);
         
         // Assert
         Assert.True(authorizeResult);
@@ -153,7 +158,8 @@ public class AuthorizerTests
         
         // Act
         var validateResult = await authorizer.ValidateToken(token);
-        var authorizeResult = authorizer.TryAuthorize(validateResult.SecurityToken);
+        var jwtToken = (JsonWebToken)validateResult.SecurityToken;
+        var authorizeResult = authorizer.TryAuthorize(jwtToken);
         
         // Assert
         Assert.False(authorizeResult);
