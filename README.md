@@ -51,6 +51,18 @@ app.UseColibri();
       }
    },
    "Colibri": {
+      "JwtSchemes": [
+      {
+        "Name": "Default", // Scheme name, must be unique
+        "Algorithm": "rs256", // Token algorithm
+        "Key": "public_key" // key for token validation
+      },
+      {
+        "Name": "Additional",
+        "Algorithm": "hs256",
+        "Key": "secret"
+      }
+    ]
       "Clusters": [
          {
             // Simple cluster settings without authorization, load-balancer, retrier and circuit breaker
@@ -69,18 +81,28 @@ app.UseColibri();
             "Prefix": "/cluster1", // Route prefix (http://cluster1/service1/method1)
             "UsePrefix": true, // Whether to apply the prefix for routes
             "Hosts": [ "192.168.1.100:6000", "192.168.1.102:6002" ],
-            "Authorization": {
-               "Enabled": true, // Disabled by default
-               "Algorithm": "rs256", // Algorithm used for key. Supports rs256, hs256, es256
-               "Key": "your_token_key", // token key (public/simmetrical/etc)
-               // Set claims only if you need to validate it
-               "Claims": [
+            "Authorization": [
+              {
+                "JwtScheme": "Default", // Scheme to use
+                "Enabled": true, // Enable/disable authorization for cluster routes
+                "Claims": [
                   {
-                     "Type": "role", // claim type
-                     "Value": [ "admin", "user" ] // claim values
+                    "Type": "role", // Claim name
+                    "Value": [ "admin", "moderator" ] // Allowed claim values
                   }
-               ]
-            },
+                ]
+              },
+              {
+                "JwtScheme": "Additional",
+                "Enabled": true,
+                "Claims": [
+                  {
+                    "Type": "status",
+                    "Value": [ "employee" ]
+                  }
+                ]
+              }
+            ],
             "Retry": {
                "Enabled": true, // Disabled by default
                "Attempts": 3 // Number of retry attempts. 3 by deafult
