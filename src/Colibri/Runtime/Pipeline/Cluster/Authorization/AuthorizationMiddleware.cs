@@ -1,12 +1,12 @@
 using System.Net;
-using Microsoft.Extensions.Caching.Memory;
+using Colibri.Services;
 using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Colibri.Runtime.Pipeline.Cluster.Authorization;
 
 public sealed class AuthorizationMiddleware(
     Authorizer[] authorizers,
-    IMemoryCache cache) : IPipelineMiddleware
+    TokenCache cache) : IPipelineMiddleware
 {
     public async ValueTask InvokeAsync(PipelineContext ctx, PipelineDelegate next)
     {
@@ -59,12 +59,7 @@ public sealed class AuthorizationMiddleware(
                         ttl = TimeSpan.FromMinutes(2);
                     }
                     
-                    cache.Set(token, cachedSecurityToken, new MemoryCacheEntryOptions
-                    {
-                        Size = 1,
-                        AbsoluteExpirationRelativeToNow = ttl
-                    });
-                    
+                    cache.Set(token, cachedSecurityToken, ttl);
                     break;
                 }
             }
