@@ -16,19 +16,13 @@ public static class ColibriExtensions
 {
     public static IServiceCollection AddColibriServices(this IServiceCollection services)
     {
-        services.AddMemoryCache(options =>
-        {
-            options.ExpirationScanFrequency = TimeSpan.FromMinutes(2);
-            options.CompactionPercentage = 0.2;
-            options.SizeLimit = 100_000;
-        });
-        
         services.AddSingleton<IValidateOptions<ColibriSettings>, ValidatorService>();
         services
             .AddOptions<ColibriSettings>()
             .BindConfiguration("Colibri")
             .ValidateOnStart();
 
+        services.AddSingleton<TokenCache>();
         services.AddSingleton<SnapshotProvider>();
         services.AddSingleton(Channel.CreateUnbounded<IAsyncDisposable>());
         

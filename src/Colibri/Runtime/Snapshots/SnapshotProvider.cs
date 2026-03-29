@@ -1,6 +1,6 @@
 using System.Threading.Channels;
 using Colibri.Configuration;
-using Microsoft.Extensions.Caching.Memory;
+using Colibri.Services;
 using Microsoft.Extensions.Options;
 
 namespace Colibri.Runtime.Snapshots;
@@ -12,7 +12,7 @@ public sealed class SnapshotProvider
     public SnapshotProvider(
         IOptionsMonitor<ColibriSettings> monitor,
         Channel<IAsyncDisposable> channel,
-        IMemoryCache cache)
+        TokenCache cache)
     {
         var globalSnapshotBuilder = new GlobalSnapshotBuilder(cache);
         _globalSnapshot = globalSnapshotBuilder.Build(monitor.CurrentValue);

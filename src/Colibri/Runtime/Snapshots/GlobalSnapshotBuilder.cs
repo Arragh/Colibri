@@ -1,11 +1,11 @@
 using Colibri.Configuration;
 using Colibri.Runtime.Snapshots.Cluster;
 using Colibri.Runtime.Snapshots.Routing;
-using Microsoft.Extensions.Caching.Memory;
+using Colibri.Services;
 
 namespace Colibri.Runtime.Snapshots;
 
-public sealed class GlobalSnapshotBuilder(IMemoryCache cache)
+public sealed class GlobalSnapshotBuilder(TokenCache cache)
 {
     private readonly ClusterSnapshotBuilder _clusterSnapshotBuilder = new(cache);
     private readonly RoutingSnapshotBuilder _routingSnapshotBuilder = new();

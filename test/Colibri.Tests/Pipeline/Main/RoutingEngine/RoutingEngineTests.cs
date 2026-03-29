@@ -4,7 +4,7 @@ using Colibri.Helpers;
 using Colibri.Runtime.Pipeline.Main.RoutingEngine;
 using Colibri.Runtime.Snapshots;
 using Colibri.Runtime.Snapshots.Routing;
-using Microsoft.Extensions.Caching.Memory;
+using Colibri.Services;
 
 namespace Unit.Pipeline.Main.RoutingEngine;
 
@@ -21,7 +21,7 @@ public sealed class RoutingEngineTests
             Routes = routes
         };
 
-        return new GlobalSnapshotBuilder(new MemoryCache(new MemoryCacheOptions()))
+        return new GlobalSnapshotBuilder(new TokenCache())
             .Build(settings)
             .RoutingSnapshot;
     }

@@ -5,7 +5,7 @@ using Colibri.Helpers;
 using Colibri.Runtime.Pipeline.Main.RoutingEngine;
 using Colibri.Runtime.Snapshots;
 using Colibri.Runtime.Snapshots.Routing;
-using Microsoft.Extensions.Caching.Memory;
+using Colibri.Services;
 
 namespace Colibri.Benchmarks.UpstreamMatcher;
 
@@ -18,7 +18,7 @@ public class UpstreamMatcherBestCase
     [GlobalSetup]
     public void Setup()
     {
-        _routingSnapshot = new GlobalSnapshotBuilder(new MemoryCache(new MemoryCacheOptions()))
+        _routingSnapshot = new GlobalSnapshotBuilder(new TokenCache())
             .Build(new ColibriSettings
             {
                 Clusters =

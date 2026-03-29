@@ -6,11 +6,11 @@ using Colibri.Runtime.Pipeline.Cluster.CircuitBreaker;
 using Colibri.Runtime.Pipeline.Cluster.LoadBalancer;
 using Colibri.Runtime.Pipeline.Cluster.Retrier;
 using Colibri.Runtime.Pipeline.Cluster.Terminal;
-using Microsoft.Extensions.Caching.Memory;
+using Colibri.Services;
 
 namespace Colibri.Runtime.Snapshots.Cluster;
 
-public sealed class ClusterSnapshotBuilder(IMemoryCache cache)
+public sealed class ClusterSnapshotBuilder(TokenCache cache)
 {
     public ClusterSnapshot Build(
         JwtSchemeCfg[] cfgJwtSchemes,
