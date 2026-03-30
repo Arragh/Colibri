@@ -52,8 +52,8 @@ public sealed class AuthorizationMiddleware(
                     && authorizer.TryAuthorize(cachedSecurityToken))
                 {
                     authResult = true;
-                    var ttl = validationResult.SecurityToken.ValidTo - DateTime.UtcNow;
 
+                    var ttl = validationResult.SecurityToken.ValidTo - DateTime.UtcNow;
                     if (ttl > TimeSpan.FromMinutes(2))
                     {
                         ttl = TimeSpan.FromMinutes(2);

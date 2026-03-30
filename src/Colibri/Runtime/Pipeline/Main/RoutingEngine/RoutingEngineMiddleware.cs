@@ -12,9 +12,9 @@ public sealed class RoutingEngineMiddleware : IPipelineMiddleware
     public ValueTask InvokeAsync(PipelineContext ctx, PipelineDelegate next)
     {
         var routingSnapshot = ctx.GlobalSnapshot.RoutingSnapshot;
-        var path = ctx.HttpContext.Request.Path.Value.AsSpan();
-        Span<char> buffer = stackalloc char[path.Length];
-        var normalizedPath = NormalizePath(path, buffer);
+        var pathSpan = ctx.HttpContext.Request.Path.Value.AsSpan();
+        Span<char> buffer = stackalloc char[pathSpan.Length];
+        var normalizedPath = NormalizePath(pathSpan, buffer);
         Span<ParamValue> routeParams = stackalloc ParamValue[16];
         
         if (!_upstreamMatcher.TryMatch(
