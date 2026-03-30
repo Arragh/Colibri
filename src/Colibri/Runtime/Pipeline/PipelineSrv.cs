@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Colibri.Runtime.Pipeline;
 
 public sealed class PipelineSrv : IDisposable
@@ -21,6 +23,7 @@ public sealed class PipelineSrv : IDisposable
         _entry = next;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ValueTask ExecuteAsync(PipelineContext ctx) => _entry(ctx);
     
     public void Dispose()
