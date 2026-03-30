@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Colibri.Runtime.Pipeline;
 
 namespace Colibri.Runtime.Snapshots.Cluster;
@@ -13,7 +14,10 @@ public sealed class ClusterSnp : IAsyncDisposable
     public required int HostsCount { get; init; }
     public required PipelineSrv Pipeline { get; init; }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Take() => Interlocked.Increment(ref _activitiesCount);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Release() => Interlocked.Decrement(ref _activitiesCount);
 
     public async ValueTask DisposeAsync()

@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
 using Colibri.Configuration.Models;
 using Colibri.Runtime.Pipeline;
 using Colibri.Runtime.Pipeline.Cluster.Authorization;
@@ -26,71 +27,29 @@ public sealed class ClusterSnapshotBuilder(TokenCache cache)
             }
             
             List<IPipelineMiddleware> clusterMiddlewares = new();
-            
             var hostsCount = cfgCluster.Hosts.Length;
 
-            List<Authorizer> authorizers = new();
-            foreach (var auth in cfgCluster.Authorization)
+            if (cfgCluster.Authorization.Any(a => a.Enabled))
             {
-                if (auth.Enabled)
-                {
-                    var jwtScheme = cfgJwtSchemes
-                        .First(s => s.Name == auth.JwtScheme);
-                
-                    var authorizer = new Authorizer(
-                        auth.Claims,
-                        jwtScheme.Algorithm,
-                        jwtScheme.Key);
-                
-                    authorizers.Add(authorizer);
-                }
-            }
-
-            if (authorizers.Count > 0)
-            {
-                clusterMiddlewares.Add(new AuthorizationMiddleware(authorizers.ToArray(), cache));
+                AddAuthorization(clusterMiddlewares, cfgJwtSchemes, cfgCluster);
             }
            
             if (cfgCluster.Retry?.Enabled == true)
             {
-                clusterMiddlewares.Add(new RetryMiddleware(cfgCluster.Retry.Attempts));
+                AddRetry(clusterMiddlewares, cfgCluster);
             }
             
             if (cfgCluster.LoadBalancer?.Enabled == true)
             {
-                ILoadBalancer loadBalancer = cfgCluster.LoadBalancer.Type switch
-                {
-                    "rr" => new RoundRobinBalancer(hostsCount),
-                    "rnd" => new RandomBalancer(hostsCount),
-                    _ => new RoundRobinBalancer(hostsCount)
-                };
-                
-                clusterMiddlewares.Add(new LoadBalancerMiddleware(loadBalancer));
+                AddLoadBalancer(clusterMiddlewares, cfgCluster, hostsCount);
             }
             
             if (cfgCluster.CircuitBreaker?.Enabled == true)
             {
-                var breaker = new CircuitBreaker(
-                    hostsCount,
-                    cfgCluster.CircuitBreaker.Failures,
-                    cfgCluster.CircuitBreaker.Timeout);
-                
-                clusterMiddlewares.Add(new CircuitBreakerMiddleware(breaker));
+                AddCircuitBreaker(clusterMiddlewares, cfgCluster, hostsCount);
             }
             
-            switch (cfgCluster.Protocol.ToLower())
-            {
-                case "http":
-                    clusterMiddlewares.Add(new HttpTerminalMiddleware(cfgCluster.Hosts));
-                    break;
-                
-                case "ws":
-                    clusterMiddlewares.Add(new WebsocketTerminalMiddleware(cfgCluster.Hosts));
-                    break;
-                
-                default:
-                    throw new ArgumentException($"Invalid protocol {cfgCluster.Protocol}");
-            }
+            AddTerminal(clusterMiddlewares, cfgCluster);
             
             var snpCluster = new ClusterSnp
             {
@@ -108,5 +67,89 @@ public sealed class ClusterSnapshotBuilder(TokenCache cache)
         {
             Clusters = snpClusters.ToImmutableArray()
         };
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void AddAuthorization(
+        List<IPipelineMiddleware> clusterMiddlewares,
+        JwtSchemeCfg[] cfgJwtSchemes,
+        ClusterCfg cfgCluster)
+    {
+        List<Authorizer> authorizers = new();
+        foreach (var auth in cfgCluster.Authorization)
+        {
+            if (auth.Enabled)
+            {
+                var jwtScheme = cfgJwtSchemes
+                    .First(s => s.Name == auth.JwtScheme);
+            
+                var authorizer = new Authorizer(
+                    auth.Claims,
+                    jwtScheme.Algorithm,
+                    jwtScheme.Key);
+            
+                authorizers.Add(authorizer);
+            }
+        }
+
+        if (authorizers.Count > 0)
+        {
+            clusterMiddlewares.Add(new AuthorizationMiddleware(authorizers.ToArray(), cache));
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void AddRetry(
+        List<IPipelineMiddleware> clusterMiddlewares,
+        ClusterCfg cfgCluster)
+    {
+        clusterMiddlewares.Add(new RetryMiddleware(cfgCluster.Retry!.Attempts));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void AddLoadBalancer(
+        List<IPipelineMiddleware> clusterMiddlewares,
+        ClusterCfg cfgCluster,
+        int hostsCount)
+    {
+        ILoadBalancer loadBalancer = cfgCluster.LoadBalancer!.Type switch
+        {
+            "rr" => new RoundRobinBalancer(hostsCount),
+            "rnd" => new RandomBalancer(hostsCount),
+            _ => new RoundRobinBalancer(hostsCount)
+        };
+        
+        clusterMiddlewares.Add(new LoadBalancerMiddleware(loadBalancer));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void AddCircuitBreaker(
+        List<IPipelineMiddleware> clusterMiddlewares,
+        ClusterCfg cfgCluster,
+        int hostsCount)
+    {
+        var breaker = new CircuitBreaker(
+            hostsCount,
+            cfgCluster.CircuitBreaker!.Failures,
+            cfgCluster.CircuitBreaker.Timeout);
+        
+        clusterMiddlewares.Add(new CircuitBreakerMiddleware(breaker));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void AddTerminal(
+        List<IPipelineMiddleware> clusterMiddlewares,
+        ClusterCfg cfgCluster)
+    {
+        switch (cfgCluster.Protocol.ToLower())
+        {
+            case "http":
+                clusterMiddlewares.Add(new HttpTerminalMiddleware(cfgCluster.Hosts));
+                break;
+            
+            case "ws":
+                clusterMiddlewares.Add(new WebsocketTerminalMiddleware(cfgCluster.Hosts));
+                break;
+        }
     }
 }

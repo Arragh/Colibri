@@ -54,7 +54,7 @@ public sealed class PipelineContext(GlobalSnapshot snapshot, HttpContext httpCon
     {
         if (_isCommited)
         {
-            throw new InvalidOperationException("StatusCode is already committed");
+            return;
         }
         
         HttpContext.Response.StatusCode = StatusCode;

@@ -94,7 +94,8 @@ public sealed class HeadersProcessor
         };
     }
 
-    private bool IsConnectionHeader(
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool IsConnectionHeader(
         ReadOnlySpan<char> header,
         StringValues connectionHeaders)
     {
