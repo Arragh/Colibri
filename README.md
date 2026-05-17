@@ -24,11 +24,6 @@ Colibri is a fast, lightweight, easy-to-configure, AOT-friendly API gateway that
 10) Configuration validation on start/hot-reload.
 11) Authorization per cluster.
 
-## 🔧 In development:
-1) Rate Limiter.
-2) Unit tests.
-3) Authorization improvements.
-
 ## 📝 Integration into your project:
 ```csharp
 ...
